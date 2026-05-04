@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AZOBSS</title>
+  <title>AZOBSS | PC Service, Info Lot & Digital Tools</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AZOBSS menyediakan servis PC, troubleshoot Windows online, info lot, PA, affiliate links, e-book, software dan AutoCAD LISP.">
+
   <style>
     body {
       margin: 0;
@@ -14,21 +16,26 @@
     .hero {
       text-align: center;
       padding: 80px 20px;
-      background: linear-gradient(135deg, #0f172a, #020617);
+      background: linear-gradient(135deg, #020617, #0f172a);
     }
 
-    .hero h1 {
-      font-size: 40px;
+    h1 {
       color: #22c55e;
+      font-size: 42px;
     }
 
-    .hero p {
-      color: #94a3b8;
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    p {
+      color: #cbd5e1;
     }
 
     .btn {
       display: inline-block;
-      margin: 10px;
+      margin: 8px;
       padding: 14px 24px;
       background: #22c55e;
       color: white;
@@ -37,33 +44,43 @@
       font-weight: bold;
     }
 
-    .btn.secondary {
-      background: #3b82f6;
+    .btn.blue {
+      background: #2563eb;
+    }
+
+    .btn.orange {
+      background: #f97316;
     }
 
     .section {
-      padding: 50px 20px;
-      text-align: center;
+      padding: 55px 20px;
+      max-width: 1100px;
+      margin: auto;
     }
 
-    .services {
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 20px;
-      max-width: 900px;
-      margin: auto;
     }
 
     .card {
       background: #1e293b;
-      padding: 20px;
-      border-radius: 15px;
+      padding: 22px;
+      border-radius: 18px;
+      text-align: center;
       transition: 0.3s;
     }
 
     .card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 0 20px rgba(34,197,94,0.4);
+      box-shadow: 0 0 20px rgba(34,197,94,0.25);
+    }
+
+    .price {
+      color: #22c55e;
+      font-size: 24px;
+      font-weight: bold;
     }
 
     .whatsapp {
@@ -74,91 +91,141 @@
       color: white;
       padding: 15px;
       border-radius: 50%;
-      font-size: 20px;
+      font-size: 22px;
       text-decoration: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #94a3b8;
+      background: #020617;
     }
   </style>
 </head>
 
 <body>
 
-<!-- HERO -->
-<div class="hero">
-  <h1>AZOBSS</h1>
-  <p>PC Repair • Format Windows • Ukur Tanah • Info Lot</p>
+  <!-- HERO -->
+  <div class="hero">
+    <h1>AZOBSS</h1>
+    <p>PC Service • Info Lot • Digital Tools • AutoCAD LISP</p>
 
-  <a class="btn" href="https://alvo.chat/6nZ2">Fix My PC</a>
-  <a class="btn secondary" href="https://alvo.chat/6nZ2">Ukur Tanah / Info Lot</a>
-</div>
-
-<!-- SERVICES -->
-<div class="section">
-  <h2>Our Services</h2>
-
-  <div class="services">
-    <div class="card">💻 Format Windows</div>
-    <div class="card">🛠️ PC Repair</div>
-    <div class="card">🧠 Troubleshoot Windows Online (Remote Support)</div>
-    <div class="card">🎮 Custom Gaming PC</div>
-    <div class="card">📍 Info Lot Kadaster</div>
-    <div class="card">📏 Ukur Kawasan Tanah</div>
+    <a class="btn" href="https://alvo.chat/6nZ2">Contact Us Now</a>
+    <a class="btn blue" href="#request">Request PA / Info Lot</a>
   </div>
-</div>
 
-<!-- REMOTE SECTION -->
-<div class="section">
-  <h2>Remote Troubleshoot Windows</h2>
+  <!-- PUBLIC LANDING PAGE / SERVICES -->
+  <div class="section">
+    <h2>Our Services</h2>
 
-  <div class="card" style="max-width:600px;margin:auto;">
-    <h3>🧠 Troubleshoot Windows Online</h3>
-    <p>Fix error, lag, software problem tanpa datang kedai.</p>
-
-    <h2 style="color:#22c55e;">RM30 sahaja</h2>
-
-    <p style="text-align:left;">
-      ✔ Diagnose & Fix Windows Problem<br>
-      ✔ Remove Virus / Software Issue<br>
-      ✔ Install Software<br>
-      ✔ System Optimization<br>
-    </p>
-
-    <hr style="opacity:0.2;">
-
-    <h4>📲 Cara guna (3 Step sahaja):</h4>
-    <p style="text-align:left;">
-      1. Download TeamViewer / RustDesk<br>
-      2. Share ID & Password<br>
-      3. Kami troubleshoot terus<br>
-    </p>
-
-    <p style="color:#94a3b8;">
-      ⏱️ Anggaran siap dalam 30 - 60 minit
-    </p>
-
-    <a class="btn secondary" href="https://www.teamviewer.com/en/download/windows/" target="_blank">
-      Download TeamViewer
-    </a>
-
-    <a class="btn secondary" href="https://rustdesk.com/download" target="_blank">
-      Download RustDesk
-    </a>
-
-    <br>
-
-    <a class="btn" href="https://alvo.chat/6nZ2">
-      Start Remote Fix Now
-    </a>
+    <div class="grid">
+      <div class="card">💻 Format Windows</div>
+      <div class="card">🛠️ PC Repair</div>
+      <div class="card">🧠 Troubleshoot Windows Online</div>
+      <div class="card">📍 Info Lot Kadaster</div>
+      <div class="card">📏 Ukur Kawasan Tanah</div>
+      <div class="card">📂 PA / PDUK Request</div>
+    </div>
   </div>
-</div>
 
-<!-- CTA -->
-<div class="section">
-  <h2>PC Slow? Tanah Tak Jelas?</h2>
-  <a class="btn" href="https://alvo.chat/6nZ2">Contact Now</a>
-</div>
+  <!-- AFFILIATE LINKS -->
+  <div class="section">
+    <h2>Affiliate Links</h2>
+    <p style="text-align:center;">Senarai barang pilihan yang berguna untuk kerja, rumah dan setup PC.</p>
 
-<!-- FLOATING BUTTON -->
-<a class="whatsapp" href="https://alvo.chat/6nZ2">💬</a>
+    <div class="grid">
+      <div class="card">
+        <h3>🛒 PC Tools</h3>
+        <p>Barang berguna untuk repair, setup dan maintenance PC.</p>
+        <a class="btn blue" href="#">View Links</a>
+      </div>
+
+      <div class="card">
+        <h3>🏠 Useful Home Items</h3>
+        <p>Produk praktikal untuk kegunaan harian.</p>
+        <a class="btn blue" href="#">View Links</a>
+      </div>
+
+      <div class="card">
+        <h3>📱 Gadgets</h3>
+        <p>Gadget menarik untuk kerja dan content creation.</p>
+        <a class="btn blue" href="#">View Links</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- EBOOK / SOFTWARE / LISP -->
+  <div class="section">
+    <h2>E-book, Software & AutoCAD LISP</h2>
+
+    <div class="grid">
+      <div class="card">
+        <h3>📘 Windows Guide E-book</h3>
+        <p>Panduan basic troubleshoot Windows untuk pengguna biasa.</p>
+        <div class="price">Coming Soon</div>
+        <a class="btn" href="https://alvo.chat/6nZ2">Ask Availability</a>
+      </div>
+
+      <div class="card">
+        <h3>🧩 Software Tools</h3>
+        <p>Tools pilihan untuk kerja PC, file, repair dan productivity.</p>
+        <div class="price">Coming Soon</div>
+        <a class="btn" href="https://alvo.chat/6nZ2">Ask Availability</a>
+      </div>
+
+      <div class="card">
+        <h3>📐 AutoCAD LISP</h3>
+        <p>LISP untuk percepat kerja AutoCAD, text, layer, area dan drafting.</p>
+        <div class="price">From RM10</div>
+        <a class="btn orange" href="https://alvo.chat/6nZ2">Buy / Request LISP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUEST PA / INFO LOT -->
+  <div class="section" id="request">
+    <h2>Request PA / Info Lot</h2>
+
+    <div class="card" style="max-width:700px;margin:auto;">
+      <h3>📂 Request PA, PDUK, Info Lot & Kawasan</h3>
+      <p>
+        Untuk request PA, info lot, lokasi lot, atau semakan kawasan,
+        klik button di bawah dan hantar detail melalui WhatsApp.
+      </p>
+
+      <p style="text-align:left;">
+        ✔ No PA / No Lot<br>
+        ✔ Negeri / Mukim / Daerah<br>
+        ✔ Jenis request<br>
+        ✔ Confirmation ada / tiada akan diberitahu<br>
+      </p>
+
+      <a class="btn blue" href="https://alvo.chat/6nZ2">
+        Request PA / Info Lot Now
+      </a>
+    </div>
+  </div>
+
+  <!-- LOGIN PLACEHOLDER -->
+  <div class="section">
+    <h2>Member Login</h2>
+
+    <div class="card" style="max-width:600px;margin:auto;">
+      <h3>🔐 Login System Coming Soon</h3>
+      <p>
+        Section untuk peraduan, request automatik, QR payment dan member area
+        akan ditambah pada fasa seterusnya.
+      </p>
+    </div>
+  </div>
+
+  <!-- FLOATING WHATSAPP -->
+  <a class="whatsapp" href="https://alvo.chat/6nZ2">💬</a>
+
+  <footer>
+    © 2026 AZOBSS. All rights reserved.
+  </footer>
 
 </body>
 </html>
