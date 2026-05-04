@@ -70,11 +70,27 @@
       border-radius: 18px;
       text-align: center;
       transition: 0.3s;
+      position: relative;
+      overflow: hidden;
+      min-height: 90px;
     }
 
     .card:hover {
       transform: translateY(-5px);
       box-shadow: 0 0 20px rgba(34,197,94,0.25);
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .card:hover img {
+      display: block;
     }
 
     .price {
@@ -93,6 +109,7 @@
       border-radius: 50%;
       font-size: 22px;
       text-decoration: none;
+      z-index: 999;
     }
 
     footer {
@@ -106,7 +123,6 @@
 
 <body>
 
-  <!-- HERO -->
   <div class="hero">
     <h1>AZOBSS</h1>
     <p>PC Service • Info Lot • Digital Tools • AutoCAD LISP</p>
@@ -115,21 +131,42 @@
     <a class="btn blue" href="#request">Request PA / Info Lot</a>
   </div>
 
-  <!-- PUBLIC LANDING PAGE / SERVICES -->
   <div class="section">
     <h2>Our Services</h2>
 
     <div class="grid">
-      <div class="card">💻 Format Windows</div>
-      <div class="card">🛠️ PC Repair</div>
-      <div class="card">🧠 Troubleshoot Windows Online</div>
-      <div class="card">📍 Info Lot Kadaster</div>
-      <div class="card">📏 Ukur Kawasan Tanah</div>
-      <div class="card">📂 PA / PDUK Request</div>
+      <div class="card">
+        💻 Format Windows
+        <img src="images/format-windows.jpg" alt="Format Windows">
+      </div>
+
+      <div class="card">
+        🛠️ PC Repair
+        <img src="images/pc-repair.jpg" alt="PC Repair">
+      </div>
+
+      <div class="card">
+        🧠 Troubleshoot Windows Online
+        <img src="images/remote-support.jpg" alt="Remote Support">
+      </div>
+
+      <div class="card">
+        📍 Info Lot Kadaster
+        <img src="images/info-lot.jpg" alt="Info Lot Kadaster">
+      </div>
+
+      <div class="card">
+        📏 Ukur Kawasan Tanah
+        <img src="images/ukur-tanah.jpg" alt="Ukur Kawasan Tanah">
+      </div>
+
+      <div class="card">
+        📂 PA / PDUK Request
+        <img src="images/pa-pduk.jpg" alt="PA PDUK Request">
+      </div>
     </div>
   </div>
 
-  <!-- AFFILIATE LINKS -->
   <div class="section">
     <h2>Affiliate Links</h2>
     <p style="text-align:center;">Senarai barang pilihan yang berguna untuk kerja, rumah dan setup PC.</p>
@@ -155,7 +192,6 @@
     </div>
   </div>
 
-  <!-- EBOOK / SOFTWARE / LISP -->
   <div class="section">
     <h2>E-book, Software & AutoCAD LISP</h2>
 
@@ -183,7 +219,6 @@
     </div>
   </div>
 
-  <!-- REQUEST PA / INFO LOT -->
   <div class="section" id="request">
     <h2>Request PA / Info Lot</h2>
 
@@ -207,7 +242,6 @@
     </div>
   </div>
 
-  <!-- LOGIN PLACEHOLDER -->
   <div class="section">
     <h2>Member Login</h2>
 
@@ -220,7 +254,6 @@
     </div>
   </div>
 
-  <!-- FLOATING WHATSAPP -->
   <a class="whatsapp" href="https://alvo.chat/6nZ2">💬</a>
 
   <footer>
