@@ -182,6 +182,53 @@
       text-align: left;
     }
 
+    .login-panel {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+      text-align: left;
+    }
+
+    .login-panel label {
+      color: #e2e8f0;
+      font-weight: bold;
+    }
+
+    .login-panel input,
+    .login-panel select {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 7px;
+      padding: 13px 14px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0f172a;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .login-panel input:focus,
+    .login-panel select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
+    }
+
+    .login-info {
+      display: none;
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(34,197,94,0.35);
+      border-radius: 10px;
+      background: rgba(34,197,94,0.12);
+      color: #bbf7d0;
+      text-align: left;
+    }
+
+    .owner-tools {
+      display: none;
+    }
+
     .whatsapp {
       position: fixed;
       bottom: 20px;
@@ -319,11 +366,33 @@
     <div class="card" style="max-width:700px;margin:auto;">
       <h3>📂 Request PA, PDUK, Info Lot & Kawasan</h3>
       <p>
-        Masukkan nombor PA dan pilih negeri. Sistem akan buka link muat turun
-        Pelan Akui JUPEM mengikut format yang diperlukan.
+        Login sebagai pengguna untuk request biasa, atau sebagai pemilik untuk akses penuh.
       </p>
 
-      <form class="request-form" id="paForm">
+      <form class="login-panel" id="loginForm">
+        <label for="loginRole">
+          Jenis Akses
+          <select id="loginRole" required>
+            <option value="user">Pengguna</option>
+            <option value="owner">Pemilik</option>
+          </select>
+        </label>
+
+        <label for="loginPassword">
+          Password
+          <input id="loginPassword" type="password" placeholder="Masukkan password" required>
+        </label>
+
+        <p class="request-error" id="loginError"></p>
+
+        <button class="btn blue" type="submit">
+          Login
+        </button>
+      </form>
+
+      <p class="login-info" id="loginInfo"></p>
+
+      <form class="request-form" id="paForm" hidden>
         <label for="paNumber">
           No PA
           <input id="paNumber" type="text" inputmode="numeric" placeholder="Contoh: 123456" required>
@@ -355,12 +424,14 @@
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue" type="submit">
-          Muat Turun Pelan Akui PDF
+          Muat Turun TIF
         </button>
 
-        <p class="request-status" id="paStatus">
-          Fail TIF dari JUPEM akan ditukar kepada PDF jika hosting menyokong PHP Imagick.
-        </p>
+        <button class="btn orange owner-tools" id="ownerPdfButton" type="button">
+          Pemilik: Muat Turun PDF
+        </button>
+
+        <p class="request-status" id="paStatus"></p>
 
         <p class="request-note" id="paLinkPreview" hidden></p>
       </form>
@@ -390,12 +461,23 @@
   </footer>
 
   <script>
+    const OWNER_PASSWORD = 'azobss-owner';
+    const USER_PASSWORD = 'azobss-user';
+
+    const loginForm = document.getElementById('loginForm');
+    const loginRole = document.getElementById('loginRole');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const loginInfo = document.getElementById('loginInfo');
     const paForm = document.getElementById('paForm');
     const paNumber = document.getElementById('paNumber');
     const negeri = document.getElementById('negeri');
     const paError = document.getElementById('paError');
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
+    const ownerPdfButton = document.getElementById('ownerPdfButton');
+    const ownerTools = document.querySelectorAll('.owner-tools');
+    let currentAccess = '';
 
     function cleanPaNumber(value) {
       return value
@@ -406,6 +488,17 @@
         .replace(/[^0-9]/g, '');
     }
 
+    function buildTifUrl() {
+      const number = cleanPaNumber(paNumber.value);
+      const selectedNegeri = negeri.value;
+
+      if (!number || !selectedNegeri) {
+        return '';
+      }
+
+      return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+    }
+
     function buildPdfUrl() {
       const number = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
@@ -414,19 +507,56 @@
         return '';
       }
 
-      const params = new URLSearchParams({
-        noPa: number,
-        negeri: selectedNegeri
-      });
-
-      return `download-pa-pdf.php?${params.toString()}`;
+      return `download-pa-pdf.php?noPa=${encodeURIComponent(number)}&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
     function updatePreview() {
-      const url = buildPdfUrl();
+      const url = buildTifUrl();
       paError.textContent = '';
       paStatus.style.display = 'none';
-      paLinkPreview.textContent = url || 'Link PDF akan dijana selepas nombor PA dan negeri dipilih.';
+      paLinkPreview.textContent = url || 'Link TIF akan dijana selepas nombor PA dan negeri dipilih.';
+    }
+
+    function setAccess(role) {
+      currentAccess = role;
+      loginForm.hidden = true;
+      paForm.hidden = false;
+      loginInfo.style.display = 'block';
+
+      if (role === 'owner') {
+        loginInfo.textContent = 'Login sebagai Pemilik. Akses penuh dibuka.';
+        ownerTools.forEach(function (element) {
+          element.style.display = 'inline-block';
+        });
+      } else {
+        loginInfo.textContent = 'Login sebagai Pengguna. Akses request biasa dibuka.';
+        ownerTools.forEach(function (element) {
+          element.style.display = 'none';
+        });
+      }
+    }
+
+    loginForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const role = loginRole.value;
+      const password = loginPassword.value.trim();
+      const validPassword = role === 'owner' ? OWNER_PASSWORD : USER_PASSWORD;
+
+      if (password !== validPassword) {
+        loginError.textContent = 'Password salah. Sila cuba semula.';
+        return;
+      }
+
+      loginError.textContent = '';
+      sessionStorage.setItem('azobssAccessRole', role);
+      setAccess(role);
+    });
+
+    const savedAccessRole = sessionStorage.getItem('azobssAccessRole');
+
+    if (savedAccessRole === 'owner' || savedAccessRole === 'user') {
+      setAccess(savedAccessRole);
     }
 
     paNumber.addEventListener('input', updatePreview);
@@ -434,6 +564,25 @@
 
     paForm.addEventListener('submit', function (event) {
       event.preventDefault();
+
+      const url = buildTifUrl();
+
+      if (!url) {
+        paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
+        return;
+      }
+
+      window.open(url, '_blank');
+      paStatus.style.display = 'block';
+      paStatus.textContent = 'Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
+    });
+
+    ownerPdfButton.addEventListener('click', function () {
+      if (currentAccess !== 'owner') {
+        paStatus.style.display = 'block';
+        paStatus.textContent = 'Akses PDF hanya untuk pemilik.';
+        return;
+      }
 
       const url = buildPdfUrl();
 
@@ -444,7 +593,7 @@
 
       window.open(url, '_blank');
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Jika conversion gagal, pastikan hosting menyokong PHP Imagick. Jika JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia.';
+      paStatus.textContent = 'Fungsi PDF memerlukan hosting PHP dengan Imagick. GitHub Pages tidak menjalankan PHP.';
     });
 
     const liveVisitors = document.getElementById('liveVisitors');
