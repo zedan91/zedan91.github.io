@@ -313,11 +313,11 @@
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue" type="submit">
-          Muat Turun Pelan Akui
+          Muat Turun Pelan Akui PDF
         </button>
 
         <p class="request-status" id="paStatus">
-          Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.
+          Fail TIF dari JUPEM akan ditukar kepada PDF jika hosting menyokong PHP Imagick.
         </p>
 
         <p class="request-note" id="paLinkPreview" hidden></p>
@@ -364,7 +364,7 @@
         .replace(/[^0-9]/g, '');
     }
 
-    function buildPaUrl() {
+    function buildPdfUrl() {
       const number = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
 
@@ -372,14 +372,19 @@
         return '';
       }
 
-      return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+      const params = new URLSearchParams({
+        noPa: number,
+        negeri: selectedNegeri
+      });
+
+      return `download-pa-pdf.php?${params.toString()}`;
     }
 
     function updatePreview() {
-      const url = buildPaUrl();
+      const url = buildPdfUrl();
       paError.textContent = '';
       paStatus.style.display = 'none';
-      paLinkPreview.textContent = url || 'Link akan dijana selepas nombor PA dan negeri dipilih.';
+      paLinkPreview.textContent = url || 'Link PDF akan dijana selepas nombor PA dan negeri dipilih.';
     }
 
     paNumber.addEventListener('input', updatePreview);
@@ -388,7 +393,7 @@
     paForm.addEventListener('submit', function (event) {
       event.preventDefault();
 
-      const url = buildPaUrl();
+      const url = buildPdfUrl();
 
       if (!url) {
         paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
@@ -397,7 +402,7 @@
 
       window.open(url, '_blank');
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
+      paStatus.textContent = 'Jika conversion gagal, pastikan hosting menyokong PHP Imagick. Jika JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia.';
     });
   </script>
 
