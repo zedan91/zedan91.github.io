@@ -446,6 +446,55 @@
       paStatus.style.display = 'block';
       paStatus.textContent = 'Jika conversion gagal, pastikan hosting menyokong PHP Imagick. Jika JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia.';
     });
+
+    const liveVisitors = document.getElementById('liveVisitors');
+    const totalVisits = document.getElementById('totalVisits');
+
+    function getVisitorId() {
+      let visitorId = sessionStorage.getItem('azobssVisitorId');
+
+      if (!visitorId) {
+        visitorId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        sessionStorage.setItem('azobssVisitorId', visitorId);
+      }
+
+      return visitorId;
+    }
+
+    async function updateTraffic() {
+      if (window.location.protocol === 'file:') {
+        liveVisitors.textContent = '-';
+        totalVisits.textContent = '-';
+        return;
+      }
+
+      try {
+        const response = await fetch('traffic.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            visitorId: getVisitorId()
+          }),
+          cache: 'no-store'
+        });
+
+        if (!response.ok) {
+          throw new Error('Traffic request failed.');
+        }
+
+        const data = await response.json();
+        liveVisitors.textContent = data.liveVisitors ?? 0;
+        totalVisits.textContent = data.totalVisits ?? 0;
+      } catch (error) {
+        liveVisitors.textContent = '-';
+        totalVisits.textContent = '-';
+      }
+    }
+
+    updateTraffic();
+    setInterval(updateTraffic, 30000);
   </script>
 
 </body>
