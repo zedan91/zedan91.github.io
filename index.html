@@ -430,7 +430,12 @@
         paStatus.textContent = 'Nombor PA dijumpai. Tab muat turun sedang dibuka.';
         window.open(result.url || url, '_blank');
       } catch (error) {
-        paStatus.textContent = 'Semakan automatik tidak dapat dijalankan. Pastikan fail check-pa.php dimuat naik bersama index.html di hosting yang menyokong PHP.';
+        if (window.location.protocol === 'file:') {
+          paStatus.textContent = 'Semakan tidak boleh berjalan jika fail dibuka terus dari komputer. Sila upload index.html dan check-pa.php ke hosting yang menyokong PHP.';
+          return;
+        }
+
+        paStatus.textContent = 'Semakan tidak dapat dijalankan. Pastikan check-pa.php berada dalam folder yang sama dan hosting menyokong PHP/cURL.';
       } finally {
         paSubmit.disabled = false;
       }
