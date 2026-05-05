@@ -30,6 +30,53 @@
       font-weight: bold;
     }
 
+    .user-menu {
+      position: fixed;
+      top: 14px;
+      right: 16px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border: 1px solid rgba(148,163,184,0.25);
+      border-radius: 999px;
+      background: rgba(15,23,42,0.92);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+      z-index: 999;
+    }
+
+    .user-avatar {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #020617;
+      border: 2px solid #22c55e;
+      color: #22c55e;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .user-name {
+      color: #e2e8f0;
+      font-weight: bold;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      border: 0;
+      border-radius: 999px;
+      background: #334155;
+      color: white;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
     .hero {
       text-align: center;
       padding: 80px 20px;
@@ -267,6 +314,12 @@
 <body>
 
   <div class="top-login-toast" id="loginToast"></div>
+
+  <div class="user-menu" id="userMenu">
+    <div class="user-avatar" id="userAvatar">AZ</div>
+    <div class="user-name" id="signedInName"></div>
+    <button class="logout-btn" id="logoutButton" type="button">Logout</button>
+  </div>
 
   <div class="hero">
     <h1>AZOBSS</h1>
@@ -515,6 +568,10 @@
     const loginError = document.getElementById('loginError');
     const loginInfo = document.getElementById('loginInfo');
     const loginToast = document.getElementById('loginToast');
+    const userMenu = document.getElementById('userMenu');
+    const userAvatar = document.getElementById('userAvatar');
+    const signedInName = document.getElementById('signedInName');
+    const logoutButton = document.getElementById('logoutButton');
     const paForm = document.getElementById('paForm');
     const paNumber = document.getElementById('paNumber');
     const negeri = document.getElementById('negeri');
@@ -564,6 +621,23 @@
       }, 3000);
     }
 
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(function (word) {
+          return word[0].toUpperCase();
+        })
+        .join('') || 'AZ';
+    }
+
+    function showSignedInUser(user) {
+      signedInName.textContent = user.name;
+      userAvatar.textContent = getInitials(user.name);
+      userMenu.style.display = 'flex';
+    }
+
     function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
       signupForm.hidden = true;
@@ -571,6 +645,7 @@
       paForm.hidden = false;
       loginInfo.style.display = 'none';
       loginInfo.textContent = '';
+      showSignedInUser(user);
 
       if (toastMessage) {
         showAccessToast(toastMessage);
@@ -642,6 +717,18 @@
       loginError.textContent = '';
       sessionStorage.setItem('azobssLoggedIn', '1');
       setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
+    });
+
+    logoutButton.addEventListener('click', function () {
+      isLoggedIn = false;
+      sessionStorage.removeItem('azobssLoggedIn');
+      userMenu.style.display = 'none';
+      signupForm.hidden = false;
+      loginForm.hidden = false;
+      paForm.hidden = true;
+      loginPassword.value = '';
+      paStatus.style.display = 'none';
+      showAccessToast('Logout berjaya.');
     });
 
     const savedUser = getSavedUser();
