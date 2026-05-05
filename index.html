@@ -660,6 +660,8 @@
     function closeSignupAccess() {
       showSignupButton.hidden = true;
       signupFields.hidden = true;
+      showSignupButton.style.display = 'none';
+      signupFields.style.display = 'none';
       registerAdminPassword.value = '';
       registerAdminError.textContent = '';
     }
@@ -669,6 +671,8 @@
       sessionStorage.setItem('azobssSignupOpenUntil', String(expiresAt));
       showSignupButton.hidden = false;
       signupFields.hidden = true;
+      showSignupButton.style.display = 'inline-block';
+      signupFields.style.display = 'none';
       registerAdminError.textContent = 'Signup dibuka selama 5 minit.';
       showAccessToast('Signup dibuka selama 5 minit.');
 
@@ -686,6 +690,8 @@
       if (expiresAt > Date.now()) {
         showSignupButton.hidden = false;
         signupFields.hidden = true;
+        showSignupButton.style.display = 'inline-block';
+        signupFields.style.display = 'none';
 
         setTimeout(function () {
           closeSignupAccess();
@@ -702,6 +708,10 @@
       loginForm.hidden = true;
       showSignupButton.hidden = true;
       signupFields.hidden = true;
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'none';
+      showSignupButton.style.display = 'none';
+      signupFields.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
       signupPassword.value = '';
@@ -733,6 +743,8 @@
     showSignupButton.addEventListener('click', function () {
       signupFields.hidden = false;
       showSignupButton.hidden = true;
+      signupFields.style.display = 'block';
+      showSignupButton.style.display = 'none';
     });
 
     signupForm.addEventListener('submit', function (event) {
@@ -745,6 +757,8 @@
       if (signupFields.hidden) {
         signupFields.hidden = false;
         showSignupButton.hidden = true;
+        signupFields.style.display = 'block';
+        showSignupButton.style.display = 'none';
         return;
       }
 
@@ -806,6 +820,10 @@
       paForm.hidden = true;
       signupFields.hidden = true;
       showSignupButton.hidden = true;
+      signupForm.style.display = 'grid';
+      loginForm.style.display = 'grid';
+      signupFields.style.display = 'none';
+      showSignupButton.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
       signupPassword.value = '';
