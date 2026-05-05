@@ -258,6 +258,7 @@
     }
 
     #paForm,
+    #adminPurchasePanel,
     .login-only {
       display: none !important;
     }
@@ -268,6 +269,10 @@
 
     .is-authenticated .login-only {
       display: inline-block !important;
+    }
+
+    .is-admin #adminPurchasePanel {
+      display: block !important;
     }
 
     .login-panel label {
@@ -333,6 +338,49 @@
       background: rgba(34,197,94,0.12);
       color: #bbf7d0;
       text-align: left;
+    }
+
+    .admin-purchase-panel {
+      margin-top: 24px;
+      padding: 18px;
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 12px;
+      background: rgba(15,23,42,0.65);
+      text-align: left;
+    }
+
+    .admin-purchase-panel h3 {
+      margin: 0 0 12px;
+      text-align: left;
+    }
+
+    .purchase-summary-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .purchase-summary-item {
+      display: grid;
+      grid-template-columns: 1.2fr 0.7fr 0.7fr 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 10px;
+      background: rgba(30,41,59,0.75);
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    .purchase-summary-item strong {
+      color: #22c55e;
+    }
+
+    @media (max-width: 700px) {
+      .purchase-summary-item {
+        grid-template-columns: 1fr;
+      }
     }
 
 
@@ -598,6 +646,22 @@
       <a class="btn blue login-only" href="https://alvo.chat/6nZ2">
         WhatsApp Untuk Bantuan
       </a>
+
+      <div class="admin-purchase-panel" id="adminPurchasePanel">
+        <h3>Rekod Pembelian Admin</h3>
+        <p class="request-note">
+          Harga: RM5 untuk 1 PA. Panel ini hanya dipaparkan kepada pemilik.
+        </p>
+        <button class="btn blue" id="refreshPurchaseButton" type="button">
+          Refresh Rekod
+        </button>
+        <p class="request-error" id="purchaseAdminError"></p>
+        <div class="purchase-summary-list" id="purchaseSummaryList">
+          <div class="purchase-summary-item">
+            Belum ada rekod pembelian.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -626,8 +690,10 @@
     } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
     import {
       getFirestore,
+      collection,
       doc,
       getDoc,
+      getDocs,
       onSnapshot,
       runTransaction,
       setDoc,
@@ -650,6 +716,8 @@
     const signupGateRef = firebaseReady ? doc(db, 'settings', 'signupGate') : null;
 
     const REGISTER_UNLOCK_PASSWORD = '61861562';
+    const ADMIN_USERNAME = 'zedan91';
+    const PURCHASE_PRICE = 5;
     sessionStorage.removeItem('azobssSignupOpenUntil');
 
     const signupForm = document.getElementById('signupForm');
@@ -679,8 +747,13 @@
     const paError = document.getElementById('paError');
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
+    const adminPurchasePanel = document.getElementById('adminPurchasePanel');
+    const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
+    const purchaseAdminError = document.getElementById('purchaseAdminError');
+    const purchaseSummaryList = document.getElementById('purchaseSummaryList');
     let isLoggedIn = false;
     let signupGateOpen = false;
+    let currentUser = null;
 
     function cleanPaNumber(value) {
       return value
@@ -754,6 +827,102 @@
       signedInName.textContent = user.name;
       userAvatar.textContent = getInitials(user.name);
       userMenu.style.display = 'flex';
+    }
+
+    function isAdminUser(user) {
+      return user && user.usernameKey === ADMIN_USERNAME;
+    }
+
+    function renderPurchaseSummaries(summaries) {
+      if (!summaries.length) {
+        purchaseSummaryList.innerHTML = '<div class="purchase-summary-item">Belum ada rekod pembelian.</div>';
+        return;
+      }
+
+      purchaseSummaryList.innerHTML = summaries.map(function (summary) {
+        const units = summary.totalUnits || 0;
+        const amount = summary.totalAmount || 0;
+        const lastPa = summary.lastPa ? `PA${summary.lastPa}` : '-';
+
+        return `
+          <div class="purchase-summary-item">
+            <span><strong>${summary.name || summary.usernameKey}</strong><br>${summary.phone || '-'}</span>
+            <span>Unit: <strong>${units}</strong></span>
+            <span>Total: <strong>RM${amount}</strong></span>
+            <span>PA terakhir: <strong>${lastPa}</strong></span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadAdminPurchases() {
+      if (!isAdminUser(currentUser)) {
+        return;
+      }
+
+      try {
+        purchaseAdminError.textContent = '';
+        const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
+        const summaries = [];
+
+        snapshot.forEach(function (item) {
+          summaries.push(item.data());
+        });
+
+        summaries.sort(function (a, b) {
+          return (b.totalAmount || 0) - (a.totalAmount || 0);
+        });
+
+        renderPurchaseSummaries(summaries);
+      } catch (error) {
+        purchaseAdminError.textContent = `Gagal baca rekod pembelian: ${error.code || error.message}`;
+      }
+    }
+
+    async function recordPurchase(paValue, selectedNegeri, url) {
+      if (!currentUser) {
+        return;
+      }
+
+      const purchaseId = `${Date.now()}-${currentUser.usernameKey}-${paValue}`;
+      const summaryRef = doc(db, 'purchaseSummaries', currentUser.usernameKey);
+      const logRef = doc(db, 'purchaseLogs', purchaseId);
+
+      await runTransaction(db, async function (transaction) {
+        const summarySnapshot = await transaction.get(summaryRef);
+        const currentSummary = summarySnapshot.exists() ? summarySnapshot.data() : {};
+        const totalUnits = (currentSummary.totalUnits || 0) + 1;
+        const totalAmount = totalUnits * PURCHASE_PRICE;
+
+        transaction.set(logRef, {
+          purchaseId,
+          uid: currentUser.uid,
+          usernameKey: currentUser.usernameKey,
+          name: currentUser.name,
+          phone: currentUser.phone || '',
+          paNumber: paValue,
+          negeri: selectedNegeri,
+          amount: PURCHASE_PRICE,
+          url,
+          createdAt: serverTimestamp()
+        });
+
+        transaction.set(summaryRef, {
+          uid: currentUser.uid,
+          usernameKey: currentUser.usernameKey,
+          name: currentUser.name,
+          phone: currentUser.phone || '',
+          totalUnits,
+          totalAmount,
+          lastPa: paValue,
+          lastNegeri: selectedNegeri,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      });
+
+      if (isAdminUser(currentUser)) {
+        await loadAdminPurchases();
+      }
     }
 
     function closeSignupAccess() {
@@ -832,6 +1001,7 @@
 
     function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
+      currentUser = user;
       signupForm.hidden = true;
       loginForm.hidden = true;
       showSignupButton.hidden = true;
@@ -852,6 +1022,13 @@
       loginInfo.style.display = 'none';
       loginInfo.textContent = '';
       showSignedInUser(user);
+
+      if (isAdminUser(user)) {
+        requestCard.classList.add('is-admin');
+        loadAdminPurchases();
+      } else {
+        requestCard.classList.remove('is-admin');
+      }
 
       if (toastMessage) {
         showAccessToast(toastMessage);
@@ -1026,6 +1203,7 @@
 
     logoutButton.addEventListener('click', async function () {
       isLoggedIn = false;
+      currentUser = null;
       sessionStorage.removeItem('azobssLoggedIn');
       clearCurrentUser();
 
@@ -1037,11 +1215,13 @@
       signupForm.hidden = false;
       loginForm.hidden = false;
       paForm.hidden = true;
+      adminPurchasePanel.style.display = 'none';
       signupFields.hidden = true;
       showSignupButton.hidden = true;
       signupForm.style.display = 'grid';
       loginForm.style.display = 'grid';
       requestCard.classList.remove('is-authenticated');
+      requestCard.classList.remove('is-admin');
       signupFields.style.display = 'none';
       showSignupButton.style.display = 'none';
       signupName.value = '';
@@ -1067,10 +1247,14 @@
     paNumber.addEventListener('input', updatePreview);
     negeri.addEventListener('change', updatePreview);
 
-    paForm.addEventListener('submit', function (event) {
+    refreshPurchaseButton.addEventListener('click', loadAdminPurchases);
+
+    paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
 
       const url = buildTifUrl();
+      const paValue = cleanPaNumber(paNumber.value);
+      const selectedNegeri = negeri.value;
 
       if (!isLoggedIn) {
         paError.textContent = 'Sila login dahulu sebelum download PA.';
@@ -1084,7 +1268,14 @@
 
       window.open(url, '_blank');
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
+      paStatus.textContent = 'Download dibuka. Jika laman JUPEM memaparkan Error, nombor PA ini mungkin tiada dalam sistem atau belum tersedia untuk dimuat turun.';
+
+      try {
+        await recordPurchase(paValue, selectedNegeri, url);
+        paStatus.textContent = `Direkod sebagai 1 pembelian RM${PURCHASE_PRICE}. Jika laman JUPEM memaparkan Error, nombor PA ini mungkin tiada dalam sistem atau belum tersedia untuk dimuat turun.`;
+      } catch (error) {
+        paError.textContent = `Download dibuka, tetapi rekod pembelian gagal disimpan: ${error.code || error.message}`;
+      }
     });
 
     const liveVisitors = document.getElementById('liveVisitors');
