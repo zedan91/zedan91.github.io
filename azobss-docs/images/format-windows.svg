@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <rect width="800" height="450" fill="#0f172a"/>
+  <rect x="120" y="80" width="560" height="290" rx="22" fill="#1e293b" stroke="#22c55e" stroke-width="8"/>
+  <rect x="165" y="130" width="210" height="85" fill="#2563eb"/>
+  <rect x="425" y="130" width="210" height="85" fill="#22c55e"/>
+  <rect x="165" y="235" width="210" height="85" fill="#38bdf8"/>
+  <rect x="425" y="235" width="210" height="85" fill="#f97316"/>
+  <text x="400" y="410" text-anchor="middle" fill="#e2e8f0" font-family="Arial" font-size="34" font-weight="700">Format Windows</text>
+</svg>
