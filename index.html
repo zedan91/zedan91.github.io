@@ -377,6 +377,58 @@
       color: #22c55e;
     }
 
+    .payment-qr-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 20px auto 8px;
+    }
+
+    .payment-qr-card {
+      width: min(160px, 52vw);
+      text-align: center;
+    }
+
+    .payment-qr-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: white;
+    }
+
+    .qr-placeholder {
+      display: none;
+      margin: 0;
+      padding: 12px;
+      border: 1px dashed #475569;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 12px;
+      background: rgba(15,23,42,0.65);
+    }
+
+    .member-login-section {
+      padding-top: 14px;
+      padding-bottom: 24px;
+    }
+
+    .member-login-card {
+      max-width: 300px;
+      margin: auto;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    .member-login-card h3 {
+      margin: 0 0 5px;
+      font-size: 11px;
+    }
+
+    .member-login-card p {
+      margin: 0;
+      font-size: 9px;
+      line-height: 1.35;
+    }
+
     @media (max-width: 700px) {
       .purchase-summary-item {
         grid-template-columns: 1fr;
@@ -665,8 +717,15 @@
     </div>
   </div>
 
-  <div class="section">
-    <div class="card" style="max-width:600px;margin:auto;">
+  <div class="payment-qr-wrap">
+    <div class="payment-qr-card">
+      <img src="images/payment-qr.jpg" alt="QR pembayaran bank" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <p class="qr-placeholder">Letak QR bank sebagai images/payment-qr.jpg</p>
+    </div>
+  </div>
+
+  <div class="section member-login-section">
+    <div class="card member-login-card">
       <h3>🔐 Member Login</h3>
       <p>
         Akses ahli untuk pengguna berdaftar dan pemilik.
