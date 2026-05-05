@@ -256,11 +256,7 @@
       display: none !important;
     }
 
-    .is-authenticated:not(.is-admin) #signupForm {
-      display: none !important;
-    }
-
-    .is-authenticated.is-admin #signupForm {
+    .is-authenticated #signupForm {
       display: grid !important;
     }
 
@@ -322,6 +318,14 @@
 
     .register-title-row h3 {
       margin: 0;
+    }
+
+    .admin-register-only {
+      display: none;
+    }
+
+    .is-admin .admin-register-only {
+      display: block;
     }
 
     .admin-whatsapp-link {
@@ -607,20 +611,20 @@
 
       <form class="login-panel" id="signupForm">
         <div class="register-title-row">
-          <h3>Buka Pendaftaran</h3>
+          <h3 class="admin-register-only">Buka Pendaftaran</h3>
           <a class="admin-whatsapp-link" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
             Sila WhatsApp Admin untuk buka pendaftaran
           </a>
         </div>
 
-        <label for="registerAdminPassword">
+        <label class="admin-register-only" for="registerAdminPassword">
           Password Admin
           <input id="registerAdminPassword" type="password" placeholder="Password untuk buka signup">
         </label>
 
-        <p class="request-error" id="registerAdminError"></p>
+        <p class="request-error admin-register-only" id="registerAdminError"></p>
 
-        <button class="btn orange" id="unlockSignupButton" type="button">
+        <button class="btn orange admin-register-only" id="unlockSignupButton" type="button">
           Buka Signup 1 Kali
         </button>
 
@@ -1220,8 +1224,10 @@
         loadRegisteredUsers();
       } else {
         requestCard.classList.remove('is-admin');
-        signupForm.hidden = true;
-        signupForm.style.display = 'none';
+        signupForm.hidden = false;
+        signupForm.style.display = 'grid';
+        signupFields.hidden = true;
+        signupFields.style.display = 'none';
       }
 
       loadPurchaseRecords();
