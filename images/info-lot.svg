@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <rect width="800" height="450" fill="#0f172a"/>
+  <path d="M170 100l180 55 140-55 150 55v230l-150-55-140 55-180-55z" fill="#1e293b" stroke="#22c55e" stroke-width="8"/>
+  <path d="M400 125c-55 0-100 45-100 100 0 80 100 150 100 150s100-70 100-150c0-55-45-100-100-100z" fill="#f97316"/>
+  <circle cx="400" cy="225" r="35" fill="#fff7ed"/>
+  <text x="400" y="420" text-anchor="middle" fill="#e2e8f0" font-family="Arial" font-size="34" font-weight="700">Info Lot</text>
+</svg>
