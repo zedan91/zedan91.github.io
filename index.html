@@ -312,12 +312,12 @@
 
         <p class="request-error" id="paError"></p>
 
-        <button class="btn blue" id="paSubmit" type="submit">
-          Semak & Muat Turun Pelan Akui
+        <button class="btn blue" type="submit">
+          Muat Turun Pelan Akui
         </button>
 
         <p class="request-status" id="paStatus">
-          Semakan akan dibuat sebelum tab muat turun dibuka.
+          Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.
         </p>
 
         <p class="request-note" id="paLinkPreview" hidden></p>
@@ -354,7 +354,6 @@
     const paError = document.getElementById('paError');
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
-    const paSubmit = document.getElementById('paSubmit');
 
     function cleanPaNumber(value) {
       return value
@@ -376,23 +375,6 @@
       return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
-    async function checkPaAvailability(number, selectedNegeri) {
-      const params = new URLSearchParams({
-        noPa: number,
-        negeri: selectedNegeri
-      });
-
-      const response = await fetch(`check-pa.php?${params.toString()}`, {
-        cache: 'no-store'
-      });
-
-      if (!response.ok) {
-        throw new Error('Semakan gagal.');
-      }
-
-      return response.json();
-    }
-
     function updatePreview() {
       const url = buildPaUrl();
       paError.textContent = '';
@@ -403,42 +385,19 @@
     paNumber.addEventListener('input', updatePreview);
     negeri.addEventListener('change', updatePreview);
 
-    paForm.addEventListener('submit', async function (event) {
+    paForm.addEventListener('submit', function (event) {
       event.preventDefault();
 
       const url = buildPaUrl();
-      const number = cleanPaNumber(paNumber.value);
-      const selectedNegeri = negeri.value;
 
       if (!url) {
         paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
         return;
       }
 
+      window.open(url, '_blank');
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Sedang menyemak nombor PA dalam sistem JUPEM...';
-      paSubmit.disabled = true;
-
-      try {
-        const result = await checkPaAvailability(number, selectedNegeri);
-
-        if (!result.exists) {
-          paStatus.textContent = 'Nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
-          return;
-        }
-
-        paStatus.textContent = 'Nombor PA dijumpai. Tab muat turun sedang dibuka.';
-        window.open(result.url || url, '_blank');
-      } catch (error) {
-        if (window.location.protocol === 'file:') {
-          paStatus.textContent = 'Semakan tidak boleh berjalan jika fail dibuka terus dari komputer. Sila upload index.html dan check-pa.php ke hosting yang menyokong PHP.';
-          return;
-        }
-
-        paStatus.textContent = 'Semakan tidak dapat dijalankan. Pastikan check-pa.php berada dalam folder yang sama dan hosting menyokong PHP/cURL.';
-      } finally {
-        paSubmit.disabled = false;
-      }
+      paStatus.textContent = 'Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
     });
   </script>
 
