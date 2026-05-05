@@ -763,20 +763,21 @@
 
     function openSignupAccess() {
       sessionStorage.setItem('azobssSignupOneTimeOpen', '1');
-      showSignupButton.hidden = false;
-      signupFields.hidden = true;
-      showSignupButton.style.display = 'inline-block';
-      signupFields.style.display = 'none';
+      showSignupButton.hidden = true;
+      signupFields.hidden = false;
+      showSignupButton.style.display = 'none';
+      signupFields.style.display = 'block';
+      registerAdminPassword.value = '';
       registerAdminError.textContent = 'Signup dibuka untuk 1 pendaftaran sahaja.';
       showAccessToast('Signup dibuka untuk 1 pendaftaran sahaja.');
     }
 
     function restoreSignupAccess() {
       if (sessionStorage.getItem('azobssSignupOneTimeOpen') === '1') {
-        showSignupButton.hidden = false;
-        signupFields.hidden = true;
-        showSignupButton.style.display = 'inline-block';
-        signupFields.style.display = 'none';
+        showSignupButton.hidden = true;
+        signupFields.hidden = false;
+        showSignupButton.style.display = 'none';
+        signupFields.style.display = 'block';
       } else {
         closeSignupAccess();
       }
