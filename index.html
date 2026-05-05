@@ -225,9 +225,6 @@
       text-align: left;
     }
 
-    .owner-tools {
-      display: none;
-    }
 
     .whatsapp {
       position: fixed;
@@ -366,17 +363,31 @@
     <div class="card" style="max-width:700px;margin:auto;">
       <h3>📂 Request PA, PDUK, Info Lot & Kawasan</h3>
       <p>
-        Login sebagai pengguna untuk request biasa, atau sebagai pemilik untuk akses penuh.
+        Sila signup atau login terlebih dahulu untuk akses download PA.
       </p>
 
-      <form class="login-panel" id="loginForm">
-        <label for="loginRole">
-          Jenis Akses
-          <select id="loginRole" required>
-            <option value="user">Pengguna</option>
-            <option value="owner">Pemilik</option>
-          </select>
+      <form class="login-panel" id="signupForm">
+        <h3>Signup Pengguna Baru</h3>
+
+        <label for="signupName">
+          Nama
+          <input id="signupName" type="text" placeholder="Nama anda" required>
         </label>
+
+        <label for="signupPassword">
+          Password
+          <input id="signupPassword" type="password" placeholder="Cipta password" required>
+        </label>
+
+        <p class="request-error" id="signupError"></p>
+
+        <button class="btn" type="submit">
+          Signup
+        </button>
+      </form>
+
+      <form class="login-panel" id="loginForm">
+        <h3>Login Pengguna</h3>
 
         <label for="loginPassword">
           Password
@@ -427,10 +438,6 @@
           Muat Turun TIF
         </button>
 
-        <button class="btn orange owner-tools" id="ownerPdfButton" type="button">
-          Pemilik: Muat Turun PDF
-        </button>
-
         <p class="request-status" id="paStatus"></p>
 
         <p class="request-note" id="paLinkPreview" hidden></p>
@@ -461,11 +468,11 @@
   </footer>
 
   <script>
-    const OWNER_PASSWORD = 'azobss-owner';
-    const USER_PASSWORD = 'azobss-user';
-
+    const signupForm = document.getElementById('signupForm');
+    const signupName = document.getElementById('signupName');
+    const signupPassword = document.getElementById('signupPassword');
+    const signupError = document.getElementById('signupError');
     const loginForm = document.getElementById('loginForm');
-    const loginRole = document.getElementById('loginRole');
     const loginPassword = document.getElementById('loginPassword');
     const loginError = document.getElementById('loginError');
     const loginInfo = document.getElementById('loginInfo');
@@ -475,9 +482,7 @@
     const paError = document.getElementById('paError');
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
-    const ownerPdfButton = document.getElementById('ownerPdfButton');
-    const ownerTools = document.querySelectorAll('.owner-tools');
-    let currentAccess = '';
+    let isLoggedIn = false;
 
     function cleanPaNumber(value) {
       return value
@@ -499,17 +504,6 @@
       return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
-    function buildPdfUrl() {
-      const number = cleanPaNumber(paNumber.value);
-      const selectedNegeri = negeri.value;
-
-      if (!number || !selectedNegeri) {
-        return '';
-      }
-
-      return `download-pa-pdf.php?noPa=${encodeURIComponent(number)}&negeri=${encodeURIComponent(selectedNegeri)}`;
-    }
-
     function updatePreview() {
       const url = buildTifUrl();
       paError.textContent = '';
@@ -517,46 +511,72 @@
       paLinkPreview.textContent = url || 'Link TIF akan dijana selepas nombor PA dan negeri dipilih.';
     }
 
-    function setAccess(role) {
-      currentAccess = role;
+    function getSavedUser() {
+      const savedUser = localStorage.getItem('azobssUser');
+      return savedUser ? JSON.parse(savedUser) : null;
+    }
+
+    function setLoggedIn(user) {
+      isLoggedIn = true;
+      signupForm.hidden = true;
       loginForm.hidden = true;
       paForm.hidden = false;
       loginInfo.style.display = 'block';
-
-      if (role === 'owner') {
-        loginInfo.textContent = 'Login sebagai Pemilik. Akses penuh dibuka.';
-        ownerTools.forEach(function (element) {
-          element.style.display = 'inline-block';
-        });
-      } else {
-        loginInfo.textContent = 'Login sebagai Pengguna. Akses request biasa dibuka.';
-        ownerTools.forEach(function (element) {
-          element.style.display = 'none';
-        });
-      }
+      loginInfo.textContent = `Login berjaya. Selamat datang, ${user.name}.`;
     }
+
+    signupForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const name = signupName.value.trim();
+      const password = signupPassword.value.trim();
+
+      if (!name || !password) {
+        signupError.textContent = 'Sila isi nama dan password.';
+        return;
+      }
+
+      if (password.length < 4) {
+        signupError.textContent = 'Password mesti sekurang-kurangnya 4 aksara.';
+        return;
+      }
+
+      const user = {
+        name,
+        password
+      };
+
+      localStorage.setItem('azobssUser', JSON.stringify(user));
+      sessionStorage.setItem('azobssLoggedIn', '1');
+      signupError.textContent = '';
+      setLoggedIn(user);
+    });
 
     loginForm.addEventListener('submit', function (event) {
       event.preventDefault();
 
-      const role = loginRole.value;
+      const user = getSavedUser();
       const password = loginPassword.value.trim();
-      const validPassword = role === 'owner' ? OWNER_PASSWORD : USER_PASSWORD;
 
-      if (password !== validPassword) {
+      if (!user) {
+        loginError.textContent = 'Akaun belum wujud. Sila signup dahulu.';
+        return;
+      }
+
+      if (password !== user.password) {
         loginError.textContent = 'Password salah. Sila cuba semula.';
         return;
       }
 
       loginError.textContent = '';
-      sessionStorage.setItem('azobssAccessRole', role);
-      setAccess(role);
+      sessionStorage.setItem('azobssLoggedIn', '1');
+      setLoggedIn(user);
     });
 
-    const savedAccessRole = sessionStorage.getItem('azobssAccessRole');
+    const savedUser = getSavedUser();
 
-    if (savedAccessRole === 'owner' || savedAccessRole === 'user') {
-      setAccess(savedAccessRole);
+    if (savedUser && sessionStorage.getItem('azobssLoggedIn') === '1') {
+      setLoggedIn(savedUser);
     }
 
     paNumber.addEventListener('input', updatePreview);
@@ -567,6 +587,11 @@
 
       const url = buildTifUrl();
 
+      if (!isLoggedIn) {
+        paError.textContent = 'Sila login dahulu sebelum download PA.';
+        return;
+      }
+
       if (!url) {
         paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
         return;
@@ -575,25 +600,6 @@
       window.open(url, '_blank');
       paStatus.style.display = 'block';
       paStatus.textContent = 'Jika laman JUPEM memaparkan Error, nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
-    });
-
-    ownerPdfButton.addEventListener('click', function () {
-      if (currentAccess !== 'owner') {
-        paStatus.style.display = 'block';
-        paStatus.textContent = 'Akses PDF hanya untuk pemilik.';
-        return;
-      }
-
-      const url = buildPdfUrl();
-
-      if (!url) {
-        paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
-        return;
-      }
-
-      window.open(url, '_blank');
-      paStatus.style.display = 'block';
-      paStatus.textContent = 'Fungsi PDF memerlukan hosting PHP dengan Imagick. GitHub Pages tidak menjalankan PHP.';
     });
 
     const liveVisitors = document.getElementById('liveVisitors');
