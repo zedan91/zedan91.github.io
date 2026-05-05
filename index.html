@@ -367,27 +367,43 @@
       </p>
 
       <form class="login-panel" id="signupForm">
-        <h3>Signup Pengguna Baru</h3>
-
-        <label for="signupName">
-          Nama
-          <input id="signupName" type="text" placeholder="Nama anda" required>
-        </label>
-
-        <label for="signupPassword">
-          Password
-          <input id="signupPassword" type="password" placeholder="Cipta password" required>
-        </label>
-
-        <p class="request-error" id="signupError"></p>
-
-        <button class="btn" type="submit">
-          Signup
+        <button class="btn" id="showSignupButton" type="button">
+          Signup Pengguna Baru
         </button>
+
+        <div id="signupFields" hidden>
+          <h3>Signup Pengguna Baru</h3>
+
+          <label for="signupName">
+            Nama
+            <input id="signupName" type="text" placeholder="Nama anda">
+          </label>
+
+          <label for="signupPhone">
+            No HP
+            <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 0123456789">
+          </label>
+
+          <label for="signupPassword">
+            Password
+            <input id="signupPassword" type="password" placeholder="Cipta password">
+          </label>
+
+          <p class="request-error" id="signupError"></p>
+
+          <button class="btn" type="submit">
+            Signup
+          </button>
+        </div>
       </form>
 
       <form class="login-panel" id="loginForm">
         <h3>Login Pengguna</h3>
+
+        <label for="loginName">
+          Nama
+          <input id="loginName" type="text" placeholder="Masukkan nama">
+        </label>
 
         <label for="loginPassword">
           Password
@@ -469,10 +485,14 @@
 
   <script>
     const signupForm = document.getElementById('signupForm');
+    const showSignupButton = document.getElementById('showSignupButton');
+    const signupFields = document.getElementById('signupFields');
     const signupName = document.getElementById('signupName');
+    const signupPhone = document.getElementById('signupPhone');
     const signupPassword = document.getElementById('signupPassword');
     const signupError = document.getElementById('signupError');
     const loginForm = document.getElementById('loginForm');
+    const loginName = document.getElementById('loginName');
     const loginPassword = document.getElementById('loginPassword');
     const loginError = document.getElementById('loginError');
     const loginInfo = document.getElementById('loginInfo');
@@ -525,14 +545,26 @@
       loginInfo.textContent = `Login berjaya. Selamat datang, ${user.name}.`;
     }
 
+    showSignupButton.addEventListener('click', function () {
+      signupFields.hidden = false;
+      showSignupButton.hidden = true;
+    });
+
     signupForm.addEventListener('submit', function (event) {
       event.preventDefault();
 
       const name = signupName.value.trim();
+      const phone = signupPhone.value.trim();
       const password = signupPassword.value.trim();
 
-      if (!name || !password) {
-        signupError.textContent = 'Sila isi nama dan password.';
+      if (signupFields.hidden) {
+        signupFields.hidden = false;
+        showSignupButton.hidden = true;
+        return;
+      }
+
+      if (!name || !phone || !password) {
+        signupError.textContent = 'Sila isi nama, no HP dan password.';
         return;
       }
 
@@ -543,6 +575,7 @@
 
       const user = {
         name,
+        phone,
         password
       };
 
@@ -556,6 +589,7 @@
       event.preventDefault();
 
       const user = getSavedUser();
+      const name = loginName.value.trim();
       const password = loginPassword.value.trim();
 
       if (!user) {
@@ -563,8 +597,13 @@
         return;
       }
 
-      if (password !== user.password) {
-        loginError.textContent = 'Password salah. Sila cuba semula.';
+      if (!name || !password) {
+        loginError.textContent = 'Sila isi nama dan password.';
+        return;
+      }
+
+      if (name.toLowerCase() !== user.name.toLowerCase() || password !== user.password) {
+        loginError.textContent = 'Nama atau password salah. Sila cuba semula.';
         return;
       }
 
