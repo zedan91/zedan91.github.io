@@ -214,8 +214,8 @@
 
     <div class="traffic-widget">
       <div class="traffic-box">
-        <span class="traffic-label">Live Now</span>
-        <span class="traffic-number" id="liveVisitors">0</span>
+        <span class="traffic-label">Status</span>
+        <span class="traffic-number" id="liveVisitors">Live</span>
       </div>
 
       <div class="traffic-box">
@@ -449,6 +449,8 @@
 
     const liveVisitors = document.getElementById('liveVisitors');
     const totalVisits = document.getElementById('totalVisits');
+    const counterNamespace = 'azobss';
+    const totalVisitKey = 'website-total-visits';
 
     function getVisitorId() {
       let visitorId = sessionStorage.getItem('azobssVisitorId');
@@ -462,21 +464,10 @@
     }
 
     async function updateTraffic() {
-      if (window.location.protocol === 'file:') {
-        liveVisitors.textContent = '-';
-        totalVisits.textContent = '-';
-        return;
-      }
-
       try {
-        const response = await fetch('traffic.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            visitorId: getVisitorId()
-          }),
+        const shouldCountVisit = !sessionStorage.getItem('azobssVisitCounted');
+        const endpoint = shouldCountVisit ? 'hit' : 'get';
+        const response = await fetch(`https://api.counterapi.dev/v1/${endpoint}/${counterNamespace}/${totalVisitKey}`, {
           cache: 'no-store'
         });
 
@@ -485,16 +476,16 @@
         }
 
         const data = await response.json();
-        liveVisitors.textContent = data.liveVisitors ?? 0;
-        totalVisits.textContent = data.totalVisits ?? 0;
+        sessionStorage.setItem('azobssVisitCounted', '1');
+        liveVisitors.textContent = 'Live';
+        totalVisits.textContent = data.value ?? 0;
       } catch (error) {
-        liveVisitors.textContent = '-';
+        liveVisitors.textContent = 'Live';
         totalVisits.textContent = '-';
       }
     }
 
     updateTraffic();
-    setInterval(updateTraffic, 30000);
   </script>
 
 </body>
