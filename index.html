@@ -252,6 +252,11 @@
       text-align: left;
     }
 
+    .is-authenticated #signupForm,
+    .is-authenticated #loginForm {
+      display: none !important;
+    }
+
     .login-panel label {
       color: #e2e8f0;
       font-weight: bold;
@@ -431,7 +436,7 @@
   <div class="section" id="request">
     <h2>Request PA / Info Lot</h2>
 
-    <div class="card" style="max-width:700px;margin:auto;">
+    <div class="card" id="requestCard" style="max-width:700px;margin:auto;">
       <h3>📂 Request PA, PDUK, Info Lot & Kawasan</h3>
       <p>
         Sila signup atau login terlebih dahulu untuk akses download PA.
@@ -587,6 +592,7 @@
     const loginError = document.getElementById('loginError');
     const loginInfo = document.getElementById('loginInfo');
     const loginToast = document.getElementById('loginToast');
+    const requestCard = document.getElementById('requestCard');
     const userMenu = document.getElementById('userMenu');
     const userAvatar = document.getElementById('userAvatar');
     const signedInName = document.getElementById('signedInName');
@@ -710,6 +716,7 @@
       signupFields.hidden = true;
       signupForm.style.display = 'none';
       loginForm.style.display = 'none';
+      requestCard.classList.add('is-authenticated');
       showSignupButton.style.display = 'none';
       signupFields.style.display = 'none';
       signupName.value = '';
@@ -822,6 +829,7 @@
       showSignupButton.hidden = true;
       signupForm.style.display = 'grid';
       loginForm.style.display = 'grid';
+      requestCard.classList.remove('is-authenticated');
       signupFields.style.display = 'none';
       showSignupButton.style.display = 'none';
       signupName.value = '';
