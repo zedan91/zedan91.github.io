@@ -1,0 +1,11 @@
+{
+  "[markdown]":{
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "editor.detectIndentation": false
+  },
+  "files.associations": {
+    "*.md": "markdown"
+  },
+  "editor.tabSize": 2
+}

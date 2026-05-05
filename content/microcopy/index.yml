@@ -1,0 +1,51 @@
+---
+locales:
+  $ref: "content/microcopy/locales.yml"
+
+head:
+  $ref: "content/microcopy/head.yml"
+
+refresh_notification:
+  $ref: "content/microcopy/refresh_notification.yml"
+
+messages:
+  $ref: "content/microcopy/messages.yml"
+
+reference:
+  $ref: "content/microcopy/reference.yml"
+
+guides:
+  $ref: "content/microcopy/guides.yml"
+
+headers:
+  $ref: "content/microcopy/headers.yml"
+
+explorer:
+  $ref: "content/microcopy/explorer.yml"
+
+search:
+  $ref: "content/microcopy/search.yml"
+
+footer:
+  $ref: "content/microcopy/footer.yml"
+
+pages:
+  $ref: "content/microcopy/pages.yml"
+
+changelog:
+  $ref: "content/microcopy/changelog.yml"
+
+app_button:
+  $ref: "content/microcopy/app_button.yml"
+
+sample_code_catalog:
+  $ref: "content/microcopy/sample_code_catalog.yml"
+
+ai_dev_zone:
+  $ref: "content/microcopy/ai_dev_zone.yml"
+
+box_ui_elements:
+  $ref: "content/microcopy/box_ui_elements.yml"
+
+versions:
+  $ref: "content/microcopy/versions.yml"

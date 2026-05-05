@@ -1,0 +1,265 @@
+---
+primary:
+  links:
+    documentation:
+      // text:
+      text: Documentation
+
+    develop:
+      // text:
+      text: Develop
+
+    connect:
+      // text:
+      text: Connect
+
+    explore:
+      // text:
+      text: Explore
+
+    quickstarts:
+      // text:
+      text: Getting Started
+
+    community:
+      // text:
+      text: Community
+
+    community_forum:
+      // text:
+      text: Box Developer Community
+
+      //url:
+      url: https://community.box.com/
+
+    events:
+      text: Events
+
+    learn:
+      // text: The text for the link to the learn section
+      text: Box Platform
+
+      //url: The URL to the learn section
+      url: /platform/
+
+    learn-sign:
+      // text: The text for the link to the learn section
+      text: Box Sign
+
+      //url: The URL to the learn section
+      url: /sign/
+
+    ai_dev_zone:
+      text: Box AI Developer Zone
+      url: /ai-dev-zone/
+
+    buie:
+      text: Box UI Elements
+      url: /box-ui-elements
+
+    mcp:
+      text: Box MCP server
+      url: /guides/box-mcp/
+
+    get_started:
+      // text: The text for the link to the old Get Started guides
+      text: Quick Start
+
+      // url: The URL to the old Get Started guides
+      url: /guides/applications/
+
+    guides:
+      // text: The text for the link to the old generic guides
+      text: Developer Guides
+
+      // url: The URL to the old generic guides
+      url: /guides/
+
+    api_reference:
+      // text: The text for the link the new API Reference docs
+      text: API Reference
+      // url: The url to the root of the reference - DO NOT TRANSLATE
+      url: "/reference/"
+
+    sample_code:
+      // text: The text for the link the Sample Code App
+      text: Sample Code Catalog
+      // url: The url to the root of the reference - DO NOT TRANSLATE
+      url: "/sample-code/"
+
+    sdks_and_tools:
+      // text: The text for the link to the old page on SDKs
+      text: SDKs & Tools
+
+      // url: The URL to the new page on SDKs - DO NOT TRANSLATE
+      url: "/sdks-and-tools/"
+
+    support:
+      // text: The text for the link to the old page on SDKs
+      text: Support
+
+      // url: The URL to the old page on SDKs - DO NOT TRANSLATE
+      url: "/support/"
+
+    additional_resouces:
+      text: Additional resources
+
+    overview:
+      text: Overview
+
+    blog:
+      // text: The text for the Medium Dev Blog
+      text: Box Developer Blog
+
+      // url: The URL to Medium bev blog
+      url: https://blog.box.com/category/developer
+
+  buttons:
+    dashboard:
+      // text: A longer description of getting to the developer console
+      text: Go to Dev Console
+
+      // url: The URL to the developer console
+      url: https://cloud.app.box.com/developers/console
+
+    console:
+      // text: The text for the link to the developer console
+      text: My Platform Apps
+
+      // url: The URL to the developer console
+      url: https://cloud.app.box.com/developers/console
+
+    signup:
+      // text: The text for the link to the developer signup
+      text: Sign up
+
+      // url: The URL to the developer signup - DO NOT TRANSLATE
+      url: https://account.box.com/signup/n/developer#ty9l3
+
+  featured:
+    tag:
+      text: New
+
+    title:
+      text: Box AI Developer Zone
+
+    details:
+      text: |-
+        Box AI Developer Zone features interactive
+        demos to give you hands-on experience with Box AI API
+
+    cta:
+      text: |-
+        Try it out!
+
+  develop_featured:
+    tag:
+      text: Featured
+
+    title:
+      text: Box Sample Code Catalog
+
+    details:
+      text: |-
+        Browse 90+ open-source repositories
+        in various programming languages to find useful scripts,
+        app examples, and inspiring use cases!
+
+    cta:
+      text: |-
+        Browse sample code
+
+  connect_featured:
+    tag:
+      text: Workshop
+
+    title:
+      text: Build AI Apps with MCP Servers
+
+    details:
+      text: |-
+        Join a short online course, built in partnership with
+        Deeplearning.ai, and taught by Ben Kus, Box CTO.
+
+    cta:
+      text: |-
+        Enroll for free
+
+secondary:
+  images:
+    logo:
+      // alt_text: The HTML alt-text for the site logo
+      alt_text: Box Developer Documentation
+
+  labels:
+    // new: A short label to signify that this page is new
+    new: new
+
+  support_links:
+    community_forum:
+      // text: The text for the link to the developer community forum
+      text: Community Forum
+
+      // url: The URL to the developer forum
+      url: "https://community.box.com/"
+
+    changelog:
+      // text: The text for the link to the changelog
+      text: Changelog
+
+      // url: The URL to the changelog
+      url: "/changelog/"
+
+  additional_resources:
+    blog:
+      // text: The text for the link to the developer blog
+      text: Blog
+
+      // url: The URL to the developer blog
+      url: https://medium.com/box-developer-blog
+
+  dropdowns:
+    // docs: |-
+      A short title for the dropdown to select a documentation type on mobile
+    docs: Documentation
+
+    // api_reference: |-
+      A title for the dropdown to select a sub-page of the API reference
+      on mobile
+    api_reference: API Reference
+
+    // support: |-
+      A short title for the dropdown to select an support menu item
+    support: Support
+
+    // additional_resources: |-
+      A short title for the dropdown to select an support menu item
+    additional_resources: Additional Resources
+
+  notifications:
+    // display: |-
+      A boolean that determines whether to show the orange notification bar
+      in the header. Must be "true" or "false"
+    display: "false"
+
+    // message: |-
+      The content of the notification
+    message: >
+      A beta version of the new Box developer documentation site is
+      launching soon! Updated Developer Guides, modern
+      API Reference, and AI-powered search are on the
+      way to help you build with Box faster.
+      Stay tuned for more updates.
+
+    # // href: |-
+    #   The link to navigate to when the CTA is clicked
+    # href: "https://boxworks.box.com/boxworks"
+
+    # // cta: |-
+    #   The text of the CTA
+    # cta: Register now!
+
+    // ttl: |-
+      The number of seconds to display the message. Should always
+      be 0 unless you want to autohide.
+    ttl: "0"
