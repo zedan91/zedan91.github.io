@@ -628,6 +628,8 @@
           Buka Signup 1 Kali
         </button>
 
+        <p class="request-status" id="signupGateNotice"></p>
+
         <button class="btn" id="showSignupButton" type="button" hidden>
           Signup Pengguna Baru
         </button>
@@ -825,6 +827,7 @@
     const registerAdminPassword = document.getElementById('registerAdminPassword');
     const registerAdminError = document.getElementById('registerAdminError');
     const unlockSignupButton = document.getElementById('unlockSignupButton');
+    const signupGateNotice = document.getElementById('signupGateNotice');
     const showSignupButton = document.getElementById('showSignupButton');
     const signupFields = document.getElementById('signupFields');
     const signupName = document.getElementById('signupName');
@@ -1095,6 +1098,8 @@
       signupFields.style.display = 'none';
       registerAdminPassword.value = '';
       registerAdminError.textContent = '';
+      signupGateNotice.style.display = 'none';
+      signupGateNotice.textContent = '';
     }
 
     function clearSignupGateTimer() {
@@ -1105,7 +1110,7 @@
     }
 
     function showGlobalSignupAccess(message = '') {
-      if (isLoggedIn) {
+      if (isLoggedIn && !isAdminUser(currentUser)) {
         return;
       }
 
@@ -1115,8 +1120,15 @@
       signupFields.style.display = 'block';
 
       if (message) {
-        registerAdminError.textContent = message;
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = message;
       }
+    }
+
+    function updateSignupGateCountdown(remainingMs) {
+      const seconds = Math.max(0, Math.ceil(remainingMs / 1000));
+      signupGateNotice.style.display = 'block';
+      signupGateNotice.textContent = `Signup dibuka untuk 1 pengguna sahaja. Auto tutup dalam ${seconds} saat.`;
     }
 
     async function closeExpiredSignupGate() {
@@ -1180,13 +1192,40 @@
         signupGateOpen = gateData.open === true && remainingMs > 0;
 
         if (signupGateOpen) {
-          showGlobalSignupAccess('Signup sedang dibuka untuk 1 pendaftaran sahaja. Auto tutup dalam 1 minit.');
-          signupGateTimer = setTimeout(closeExpiredSignupGate, remainingMs);
+          showGlobalSignupAccess();
+          updateSignupGateCountdown(remainingMs);
+          signupGateTimer = setInterval(function () {
+            const nextRemainingMs = expiresAtMs - Date.now();
+
+            if (nextRemainingMs <= 0) {
+              clearSignupGateTimer();
+              closeExpiredSignupGate();
+
+              if (!isAdminUser(currentUser)) {
+                closeSignupAccess();
+              } else {
+                signupGateNotice.style.display = 'block';
+                signupGateNotice.textContent = 'Signup tamat masa. Masukkan password admin untuk buka semula.';
+              }
+
+              return;
+            }
+
+            updateSignupGateCountdown(nextRemainingMs);
+          }, 1000);
         } else if (gateData.open === true && expiresAtMs && remainingMs <= 0) {
           closeExpiredSignupGate();
-          closeSignupAccess();
+          if (!isAdminUser(currentUser)) {
+            closeSignupAccess();
+          } else {
+            signupGateNotice.style.display = 'block';
+            signupGateNotice.textContent = 'Signup tamat masa. Masukkan password admin untuk buka semula.';
+          }
         } else if (!isLoggedIn) {
           closeSignupAccess();
+        } else if (isAdminUser(currentUser)) {
+          signupGateNotice.style.display = 'block';
+          signupGateNotice.textContent = 'Signup belum dibuka. Masukkan password admin dan tekan Buka Signup 1 Kali.';
         }
       }, function () {
         registerAdminError.textContent = 'Gate signup online belum boleh dibaca. Semak Firestore Rules untuk settings/signupGate.';
@@ -1219,8 +1258,12 @@
         requestCard.classList.add('is-admin');
         signupForm.hidden = false;
         signupForm.style.display = 'grid';
-        signupFields.hidden = true;
-        signupFields.style.display = 'none';
+        signupFields.hidden = false;
+        signupFields.style.display = 'block';
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = signupGateOpen
+          ? 'Signup dibuka untuk 1 pengguna sahaja.'
+          : 'Signup belum dibuka. Masukkan password admin dan tekan Buka Signup 1 Kali.';
         loadRegisteredUsers();
       } else {
         requestCard.classList.remove('is-admin');
