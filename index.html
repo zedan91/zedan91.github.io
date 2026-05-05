@@ -259,6 +259,7 @@
 
     #paForm,
     #adminPurchasePanel,
+    #registeredUsersPanel,
     .login-only {
       display: none !important;
     }
@@ -272,6 +273,10 @@
     }
 
     .is-authenticated #adminPurchasePanel {
+      display: block !important;
+    }
+
+    .is-admin #registeredUsersPanel {
       display: block !important;
     }
 
@@ -375,6 +380,15 @@
 
     .purchase-summary-item strong {
       color: #22c55e;
+    }
+
+    .registered-users-panel {
+      margin-top: 18px;
+      padding: 18px;
+      border: 1px solid rgba(37,99,235,0.35);
+      border-radius: 12px;
+      background: rgba(15,23,42,0.65);
+      text-align: left;
     }
 
     .payment-qr-wrap {
@@ -714,6 +728,22 @@
           </div>
         </div>
       </div>
+
+      <div class="registered-users-panel" id="registeredUsersPanel">
+        <h3>Rekod User Berdaftar</h3>
+        <p class="request-note">
+          Senarai ini hanya dipaparkan kepada admin.
+        </p>
+        <button class="btn blue" id="refreshUsersButton" type="button">
+          Refresh User
+        </button>
+        <p class="request-error" id="registeredUsersError"></p>
+        <div class="purchase-summary-list" id="registeredUsersList">
+          <div class="purchase-summary-item">
+            Belum ada rekod user.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -813,6 +843,10 @@
     const purchaseSummaryList = document.getElementById('purchaseSummaryList');
     const purchasePanelTitle = document.getElementById('purchasePanelTitle');
     const purchasePanelNote = document.getElementById('purchasePanelNote');
+    const registeredUsersPanel = document.getElementById('registeredUsersPanel');
+    const refreshUsersButton = document.getElementById('refreshUsersButton');
+    const registeredUsersError = document.getElementById('registeredUsersError');
+    const registeredUsersList = document.getElementById('registeredUsersList');
     let isLoggedIn = false;
     let signupGateOpen = false;
     let currentUser = null;
@@ -954,6 +988,48 @@
         renderPurchaseSummaries(summaries);
       } catch (error) {
         purchaseAdminError.textContent = `Gagal baca rekod pembelian: ${error.code || error.message}`;
+      }
+    }
+
+    function renderRegisteredUsers(users) {
+      if (!users.length) {
+        registeredUsersList.innerHTML = '<div class="purchase-summary-item">Belum ada rekod user.</div>';
+        return;
+      }
+
+      registeredUsersList.innerHTML = users.map(function (user) {
+        return `
+          <div class="purchase-summary-item">
+            <span><strong>${user.name || user.usernameKey}</strong><br>${user.phone || '-'}</span>
+            <span>Username: <strong>${user.usernameKey || '-'}</strong></span>
+            <span>Role: <strong>${user.usernameKey === ADMIN_USERNAME ? 'Admin' : 'User'}</strong></span>
+            <span>UID: <strong>${user.uid ? user.uid.slice(0, 8) : '-'}</strong></span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadRegisteredUsers() {
+      if (!isAdminUser(currentUser)) {
+        return;
+      }
+
+      try {
+        registeredUsersError.textContent = '';
+        const snapshot = await getDocs(collection(db, 'users'));
+        const users = [];
+
+        snapshot.forEach(function (item) {
+          users.push(item.data());
+        });
+
+        users.sort(function (a, b) {
+          return (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        });
+
+        renderRegisteredUsers(users);
+      } catch (error) {
+        registeredUsersError.textContent = `Gagal baca rekod user: ${error.code || error.message}`;
       }
     }
 
@@ -1132,6 +1208,7 @@
 
       if (isAdminUser(user)) {
         requestCard.classList.add('is-admin');
+        loadRegisteredUsers();
       } else {
         requestCard.classList.remove('is-admin');
       }
@@ -1214,13 +1291,6 @@
 
       try {
         const userRef = doc(db, 'users', usernameKey);
-        const existingUser = await getDoc(userRef);
-
-        if (existingUser.exists()) {
-          signupError.textContent = 'Nama ini sudah didaftarkan. Sila guna nama lain.';
-          return;
-        }
-
         await claimSignupAccess(usernameKey);
 
         const email = buildUserEmail(usernameKey);
@@ -1281,23 +1351,23 @@
       }
 
       try {
+        const credential = await signInWithEmailAndPassword(auth, buildUserEmail(usernameKey), password);
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-          loginError.textContent = 'Akaun belum wujud. Sila signup dahulu.';
-          return;
-        }
-
-        const profile = userSnap.data();
-        await signInWithEmailAndPassword(auth, profile.email, password);
+        const profile = userSnap.exists() ? userSnap.data() : {
+          uid: credential.user.uid,
+          name,
+          usernameKey,
+          phone: '',
+          email: credential.user.email
+        };
 
         const user = {
-          uid: profile.uid,
+          uid: profile.uid || credential.user.uid,
           name: profile.name,
           usernameKey: profile.usernameKey,
-          phone: profile.phone,
-          email: profile.email
+          phone: profile.phone || '',
+          email: profile.email || credential.user.email
         };
 
         saveCurrentUser(user);
@@ -1324,6 +1394,7 @@
       loginForm.hidden = false;
       paForm.hidden = true;
       adminPurchasePanel.style.display = 'none';
+      registeredUsersPanel.style.display = 'none';
       signupFields.hidden = true;
       showSignupButton.hidden = true;
       signupForm.style.display = 'grid';
@@ -1356,6 +1427,7 @@
     negeri.addEventListener('change', updatePreview);
 
     refreshPurchaseButton.addEventListener('click', loadPurchaseRecords);
+    refreshUsersButton.addEventListener('click', loadRegisteredUsers);
 
     paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
