@@ -378,7 +378,7 @@
 
     .purchase-summary-item {
       display: grid;
-      grid-template-columns: 1.2fr 0.7fr 0.7fr 1fr;
+      grid-template-columns: 1.2fr 0.7fr 0.7fr 1fr auto;
       gap: 10px;
       align-items: center;
       padding: 12px;
@@ -391,6 +391,22 @@
 
     .purchase-summary-item strong {
       color: #22c55e;
+    }
+
+    .small-action-btn {
+      width: fit-content;
+      margin: 0;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: #ef4444;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .small-action-btn:hover {
+      background: #dc2626;
     }
 
     .registered-users-panel {
@@ -944,6 +960,9 @@
         const units = summary.totalUnits || 0;
         const amount = summary.totalAmount || 0;
         const lastPa = summary.lastPa ? `PA${summary.lastPa}` : '-';
+        const resetButton = isAdminUser(currentUser)
+          ? `<button class="small-action-btn" type="button" data-reset-purchase="${summary.usernameKey}">Reset</button>`
+          : '';
 
         return `
           <div class="purchase-summary-item">
@@ -951,9 +970,36 @@
             <span>Unit: <strong>${units}</strong></span>
             <span>Total: <strong>RM${amount}</strong></span>
             <span>PA terakhir: <strong>${lastPa}</strong></span>
+            ${resetButton}
           </div>
         `;
       }).join('');
+    }
+
+    async function resetPurchaseSummary(usernameKey) {
+      if (!isAdminUser(currentUser) || !usernameKey) {
+        return;
+      }
+
+      if (!confirm(`Reset rekod pembelian untuk ${usernameKey}?`)) {
+        return;
+      }
+
+      try {
+        purchaseAdminError.textContent = '';
+        await setDoc(doc(db, 'purchaseSummaries', usernameKey), {
+          totalUnits: 0,
+          totalAmount: 0,
+          lastPa: '',
+          lastNegeri: '',
+          resetBy: currentUser.usernameKey,
+          resetAt: serverTimestamp()
+        }, { merge: true });
+
+        await loadPurchaseRecords();
+      } catch (error) {
+        purchaseAdminError.textContent = `Gagal reset rekod pembelian: ${error.code || error.message}`;
+      }
     }
 
     async function loadPurchaseRecords() {
@@ -1484,6 +1530,16 @@
     negeri.addEventListener('change', updatePreview);
 
     refreshPurchaseButton.addEventListener('click', loadPurchaseRecords);
+    purchaseSummaryList.addEventListener('click', function (event) {
+      const resetButton = event.target.closest('[data-reset-purchase]');
+
+      if (!resetButton) {
+        return;
+      }
+
+      resetPurchaseSummary(resetButton.dataset.resetPurchase);
+    });
+
     refreshUsersButton.addEventListener('click', loadRegisteredUsers);
 
     paForm.addEventListener('submit', async function (event) {
