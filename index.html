@@ -453,7 +453,7 @@
         <p class="request-error" id="registerAdminError"></p>
 
         <button class="btn orange" id="unlockSignupButton" type="button">
-          Buka Signup 5 Minit
+          Buka Signup 1 Kali
         </button>
 
         <button class="btn" id="showSignupButton" type="button" hidden>
@@ -574,7 +574,6 @@
 
   <script>
     const REGISTER_UNLOCK_PASSWORD = '61861562';
-    const REGISTER_UNLOCK_DURATION = 5 * 60 * 1000;
 
     const signupForm = document.getElementById('signupForm');
     const registerAdminPassword = document.getElementById('registerAdminPassword');
@@ -673,36 +672,21 @@
     }
 
     function openSignupAccess() {
-      const expiresAt = Date.now() + REGISTER_UNLOCK_DURATION;
-      sessionStorage.setItem('azobssSignupOpenUntil', String(expiresAt));
+      sessionStorage.setItem('azobssSignupOneTimeOpen', '1');
       showSignupButton.hidden = false;
       signupFields.hidden = true;
       showSignupButton.style.display = 'inline-block';
       signupFields.style.display = 'none';
-      registerAdminError.textContent = 'Signup dibuka selama 5 minit.';
-      showAccessToast('Signup dibuka selama 5 minit.');
-
-      setTimeout(function () {
-        if (Date.now() >= Number(sessionStorage.getItem('azobssSignupOpenUntil') || 0)) {
-          closeSignupAccess();
-          showAccessToast('Signup telah ditutup semula.');
-        }
-      }, REGISTER_UNLOCK_DURATION);
+      registerAdminError.textContent = 'Signup dibuka untuk 1 pendaftaran sahaja.';
+      showAccessToast('Signup dibuka untuk 1 pendaftaran sahaja.');
     }
 
     function restoreSignupAccess() {
-      const expiresAt = Number(sessionStorage.getItem('azobssSignupOpenUntil') || 0);
-
-      if (expiresAt > Date.now()) {
+      if (sessionStorage.getItem('azobssSignupOneTimeOpen') === '1') {
         showSignupButton.hidden = false;
         signupFields.hidden = true;
         showSignupButton.style.display = 'inline-block';
         signupFields.style.display = 'none';
-
-        setTimeout(function () {
-          closeSignupAccess();
-          showAccessToast('Signup telah ditutup semula.');
-        }, expiresAt - Date.now());
       } else {
         closeSignupAccess();
       }
@@ -787,6 +771,7 @@
 
       localStorage.setItem('azobssUser', JSON.stringify(user));
       sessionStorage.setItem('azobssLoggedIn', '1');
+      sessionStorage.removeItem('azobssSignupOneTimeOpen');
       signupError.textContent = '';
       setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
     });
