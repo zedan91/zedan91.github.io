@@ -1,264 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AZOBSS | PC Service, Info Lot & Digital Tools</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AZOBSS menyediakan servis PC, troubleshoot Windows online, info lot, PA, affiliate links, e-book, software dan AutoCAD LISP.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZOBSS</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b1b2b;
+  color: white;
+}
 
-    .hero {
-      text-align: center;
-      padding: 80px 20px;
-      background: linear-gradient(135deg, #020617, #0f172a);
-    }
+.section {
+  padding: 50px 20px;
+  text-align: center;
+}
 
-    h1 {
-      color: #22c55e;
-      font-size: 42px;
-    }
+.section h2 {
+  margin-bottom: 30px;
+  font-size: 28px;
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+/* GRID */
+.services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: auto;
+}
 
-    p {
-      color: #cbd5e1;
-    }
+/* CARD */
+.card {
+  background: #14283d;
+  border-radius: 18px;
+  padding: 15px;
+  transition: 0.3s;
+  cursor: pointer;
+}
 
-    .btn {
-      display: inline-block;
-      margin: 8px;
-      padding: 14px 24px;
-      background: #22c55e;
-      color: white;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: bold;
-    }
+.card:hover {
+  transform: translateY(-5px);
+  background: #18324d;
+}
 
-    .btn.blue {
-      background: #2563eb;
-    }
+/* IMAGE */
+.card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+}
 
-    .btn.orange {
-      background: #f97316;
-    }
+/* TEXT */
+.card p {
+  margin-top: 12px;
+  font-size: 15px;
+  opacity: 0.85;
+}
+</style>
 
-    .section {
-      padding: 55px 20px;
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 22px;
-      border-radius: 18px;
-      text-align: center;
-      transition: 0.3s;
-      position: relative;
-      overflow: hidden;
-      min-height: 90px;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 20px rgba(34,197,94,0.25);
-    }
-
-    .card img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 14px;
-      margin-top: 15px;
-      display: none;
-    }
-
-    .card:hover img {
-      display: block;
-    }
-
-    .price {
-      color: #22c55e;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .whatsapp {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #25D366;
-      color: white;
-      padding: 15px;
-      border-radius: 50%;
-      font-size: 22px;
-      text-decoration: none;
-      z-index: 999;
-    }
-
-    footer {
-      text-align: center;
-      padding: 30px;
-      color: #94a3b8;
-      background: #020617;
-    }
-  </style>
 </head>
-
 <body>
 
-  <div class="hero">
-    <h1>AZOBSS</h1>
-    <p>PC Service • Info Lot • Digital Tools • AutoCAD LISP</p>
+<div class="section">
+  <h2>Our Services</h2>
 
-    <a class="btn" href="https://alvo.chat/6nZ2">Contact Us Now</a>
-    <a class="btn blue" href="#request">Request PA / Info Lot</a>
-  </div>
+  <div class="services">
 
-  <div class="section">
-    <h2>Our Services</h2>
-
-    <div class="grid">
-      <div class="card">
-        💻 Format Windows
-        <img src="images/format-windows.jpg" alt="Format Windows">
-      </div>
-
-      <div class="card">
-        🛠️ PC Repair
-        <img src="images/pc-repair.jpg" alt="PC Repair">
-      </div>
-
-      <div class="card">
-        🧠 Troubleshoot Windows Online
-        <img src="images/remote-support.jpg" alt="Remote Support">
-      </div>
-
-      <div class="card">
-        📍 Info Lot Kadaster
-        <img src="images/info-lot.jpg" alt="Info Lot Kadaster">
-      </div>
-
-      <div class="card">
-        📏 Ukur Kawasan Tanah
-        <img src="images/ukur-tanah.jpg" alt="Ukur Kawasan Tanah">
-      </div>
-
-      <div class="card">
-        📂 PA / PDUK Request
-        <img src="images/pa-pduk.jpg" alt="PA PDUK Request">
-      </div>
+    <div class="card">
+      <img src="images/format-windows.jpg">
+      <p>Format Windows</p>
     </div>
-  </div>
 
-  <div class="section">
-    <h2>Affiliate Links</h2>
-    <p style="text-align:center;">Senarai barang pilihan yang berguna untuk kerja, rumah dan setup PC.</p>
-
-    <div class="grid">
-      <div class="card">
-        <h3>🛒 PC Tools</h3>
-        <p>Barang berguna untuk repair, setup dan maintenance PC.</p>
-        <a class="btn blue" href="#">View Links</a>
-      </div>
-
-      <div class="card">
-        <h3>🏠 Useful Home Items</h3>
-        <p>Produk praktikal untuk kegunaan harian.</p>
-        <a class="btn blue" href="#">View Links</a>
-      </div>
-
-      <div class="card">
-        <h3>📱 Gadgets</h3>
-        <p>Gadget menarik untuk kerja dan content creation.</p>
-        <a class="btn blue" href="#">View Links</a>
-      </div>
+    <div class="card">
+      <img src="images/pc-repair.jpg">
+      <p>PC Repair</p>
     </div>
-  </div>
 
-  <div class="section">
-    <h2>E-book, Software & AutoCAD LISP</h2>
-
-    <div class="grid">
-      <div class="card">
-        <h3>📘 Windows Guide E-book</h3>
-        <p>Panduan basic troubleshoot Windows untuk pengguna biasa.</p>
-        <div class="price">Coming Soon</div>
-        <a class="btn" href="https://alvo.chat/6nZ2">Ask Availability</a>
-      </div>
-
-      <div class="card">
-        <h3>🧩 Software Tools</h3>
-        <p>Tools pilihan untuk kerja PC, file, repair dan productivity.</p>
-        <div class="price">Coming Soon</div>
-        <a class="btn" href="https://alvo.chat/6nZ2">Ask Availability</a>
-      </div>
-
-      <div class="card">
-        <h3>📐 AutoCAD LISP</h3>
-        <p>LISP untuk percepat kerja AutoCAD, text, layer, area dan drafting.</p>
-        <div class="price">From RM10</div>
-        <a class="btn orange" href="https://alvo.chat/6nZ2">Buy / Request LISP</a>
-      </div>
+    <div class="card">
+      <img src="images/remote-support.jpg">
+      <p>Troubleshoot Windows Online</p>
     </div>
-  </div>
 
-  <div class="section" id="request">
-    <h2>Request PA / Info Lot</h2>
-
-    <div class="card" style="max-width:700px;margin:auto;">
-      <h3>📂 Request PA, PDUK, Info Lot & Kawasan</h3>
-      <p>
-        Untuk request PA, info lot, lokasi lot, atau semakan kawasan,
-        klik button di bawah dan hantar detail melalui WhatsApp.
-      </p>
-
-      <p style="text-align:left;">
-        ✔ No PA / No Lot<br>
-        ✔ Negeri / Mukim / Daerah<br>
-        ✔ Jenis request<br>
-        ✔ Confirmation ada / tiada akan diberitahu<br>
-      </p>
-
-      <a class="btn blue" href="https://alvo.chat/6nZ2">
-        Request PA / Info Lot Now
-      </a>
+    <div class="card">
+      <img src="images/info-lot.jpg">
+      <p>Info Lot Kadaster</p>
     </div>
-  </div>
 
-  <div class="section">
-    <h2>Member Login</h2>
-
-    <div class="card" style="max-width:600px;margin:auto;">
-      <h3>🔐 Login System Coming Soon</h3>
-      <p>
-        Section untuk peraduan, request automatik, QR payment dan member area
-        akan ditambah pada fasa seterusnya.
-      </p>
+    <div class="card">
+      <img src="images/ukur-tanah.jpg">
+      <p>Ukur Kawasan Tanah</p>
     </div>
+
+    <div class="card">
+      <img src="images/pa-pduk.jpg">
+      <p>PA / PDUK Request</p>
+    </div>
+
   </div>
-
-  <a class="whatsapp" href="https://alvo.chat/6nZ2">💬</a>
-
-  <footer>
-    © 2026 AZOBSS. All rights reserved.
-  </footer>
+</div>
 
 </body>
 </html>
