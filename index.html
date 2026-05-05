@@ -438,7 +438,20 @@
       </p>
 
       <form class="login-panel" id="signupForm">
-        <button class="btn" id="showSignupButton" type="button">
+        <h3>Buka Pendaftaran</h3>
+
+        <label for="registerAdminPassword">
+          Password Admin
+          <input id="registerAdminPassword" type="password" placeholder="Password untuk buka signup">
+        </label>
+
+        <p class="request-error" id="registerAdminError"></p>
+
+        <button class="btn orange" id="unlockSignupButton" type="button">
+          Buka Signup 5 Minit
+        </button>
+
+        <button class="btn" id="showSignupButton" type="button" hidden>
           Signup Pengguna Baru
         </button>
 
@@ -555,7 +568,13 @@
   </footer>
 
   <script>
+    const REGISTER_UNLOCK_PASSWORD = '61861562';
+    const REGISTER_UNLOCK_DURATION = 5 * 60 * 1000;
+
     const signupForm = document.getElementById('signupForm');
+    const registerAdminPassword = document.getElementById('registerAdminPassword');
+    const registerAdminError = document.getElementById('registerAdminError');
+    const unlockSignupButton = document.getElementById('unlockSignupButton');
     const showSignupButton = document.getElementById('showSignupButton');
     const signupFields = document.getElementById('signupFields');
     const signupName = document.getElementById('signupName');
@@ -638,6 +657,45 @@
       userMenu.style.display = 'flex';
     }
 
+    function closeSignupAccess() {
+      showSignupButton.hidden = true;
+      signupFields.hidden = true;
+      registerAdminPassword.value = '';
+      registerAdminError.textContent = '';
+    }
+
+    function openSignupAccess() {
+      const expiresAt = Date.now() + REGISTER_UNLOCK_DURATION;
+      sessionStorage.setItem('azobssSignupOpenUntil', String(expiresAt));
+      showSignupButton.hidden = false;
+      signupFields.hidden = true;
+      registerAdminError.textContent = 'Signup dibuka selama 5 minit.';
+      showAccessToast('Signup dibuka selama 5 minit.');
+
+      setTimeout(function () {
+        if (Date.now() >= Number(sessionStorage.getItem('azobssSignupOpenUntil') || 0)) {
+          closeSignupAccess();
+          showAccessToast('Signup telah ditutup semula.');
+        }
+      }, REGISTER_UNLOCK_DURATION);
+    }
+
+    function restoreSignupAccess() {
+      const expiresAt = Number(sessionStorage.getItem('azobssSignupOpenUntil') || 0);
+
+      if (expiresAt > Date.now()) {
+        showSignupButton.hidden = false;
+        signupFields.hidden = true;
+
+        setTimeout(function () {
+          closeSignupAccess();
+          showAccessToast('Signup telah ditutup semula.');
+        }, expiresAt - Date.now());
+      } else {
+        closeSignupAccess();
+      }
+    }
+
     function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
       signupForm.hidden = true;
@@ -651,6 +709,17 @@
         showAccessToast(toastMessage);
       }
     }
+
+    unlockSignupButton.addEventListener('click', function () {
+      const password = registerAdminPassword.value.trim();
+
+      if (password !== REGISTER_UNLOCK_PASSWORD) {
+        registerAdminError.textContent = 'Password admin salah.';
+        return;
+      }
+
+      openSignupAccess();
+    });
 
     showSignupButton.addEventListener('click', function () {
       signupFields.hidden = false;
@@ -728,6 +797,7 @@
       paForm.hidden = true;
       loginPassword.value = '';
       paStatus.style.display = 'none';
+      restoreSignupAccess();
       showAccessToast('Logout berjaya.');
     });
 
@@ -735,6 +805,8 @@
 
     if (savedUser && sessionStorage.getItem('azobssLoggedIn') === '1') {
       setLoggedIn(savedUser);
+    } else {
+      restoreSignupAccess();
     }
 
     paNumber.addEventListener('input', updatePreview);
