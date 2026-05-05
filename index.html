@@ -628,6 +628,8 @@
       getFirestore,
       doc,
       getDoc,
+      onSnapshot,
+      runTransaction,
       setDoc,
       serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
@@ -645,6 +647,7 @@
     const firebaseApp = firebaseReady ? initializeApp(firebaseConfig) : null;
     const auth = firebaseReady ? getAuth(firebaseApp) : null;
     const db = firebaseReady ? getFirestore(firebaseApp) : null;
+    const signupGateRef = firebaseReady ? doc(db, 'settings', 'signupGate') : null;
 
     const REGISTER_UNLOCK_PASSWORD = '61861562';
     sessionStorage.removeItem('azobssSignupOpenUntil');
@@ -677,6 +680,7 @@
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
     let isLoggedIn = false;
+    let signupGateOpen = false;
 
     function cleanPaNumber(value) {
       return value
@@ -761,26 +765,69 @@
       registerAdminError.textContent = '';
     }
 
-    function openSignupAccess() {
-      sessionStorage.setItem('azobssSignupOneTimeOpen', '1');
+    function showGlobalSignupAccess(message = '') {
+      if (isLoggedIn) {
+        return;
+      }
+
       showSignupButton.hidden = true;
       signupFields.hidden = false;
       showSignupButton.style.display = 'none';
       signupFields.style.display = 'block';
+
+      if (message) {
+        registerAdminError.textContent = message;
+      }
+    }
+
+    async function openSignupAccess() {
+      await setDoc(signupGateRef, {
+        open: true,
+        openedAt: serverTimestamp(),
+        openedBy: 'admin',
+        mode: 'one-time'
+      }, { merge: true });
+
       registerAdminPassword.value = '';
-      registerAdminError.textContent = 'Signup dibuka untuk 1 pendaftaran sahaja.';
-      showAccessToast('Signup dibuka untuk 1 pendaftaran sahaja.');
+      showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja.');
+      showAccessToast('Signup dibuka online untuk 1 pendaftaran sahaja.');
     }
 
     function restoreSignupAccess() {
-      if (sessionStorage.getItem('azobssSignupOneTimeOpen') === '1') {
-        showSignupButton.hidden = true;
-        signupFields.hidden = false;
-        showSignupButton.style.display = 'none';
-        signupFields.style.display = 'block';
-      } else {
-        closeSignupAccess();
-      }
+      closeSignupAccess();
+    }
+
+    async function claimSignupAccess(usernameKey) {
+      await runTransaction(db, async function (transaction) {
+        const gateSnapshot = await transaction.get(signupGateRef);
+        const gateData = gateSnapshot.exists() ? gateSnapshot.data() : {};
+
+        if (gateData.open !== true) {
+          throw new Error('signup-gate-closed');
+        }
+
+        transaction.set(signupGateRef, {
+          open: false,
+          claimedBy: usernameKey,
+          claimedAt: serverTimestamp(),
+          mode: 'one-time'
+        }, { merge: true });
+      });
+    }
+
+    if (firebaseReady) {
+      onSnapshot(signupGateRef, function (snapshot) {
+        const gateData = snapshot.exists() ? snapshot.data() : {};
+        signupGateOpen = gateData.open === true;
+
+        if (signupGateOpen) {
+          showGlobalSignupAccess('Signup sedang dibuka untuk 1 pendaftaran sahaja.');
+        } else if (!isLoggedIn) {
+          closeSignupAccess();
+        }
+      }, function () {
+        registerAdminError.textContent = 'Gate signup online belum boleh dibaca. Semak Firestore Rules untuk settings/signupGate.';
+      });
     }
 
     function setLoggedIn(user, toastMessage = '') {
@@ -811,7 +858,7 @@
       }
     }
 
-    unlockSignupButton.addEventListener('click', function () {
+    unlockSignupButton.addEventListener('click', async function () {
       const password = registerAdminPassword.value.trim();
 
       if (password !== REGISTER_UNLOCK_PASSWORD) {
@@ -819,7 +866,17 @@
         return;
       }
 
-      openSignupAccess();
+      if (!firebaseReady) {
+        registerAdminError.textContent = 'Firebase belum disambungkan.';
+        return;
+      }
+
+      try {
+        registerAdminError.textContent = 'Membuka signup online...';
+        await openSignupAccess();
+      } catch (error) {
+        registerAdminError.textContent = `Gagal buka signup online: ${error.code || error.message}`;
+      }
     });
 
     showSignupButton.addEventListener('click', function () {
@@ -865,6 +922,11 @@
         return;
       }
 
+      if (!signupGateOpen) {
+        signupError.textContent = 'Signup belum dibuka oleh admin. Sila WhatsApp Admin untuk buka pendaftaran.';
+        return;
+      }
+
       try {
         const userRef = doc(db, 'users', usernameKey);
         const existingUser = await getDoc(userRef);
@@ -873,6 +935,8 @@
           signupError.textContent = 'Nama ini sudah didaftarkan. Sila guna nama lain.';
           return;
         }
+
+        await claimSignupAccess(usernameKey);
 
         const email = buildUserEmail(usernameKey);
         const credential = await createUserWithEmailAndPassword(auth, email, password);
@@ -895,11 +959,12 @@
 
         saveCurrentUser(user);
         sessionStorage.setItem('azobssLoggedIn', '1');
-        sessionStorage.removeItem('azobssSignupOneTimeOpen');
         signupError.textContent = '';
         setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
       } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
+        if (error.message === 'signup-gate-closed') {
+          signupError.textContent = 'Signup sudah digunakan oleh pengguna lain. Admin perlu buka semula.';
+        } else if (error.code === 'auth/email-already-in-use') {
           signupError.textContent = 'Nama ini sudah didaftarkan. Sila guna nama lain.';
         } else if (error.code === 'auth/weak-password') {
           signupError.textContent = 'Password terlalu pendek. Guna sekurang-kurangnya 6 aksara.';
