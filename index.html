@@ -257,6 +257,19 @@
       display: none !important;
     }
 
+    #paForm,
+    .login-only {
+      display: none !important;
+    }
+
+    .is-authenticated #paForm {
+      display: grid !important;
+    }
+
+    .is-authenticated .login-only {
+      display: inline-block !important;
+    }
+
     .login-panel label {
       color: #e2e8f0;
       font-weight: bold;
@@ -582,7 +595,7 @@
         <p class="request-note" id="paLinkPreview" hidden></p>
       </form>
 
-      <a class="btn blue" href="https://alvo.chat/6nZ2">
+      <a class="btn blue login-only" href="https://alvo.chat/6nZ2">
         WhatsApp Untuk Bantuan
       </a>
     </div>
