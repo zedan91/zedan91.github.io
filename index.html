@@ -252,9 +252,16 @@
       text-align: left;
     }
 
-    .is-authenticated #signupForm,
     .is-authenticated #loginForm {
       display: none !important;
+    }
+
+    .is-authenticated:not(.is-admin) #signupForm {
+      display: none !important;
+    }
+
+    .is-authenticated.is-admin #signupForm {
+      display: grid !important;
     }
 
     #paForm,
@@ -1185,11 +1192,9 @@
     function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
       currentUser = user;
-      signupForm.hidden = true;
       loginForm.hidden = true;
       showSignupButton.hidden = true;
       signupFields.hidden = true;
-      signupForm.style.display = 'none';
       loginForm.style.display = 'none';
       requestCard.classList.add('is-authenticated');
       showSignupButton.style.display = 'none';
@@ -1208,9 +1213,15 @@
 
       if (isAdminUser(user)) {
         requestCard.classList.add('is-admin');
+        signupForm.hidden = false;
+        signupForm.style.display = 'grid';
+        signupFields.hidden = true;
+        signupFields.style.display = 'none';
         loadRegisteredUsers();
       } else {
         requestCard.classList.remove('is-admin');
+        signupForm.hidden = true;
+        signupForm.style.display = 'none';
       }
 
       loadPurchaseRecords();
