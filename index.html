@@ -619,7 +619,36 @@
     © 2026 AZOBSS. All rights reserved.
   </footer>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut
+    } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: 'AIzaSyDUF03esBSpddXA0wuP-u0mHVRp54pZyI8',
+      authDomain: 'azobss.firebaseapp.com',
+      projectId: 'azobss',
+      storageBucket: 'azobss.firebasestorage.app',
+      messagingSenderId: '159277716405',
+      appId: '1:159277716405:web:17d8924b6b6380e2b77ffc'
+    };
+
+    const firebaseReady = !firebaseConfig.apiKey.includes('PASTE_');
+    const firebaseApp = firebaseReady ? initializeApp(firebaseConfig) : null;
+    const auth = firebaseReady ? getAuth(firebaseApp) : null;
+    const db = firebaseReady ? getFirestore(firebaseApp) : null;
+
     const REGISTER_UNLOCK_PASSWORD = '61861562';
     sessionStorage.removeItem('azobssSignupOpenUntil');
 
@@ -679,9 +708,25 @@
       paLinkPreview.textContent = url || 'Link TIF akan dijana selepas nombor PA dan negeri dipilih.';
     }
 
+    function normalizeUsername(name) {
+      return name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    }
+
+    function buildUserEmail(usernameKey) {
+      return `${usernameKey}@azobss.local`;
+    }
+
     function getSavedUser() {
-      const savedUser = localStorage.getItem('azobssUser');
+      const savedUser = sessionStorage.getItem('azobssCurrentUser');
       return savedUser ? JSON.parse(savedUser) : null;
+    }
+
+    function saveCurrentUser(user) {
+      sessionStorage.setItem('azobssCurrentUser', JSON.stringify(user));
+    }
+
+    function clearCurrentUser() {
+      sessionStorage.removeItem('azobssCurrentUser');
     }
 
     function showAccessToast(message) {
@@ -786,12 +831,13 @@
       showSignupButton.style.display = 'none';
     });
 
-    signupForm.addEventListener('submit', function (event) {
+    signupForm.addEventListener('submit', async function (event) {
       event.preventDefault();
 
       const name = signupName.value.trim();
       const phone = signupPhone.value.trim();
       const password = signupPassword.value.trim();
+      const usernameKey = normalizeUsername(name);
 
       if (signupFields.hidden) {
         signupFields.hidden = false;
@@ -806,54 +852,114 @@
         return;
       }
 
+      if (!firebaseReady) {
+        signupError.textContent = 'Firebase belum disambungkan. Masukkan firebaseConfig sebenar dalam index.html.';
+        return;
+      }
+
+      if (!usernameKey) {
+        signupError.textContent = 'Nama hanya boleh mengandungi huruf, nombor atau underscore.';
+        return;
+      }
+
       if (password.length < 4) {
         signupError.textContent = 'Password mesti sekurang-kurangnya 4 aksara.';
         return;
       }
 
-      const user = {
-        name,
-        phone,
-        password
-      };
+      try {
+        const userRef = doc(db, 'users', usernameKey);
+        const existingUser = await getDoc(userRef);
 
-      localStorage.setItem('azobssUser', JSON.stringify(user));
-      sessionStorage.setItem('azobssLoggedIn', '1');
-      sessionStorage.removeItem('azobssSignupOneTimeOpen');
-      signupError.textContent = '';
-      setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
+        if (existingUser.exists()) {
+          signupError.textContent = 'Nama ini sudah didaftarkan. Sila guna nama lain.';
+          return;
+        }
+
+        const email = buildUserEmail(usernameKey);
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = {
+          uid: credential.user.uid,
+          name,
+          usernameKey,
+          phone,
+          email
+        };
+
+        await setDoc(userRef, {
+          uid: user.uid,
+          name,
+          usernameKey,
+          phone,
+          email,
+          createdAt: serverTimestamp()
+        });
+
+        saveCurrentUser(user);
+        sessionStorage.setItem('azobssLoggedIn', '1');
+        sessionStorage.removeItem('azobssSignupOneTimeOpen');
+        signupError.textContent = '';
+        setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
+      } catch (error) {
+        signupError.textContent = 'Signup gagal. Semak Firebase Authentication dan Firestore sudah diaktifkan.';
+      }
     });
 
-    loginForm.addEventListener('submit', function (event) {
+    loginForm.addEventListener('submit', async function (event) {
       event.preventDefault();
 
-      const user = getSavedUser();
       const name = loginName.value.trim();
       const password = loginPassword.value.trim();
-
-      if (!user) {
-        loginError.textContent = 'Akaun belum wujud. Sila signup dahulu.';
-        return;
-      }
+      const usernameKey = normalizeUsername(name);
 
       if (!name || !password) {
         loginError.textContent = 'Sila isi nama dan password.';
         return;
       }
 
-      if (name.toLowerCase() !== user.name.toLowerCase() || password !== user.password) {
-        loginError.textContent = 'Nama atau password salah. Sila cuba semula.';
+      if (!firebaseReady) {
+        loginError.textContent = 'Firebase belum disambungkan. Masukkan firebaseConfig sebenar dalam index.html.';
         return;
       }
 
-      loginError.textContent = '';
-      sessionStorage.setItem('azobssLoggedIn', '1');
-      setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
+      try {
+        const userRef = doc(db, 'users', usernameKey);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          loginError.textContent = 'Akaun belum wujud. Sila signup dahulu.';
+          return;
+        }
+
+        const profile = userSnap.data();
+        await signInWithEmailAndPassword(auth, profile.email, password);
+
+        const user = {
+          uid: profile.uid,
+          name: profile.name,
+          usernameKey: profile.usernameKey,
+          phone: profile.phone,
+          email: profile.email
+        };
+
+        saveCurrentUser(user);
+        loginError.textContent = '';
+        sessionStorage.setItem('azobssLoggedIn', '1');
+        setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
+      } catch (error) {
+        loginError.textContent = 'Nama atau password salah. Sila cuba semula.';
+      }
     });
 
-    logoutButton.addEventListener('click', function () {
+    logoutButton.addEventListener('click', async function () {
       isLoggedIn = false;
       sessionStorage.removeItem('azobssLoggedIn');
+      clearCurrentUser();
+
+      if (auth) {
+        await signOut(auth);
+      }
+
       userMenu.style.display = 'none';
       signupForm.hidden = false;
       loginForm.hidden = false;
