@@ -862,8 +862,8 @@
         return;
       }
 
-      if (password.length < 4) {
-        signupError.textContent = 'Password mesti sekurang-kurangnya 4 aksara.';
+      if (password.length < 6) {
+        signupError.textContent = 'Password mesti sekurang-kurangnya 6 aksara.';
         return;
       }
 
@@ -901,7 +901,17 @@
         signupError.textContent = '';
         setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
       } catch (error) {
-        signupError.textContent = 'Signup gagal. Semak Firebase Authentication dan Firestore sudah diaktifkan.';
+        if (error.code === 'auth/email-already-in-use') {
+          signupError.textContent = 'Nama ini sudah didaftarkan. Sila guna nama lain.';
+        } else if (error.code === 'auth/weak-password') {
+          signupError.textContent = 'Password terlalu pendek. Guna sekurang-kurangnya 6 aksara.';
+        } else if (error.code === 'auth/operation-not-allowed') {
+          signupError.textContent = 'Email/Password belum diaktifkan dalam Firebase Authentication.';
+        } else if (error.code === 'permission-denied') {
+          signupError.textContent = 'Firestore rules belum membenarkan simpan data user.';
+        } else {
+          signupError.textContent = `Signup gagal: ${error.code || error.message}`;
+        }
       }
     });
 
