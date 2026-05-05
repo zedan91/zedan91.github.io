@@ -271,7 +271,7 @@
       display: inline-block !important;
     }
 
-    .is-admin #adminPurchasePanel {
+    .is-authenticated #adminPurchasePanel {
       display: block !important;
     }
 
@@ -700,9 +700,9 @@
       </a>
 
       <div class="admin-purchase-panel" id="adminPurchasePanel">
-        <h3>Rekod Pembelian Admin</h3>
-        <p class="request-note">
-          Harga: RM5 untuk 1 PA. Panel ini hanya dipaparkan kepada pemilik.
+        <h3 id="purchasePanelTitle">Rekod Pembelian</h3>
+        <p class="request-note" id="purchasePanelNote">
+          Harga: RM5 untuk 1 PA.
         </p>
         <button class="btn blue" id="refreshPurchaseButton" type="button">
           Refresh Rekod
@@ -811,6 +811,8 @@
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
     const purchaseAdminError = document.getElementById('purchaseAdminError');
     const purchaseSummaryList = document.getElementById('purchaseSummaryList');
+    const purchasePanelTitle = document.getElementById('purchasePanelTitle');
+    const purchasePanelNote = document.getElementById('purchasePanelNote');
     let isLoggedIn = false;
     let signupGateOpen = false;
     let currentUser = null;
@@ -916,19 +918,34 @@
       }).join('');
     }
 
-    async function loadAdminPurchases() {
-      if (!isAdminUser(currentUser)) {
+    async function loadPurchaseRecords() {
+      if (!currentUser) {
         return;
       }
 
       try {
         purchaseAdminError.textContent = '';
-        const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
         const summaries = [];
 
-        snapshot.forEach(function (item) {
-          summaries.push(item.data());
-        });
+        if (isAdminUser(currentUser)) {
+          purchasePanelTitle.textContent = 'Rekod Pembelian Admin';
+          purchasePanelNote.textContent = 'Harga: RM5 untuk 1 PA. Admin boleh lihat kesemua rekod user.';
+
+          const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
+
+          snapshot.forEach(function (item) {
+            summaries.push(item.data());
+          });
+        } else {
+          purchasePanelTitle.textContent = 'Rekod Pembelian Saya';
+          purchasePanelNote.textContent = 'Harga: RM5 untuk 1 PA. Anda hanya boleh lihat rekod sendiri.';
+
+          const summarySnapshot = await getDoc(doc(db, 'purchaseSummaries', currentUser.usernameKey));
+
+          if (summarySnapshot.exists()) {
+            summaries.push(summarySnapshot.data());
+          }
+        }
 
         summaries.sort(function (a, b) {
           return (b.totalAmount || 0) - (a.totalAmount || 0);
@@ -981,9 +998,7 @@
         }, { merge: true });
       });
 
-      if (isAdminUser(currentUser)) {
-        await loadAdminPurchases();
-      }
+      await loadPurchaseRecords();
     }
 
     function closeSignupAccess() {
@@ -1117,10 +1132,11 @@
 
       if (isAdminUser(user)) {
         requestCard.classList.add('is-admin');
-        loadAdminPurchases();
       } else {
         requestCard.classList.remove('is-admin');
       }
+
+      loadPurchaseRecords();
 
       if (toastMessage) {
         showAccessToast(toastMessage);
@@ -1339,7 +1355,7 @@
     paNumber.addEventListener('input', updatePreview);
     negeri.addEventListener('change', updatePreview);
 
-    refreshPurchaseButton.addEventListener('click', loadAdminPurchases);
+    refreshPurchaseButton.addEventListener('click', loadPurchaseRecords);
 
     paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
