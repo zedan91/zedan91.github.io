@@ -436,6 +436,40 @@
       background: white;
     }
 
+    .qr-actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .qr-action-btn {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 10px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .qr-action-btn.green {
+      background: #22c55e;
+    }
+
+    .qr-copy-status {
+      display: none;
+      margin: 0;
+      color: #bbf7d0;
+      font-size: 12px;
+    }
+
     .qr-placeholder {
       display: none;
       margin: 0;
@@ -773,6 +807,15 @@
     <div class="payment-qr-card">
       <img src="images/payment-qr.jpg" alt="QR pembayaran bank" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
       <p class="qr-placeholder">Letak QR bank sebagai images/payment-qr.jpg</p>
+      <div class="qr-actions">
+        <button class="qr-action-btn green" id="copyAccountButton" type="button">
+          Copy No Akaun
+        </button>
+        <a class="qr-action-btn" href="images/payment-qr.jpg" download="azobss-payment-qr.jpg">
+          Download QR
+        </a>
+        <p class="qr-copy-status" id="qrCopyStatus">No akaun copied: 162405194110</p>
+      </div>
     </div>
   </div>
 
@@ -867,6 +910,9 @@
     const refreshUsersButton = document.getElementById('refreshUsersButton');
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
+    const copyAccountButton = document.getElementById('copyAccountButton');
+    const qrCopyStatus = document.getElementById('qrCopyStatus');
+    const BANK_ACCOUNT_NUMBER = '162405194110';
     let isLoggedIn = false;
     let signupGateOpen = false;
     let currentUser = null;
@@ -1541,6 +1587,20 @@
     });
 
     refreshUsersButton.addEventListener('click', loadRegisteredUsers);
+    copyAccountButton.addEventListener('click', async function () {
+      try {
+        await navigator.clipboard.writeText(BANK_ACCOUNT_NUMBER);
+        qrCopyStatus.textContent = `No akaun copied: ${BANK_ACCOUNT_NUMBER}`;
+      } catch (error) {
+        qrCopyStatus.textContent = `Copy gagal. No akaun: ${BANK_ACCOUNT_NUMBER}`;
+      }
+
+      qrCopyStatus.style.display = 'block';
+
+      setTimeout(function () {
+        qrCopyStatus.style.display = 'none';
+      }, 2500);
+    });
 
     paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
