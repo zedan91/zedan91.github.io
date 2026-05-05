@@ -617,13 +617,6 @@
           </a>
         </div>
 
-        <label class="admin-register-only" for="registerAdminPassword">
-          Password Admin
-          <input id="registerAdminPassword" type="password" placeholder="Password untuk buka signup">
-        </label>
-
-        <p class="request-error admin-register-only" id="registerAdminError"></p>
-
         <button class="btn orange admin-register-only" id="unlockSignupButton" type="button">
           Buka Signup 1 Kali
         </button>
@@ -817,15 +810,12 @@
     const db = firebaseReady ? getFirestore(firebaseApp) : null;
     const signupGateRef = firebaseReady ? doc(db, 'settings', 'signupGate') : null;
 
-    const REGISTER_UNLOCK_PASSWORD = '61861562';
     const ADMIN_USERNAME = 'zedan91';
     const PURCHASE_PRICE = 5;
     const SIGNUP_GATE_DURATION_MS = 60 * 1000;
     sessionStorage.removeItem('azobssSignupOpenUntil');
 
     const signupForm = document.getElementById('signupForm');
-    const registerAdminPassword = document.getElementById('registerAdminPassword');
-    const registerAdminError = document.getElementById('registerAdminError');
     const unlockSignupButton = document.getElementById('unlockSignupButton');
     const signupGateNotice = document.getElementById('signupGateNotice');
     const showSignupButton = document.getElementById('showSignupButton');
@@ -1096,8 +1086,6 @@
       signupFields.hidden = true;
       showSignupButton.style.display = 'none';
       signupFields.style.display = 'none';
-      registerAdminPassword.value = '';
-      registerAdminError.textContent = '';
       signupGateNotice.style.display = 'none';
       signupGateNotice.textContent = '';
     }
@@ -1139,7 +1127,8 @@
           closedAt: serverTimestamp()
         }, { merge: true });
       } catch (error) {
-        registerAdminError.textContent = `Gagal tutup signup tamat masa: ${error.code || error.message}`;
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = `Gagal tutup signup tamat masa: ${error.code || error.message}`;
       }
     }
 
@@ -1154,7 +1143,6 @@
         mode: 'one-time'
       }, { merge: true });
 
-      registerAdminPassword.value = '';
       showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja. Auto tutup dalam 1 minit.');
       showAccessToast('Signup dibuka online untuk 1 pendaftaran sahaja.');
     }
@@ -1192,8 +1180,16 @@
         signupGateOpen = gateData.open === true && remainingMs > 0;
 
         if (signupGateOpen) {
-          showGlobalSignupAccess();
-          updateSignupGateCountdown(remainingMs);
+          if (isLoggedIn && !isAdminUser(currentUser)) {
+            signupFields.hidden = true;
+            signupFields.style.display = 'none';
+            signupGateNotice.style.display = 'none';
+            signupGateNotice.textContent = '';
+          } else {
+            showGlobalSignupAccess();
+            updateSignupGateCountdown(remainingMs);
+          }
+
           signupGateTimer = setInterval(function () {
             const nextRemainingMs = expiresAtMs - Date.now();
 
@@ -1205,13 +1201,15 @@
                 closeSignupAccess();
               } else {
                 signupGateNotice.style.display = 'block';
-                signupGateNotice.textContent = 'Signup tamat masa. Masukkan password admin untuk buka semula.';
+                signupGateNotice.textContent = 'Signup tamat masa. Tekan Buka Signup 1 Kali untuk buka semula.';
               }
 
               return;
             }
 
-            updateSignupGateCountdown(nextRemainingMs);
+            if (!(isLoggedIn && !isAdminUser(currentUser))) {
+              updateSignupGateCountdown(nextRemainingMs);
+            }
           }, 1000);
         } else if (gateData.open === true && expiresAtMs && remainingMs <= 0) {
           closeExpiredSignupGate();
@@ -1219,16 +1217,17 @@
             closeSignupAccess();
           } else {
             signupGateNotice.style.display = 'block';
-            signupGateNotice.textContent = 'Signup tamat masa. Masukkan password admin untuk buka semula.';
+            signupGateNotice.textContent = 'Signup tamat masa. Tekan Buka Signup 1 Kali untuk buka semula.';
           }
         } else if (!isLoggedIn) {
           closeSignupAccess();
         } else if (isAdminUser(currentUser)) {
           signupGateNotice.style.display = 'block';
-          signupGateNotice.textContent = 'Signup belum dibuka. Masukkan password admin dan tekan Buka Signup 1 Kali.';
+          signupGateNotice.textContent = 'Signup belum dibuka. Tekan Buka Signup 1 Kali untuk buka pendaftaran.';
         }
       }, function () {
-        registerAdminError.textContent = 'Gate signup online belum boleh dibaca. Semak Firestore Rules untuk settings/signupGate.';
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = 'Gate signup online belum boleh dibaca. Semak Firestore Rules untuk settings/signupGate.';
       });
     }
 
@@ -1263,7 +1262,7 @@
         signupGateNotice.style.display = 'block';
         signupGateNotice.textContent = signupGateOpen
           ? 'Signup dibuka untuk 1 pengguna sahaja.'
-          : 'Signup belum dibuka. Masukkan password admin dan tekan Buka Signup 1 Kali.';
+          : 'Signup belum dibuka. Tekan Buka Signup 1 Kali untuk buka pendaftaran.';
         loadRegisteredUsers();
       } else {
         requestCard.classList.remove('is-admin');
@@ -1271,6 +1270,8 @@
         signupForm.style.display = 'grid';
         signupFields.hidden = true;
         signupFields.style.display = 'none';
+        signupGateNotice.style.display = 'none';
+        signupGateNotice.textContent = '';
       }
 
       loadPurchaseRecords();
@@ -1281,23 +1282,19 @@
     }
 
     unlockSignupButton.addEventListener('click', async function () {
-      const password = registerAdminPassword.value.trim();
-
-      if (password !== REGISTER_UNLOCK_PASSWORD) {
-        registerAdminError.textContent = 'Password admin salah.';
-        return;
-      }
-
       if (!firebaseReady) {
-        registerAdminError.textContent = 'Firebase belum disambungkan.';
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = 'Firebase belum disambungkan.';
         return;
       }
 
       try {
-        registerAdminError.textContent = 'Membuka signup online...';
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = 'Membuka signup online...';
         await openSignupAccess();
       } catch (error) {
-        registerAdminError.textContent = `Gagal buka signup online: ${error.code || error.message}`;
+        signupGateNotice.style.display = 'block';
+        signupGateNotice.textContent = `Gagal buka signup online: ${error.code || error.message}`;
       }
     });
 
