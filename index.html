@@ -187,6 +187,44 @@
       font-weight: bold;
     }
 
+    .affiliate-menu {
+      position: relative;
+      display: inline-block;
+    }
+
+    .affiliate-dropdown {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 8px);
+      transform: translateX(-50%);
+      min-width: 220px;
+      display: none;
+      z-index: 20;
+      padding: 10px;
+      border: 1px solid rgba(37,99,235,0.35);
+      border-radius: 10px;
+      background: #0f172a;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+      text-align: left;
+    }
+
+    .affiliate-menu:hover .affiliate-dropdown,
+    .affiliate-menu:focus-within .affiliate-dropdown {
+      display: grid;
+      gap: 8px;
+    }
+
+    .affiliate-dropdown a {
+      color: #bfdbfe;
+      text-decoration: none;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .affiliate-dropdown a:hover {
+      color: #22c55e;
+    }
+
     .request-form {
       display: grid;
       gap: 14px;
@@ -606,7 +644,13 @@
       <div class="card">
         <h3>🛒 PC Tools</h3>
         <p>Barang berguna untuk repair, setup dan maintenance PC.</p>
-        <a class="btn blue" href="#">View Links</a>
+        <div class="affiliate-menu">
+          <a class="btn blue" href="#">View Links</a>
+          <div class="affiliate-dropdown">
+            <a href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">PC Tools Link 1</a>
+            <a href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener">PC Tools Link 2</a>
+          </div>
+        </div>
       </div>
 
       <div class="card">
@@ -618,7 +662,14 @@
       <div class="card">
         <h3>📱 Gadgets</h3>
         <p>Gadget menarik untuk kerja dan content creation.</p>
-        <a class="btn blue" href="#">View Links</a>
+        <div class="affiliate-menu">
+          <a class="btn blue" href="#">View Links</a>
+          <div class="affiliate-dropdown">
+            <a href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">Gadgets Link 1</a>
+            <a href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener">Gadgets Link 2</a>
+            <a href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">Gadgets Link 3</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
