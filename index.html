@@ -140,6 +140,18 @@
       text-align: left;
     }
 
+    .request-status {
+      display: none;
+      margin: 8px 0 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(249,115,22,0.45);
+      border-radius: 10px;
+      background: rgba(249,115,22,0.12);
+      color: #fed7aa;
+      font-size: 14px;
+      text-align: left;
+    }
+
     .whatsapp {
       position: fixed;
       bottom: 20px;
@@ -300,13 +312,15 @@
 
         <p class="request-error" id="paError"></p>
 
-        <button class="btn blue" type="submit">
-          Muat Turun Pelan Akui
+        <button class="btn blue" id="paSubmit" type="submit">
+          Semak & Muat Turun Pelan Akui
         </button>
 
-        <p class="request-note" id="paLinkPreview">
-          Link akan dijana selepas nombor PA dan negeri dipilih.
+        <p class="request-status" id="paStatus">
+          Semakan akan dibuat sebelum tab muat turun dibuka.
         </p>
+
+        <p class="request-note" id="paLinkPreview" hidden></p>
       </form>
 
       <a class="btn blue" href="https://alvo.chat/6nZ2">
@@ -338,7 +352,9 @@
     const paNumber = document.getElementById('paNumber');
     const negeri = document.getElementById('negeri');
     const paError = document.getElementById('paError');
+    const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
+    const paSubmit = document.getElementById('paSubmit');
 
     function cleanPaNumber(value) {
       return value
@@ -360,26 +376,64 @@
       return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
+    async function checkPaAvailability(number, selectedNegeri) {
+      const params = new URLSearchParams({
+        noPa: number,
+        negeri: selectedNegeri
+      });
+
+      const response = await fetch(`check-pa.php?${params.toString()}`, {
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error('Semakan gagal.');
+      }
+
+      return response.json();
+    }
+
     function updatePreview() {
       const url = buildPaUrl();
       paError.textContent = '';
+      paStatus.style.display = 'none';
       paLinkPreview.textContent = url || 'Link akan dijana selepas nombor PA dan negeri dipilih.';
     }
 
     paNumber.addEventListener('input', updatePreview);
     negeri.addEventListener('change', updatePreview);
 
-    paForm.addEventListener('submit', function (event) {
+    paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
 
       const url = buildPaUrl();
+      const number = cleanPaNumber(paNumber.value);
+      const selectedNegeri = negeri.value;
 
       if (!url) {
         paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
         return;
       }
 
-      window.open(url, '_blank');
+      paStatus.style.display = 'block';
+      paStatus.textContent = 'Sedang menyemak nombor PA dalam sistem JUPEM...';
+      paSubmit.disabled = true;
+
+      try {
+        const result = await checkPaAvailability(number, selectedNegeri);
+
+        if (!result.exists) {
+          paStatus.textContent = 'Nombor PA ini tiada dalam sistem atau belum tersedia untuk dimuat turun.';
+          return;
+        }
+
+        paStatus.textContent = 'Nombor PA dijumpai. Tab muat turun sedang dibuka.';
+        window.open(result.url || url, '_blank');
+      } catch (error) {
+        paStatus.textContent = 'Semakan automatik tidak dapat dijalankan. Pastikan fail check-pa.php dimuat naik bersama index.html di hosting yang menyokong PHP.';
+      } finally {
+        paSubmit.disabled = false;
+      }
     });
   </script>
 
