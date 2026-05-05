@@ -555,8 +555,8 @@
       return savedUser ? JSON.parse(savedUser) : null;
     }
 
-    function showLoginToast(user) {
-      loginToast.textContent = `Login berjaya. Selamat datang, ${user.name}.`;
+    function showAccessToast(message) {
+      loginToast.textContent = message;
       loginToast.style.display = 'block';
 
       setTimeout(function () {
@@ -564,7 +564,7 @@
       }, 3000);
     }
 
-    function setLoggedIn(user, showToast = false) {
+    function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
       signupForm.hidden = true;
       loginForm.hidden = true;
@@ -572,8 +572,8 @@
       loginInfo.style.display = 'none';
       loginInfo.textContent = '';
 
-      if (showToast) {
-        showLoginToast(user);
+      if (toastMessage) {
+        showAccessToast(toastMessage);
       }
     }
 
@@ -614,7 +614,7 @@
       localStorage.setItem('azobssUser', JSON.stringify(user));
       sessionStorage.setItem('azobssLoggedIn', '1');
       signupError.textContent = '';
-      setLoggedIn(user, true);
+      setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
     });
 
     loginForm.addEventListener('submit', function (event) {
@@ -641,7 +641,7 @@
 
       loginError.textContent = '';
       sessionStorage.setItem('azobssLoggedIn', '1');
-      setLoggedIn(user, true);
+      setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
     });
 
     const savedUser = getSavedUser();
