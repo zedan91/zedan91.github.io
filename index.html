@@ -282,6 +282,29 @@
       box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
     }
 
+    .register-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .register-title-row h3 {
+      margin: 0;
+    }
+
+    .admin-whatsapp-link {
+      color: #22c55e;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .admin-whatsapp-link:hover {
+      text-decoration: underline;
+    }
+
     .login-info {
       display: none;
       margin: 0 0 16px;
@@ -443,7 +466,12 @@
       </p>
 
       <form class="login-panel" id="signupForm">
-        <h3>Buka Pendaftaran</h3>
+        <div class="register-title-row">
+          <h3>Buka Pendaftaran</h3>
+          <a class="admin-whatsapp-link" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
+            Sila WhatsApp Admin untuk buka pendaftaran
+          </a>
+        </div>
 
         <label for="registerAdminPassword">
           Password Admin
