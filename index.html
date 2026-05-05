@@ -34,7 +34,9 @@
     .request-error { color: #fca5a5; min-height: 20px; margin: 0; font-size: 14px; text-align: left; }
     .request-status { display: none; margin: 8px 0 0; padding: 12px 14px; border: 1px solid rgba(249,115,22,0.45); border-radius: 10px; background: rgba(249,115,22,0.12); color: #fed7aa; font-size: 14px; text-align: left; }
     .docs-list { text-align: left; max-width: 720px; margin: auto; }
-    .docs-list a { display: block; padding: 14px 16px; margin-bottom: 10px; border: 1px solid #334155; border-radius: 10px; background: #1e293b; text-decoration: none; color: #e2e8f0; }
+    .docs-list .doc-item { display: block; padding: 16px; margin-bottom: 10px; border: 1px solid #334155; border-radius: 10px; background: #1e293b; color: #e2e8f0; }
+    .docs-list .doc-item h3 { margin: 0 0 6px; color: white; }
+    .docs-list .doc-item p { margin: 0; }
     .whatsapp { position: fixed; bottom: 20px; right: 20px; background: #25d366; color: white; padding: 14px 16px; border-radius: 999px; font-size: 15px; text-decoration: none; z-index: 999; font-weight: bold; }
     footer { text-align: center; padding: 30px; color: #94a3b8; background: #020617; }
   </style>
@@ -203,10 +205,25 @@
   <div class="section" id="docs">
     <h2>Documentation</h2>
     <div class="docs-list">
-      <a href="docs/pa-downloader.md">PA Downloader</a>
-      <a href="docs/pc-services.md">PC Services</a>
-      <a href="docs/autocad-lisp.md">AutoCAD LISP</a>
-      <a href="docs/php-backend.md">PHP Backend</a>
+      <div class="doc-item">
+        <h3>PA Downloader</h3>
+        <p>Masukkan nombor PA dan pilih negeri untuk jana link Pelan Akui JUPEM. Jika laman JUPEM memaparkan Error, nombor PA tiada dalam sistem atau belum tersedia.</p>
+      </div>
+
+      <div class="doc-item">
+        <h3>PC Services</h3>
+        <p>Servis format Windows, PC repair, troubleshoot Windows online, setup software dan productivity tools.</p>
+      </div>
+
+      <div class="doc-item">
+        <h3>AutoCAD LISP</h3>
+        <p>LISP untuk percepat kerja AutoCAD seperti text, layer, area calculation dan drafting helper. Harga bermula dari RM10.</p>
+      </div>
+
+      <div class="doc-item">
+        <h3>PHP Backend</h3>
+        <p>GitHub Pages tidak menjalankan PHP. Fungsi convert TIF ke PDF memerlukan hosting PHP dengan cURL dan Imagick.</p>
+      </div>
     </div>
   </div>
 
