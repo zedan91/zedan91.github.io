@@ -718,6 +718,7 @@
     const REGISTER_UNLOCK_PASSWORD = '61861562';
     const ADMIN_USERNAME = 'zedan91';
     const PURCHASE_PRICE = 5;
+    const SIGNUP_GATE_DURATION_MS = 60 * 1000;
     sessionStorage.removeItem('azobssSignupOpenUntil');
 
     const signupForm = document.getElementById('signupForm');
@@ -754,6 +755,7 @@
     let isLoggedIn = false;
     let signupGateOpen = false;
     let currentUser = null;
+    let signupGateTimer = null;
 
     function cleanPaNumber(value) {
       return value
@@ -934,6 +936,13 @@
       registerAdminError.textContent = '';
     }
 
+    function clearSignupGateTimer() {
+      if (signupGateTimer) {
+        clearTimeout(signupGateTimer);
+        signupGateTimer = null;
+      }
+    }
+
     function showGlobalSignupAccess(message = '') {
       if (isLoggedIn) {
         return;
@@ -949,16 +958,31 @@
       }
     }
 
+    async function closeExpiredSignupGate() {
+      try {
+        await setDoc(signupGateRef, {
+          open: false,
+          closedReason: 'expired',
+          closedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        registerAdminError.textContent = `Gagal tutup signup tamat masa: ${error.code || error.message}`;
+      }
+    }
+
     async function openSignupAccess() {
+      const expiresAtMs = Date.now() + SIGNUP_GATE_DURATION_MS;
+
       await setDoc(signupGateRef, {
         open: true,
         openedAt: serverTimestamp(),
+        expiresAtMs,
         openedBy: 'admin',
         mode: 'one-time'
       }, { merge: true });
 
       registerAdminPassword.value = '';
-      showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja.');
+      showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja. Auto tutup dalam 1 minit.');
       showAccessToast('Signup dibuka online untuk 1 pendaftaran sahaja.');
     }
 
@@ -970,8 +994,9 @@
       await runTransaction(db, async function (transaction) {
         const gateSnapshot = await transaction.get(signupGateRef);
         const gateData = gateSnapshot.exists() ? gateSnapshot.data() : {};
+        const expiresAtMs = Number(gateData.expiresAtMs || 0);
 
-        if (gateData.open !== true) {
+        if (gateData.open !== true || (expiresAtMs && expiresAtMs <= Date.now())) {
           throw new Error('signup-gate-closed');
         }
 
@@ -987,10 +1012,18 @@
     if (firebaseReady) {
       onSnapshot(signupGateRef, function (snapshot) {
         const gateData = snapshot.exists() ? snapshot.data() : {};
-        signupGateOpen = gateData.open === true;
+        const expiresAtMs = Number(gateData.expiresAtMs || 0);
+        const remainingMs = expiresAtMs - Date.now();
+
+        clearSignupGateTimer();
+        signupGateOpen = gateData.open === true && remainingMs > 0;
 
         if (signupGateOpen) {
-          showGlobalSignupAccess('Signup sedang dibuka untuk 1 pendaftaran sahaja.');
+          showGlobalSignupAccess('Signup sedang dibuka untuk 1 pendaftaran sahaja. Auto tutup dalam 1 minit.');
+          signupGateTimer = setTimeout(closeExpiredSignupGate, remainingMs);
+        } else if (gateData.open === true && expiresAtMs && remainingMs <= 0) {
+          closeExpiredSignupGate();
+          closeSignupAccess();
         } else if (!isLoggedIn) {
           closeSignupAccess();
         }
