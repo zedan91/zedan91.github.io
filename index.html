@@ -222,41 +222,51 @@
       font-weight: bold;
     }
 
-    .affiliate-menu {
-      position: relative;
-      display: inline-block;
+    .affiliate-card {
+      cursor: pointer;
     }
 
-    .affiliate-dropdown {
-      position: absolute;
-      left: 50%;
-      top: calc(100% + 8px);
-      transform: translateX(-50%);
-      min-width: 220px;
-      display: none;
-      z-index: 20;
-      padding: 10px;
+    .affiliate-toggle {
+      border: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    .affiliate-info {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      display: grid;
+      gap: 8px;
+      margin-top: 0;
+      transition: max-height 0.28s ease, opacity 0.28s ease, margin-top 0.28s ease;
+    }
+
+    .affiliate-card:hover .affiliate-info,
+    .affiliate-card:focus-within .affiliate-info,
+    .affiliate-card.is-open .affiliate-info {
+      max-height: 240px;
+      opacity: 1;
+      margin-top: 14px;
+    }
+
+    .affiliate-info a {
+      display: block;
+      padding: 10px 12px;
       border: 1px solid rgba(37,99,235,0.35);
       border-radius: 10px;
       background: #0f172a;
-      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
-      text-align: left;
-    }
-
-    .affiliate-menu:hover .affiliate-dropdown,
-    .affiliate-menu:focus-within .affiliate-dropdown {
-      display: grid;
-      gap: 8px;
-    }
-
-    .affiliate-dropdown a {
       color: #bfdbfe;
       text-decoration: none;
       font-size: 14px;
+      font-weight: bold;
       line-height: 1.3;
+      text-align: center;
     }
 
-    .affiliate-dropdown a:hover {
+    .affiliate-info a:hover {
+      border-color: rgba(34,197,94,0.55);
       color: #22c55e;
     }
 
@@ -713,34 +723,30 @@
     <p style="text-align:center;">Senarai barang pilihan yang berguna untuk kerja, rumah dan setup PC.</p>
 
     <div class="grid">
-      <div class="card">
-        <h3>🛒 PC Tools</h3>
+      <div class="card affiliate-card">
+        <h3>&#128722; PC Tools</h3>
         <p>Barang berguna untuk repair, setup dan maintenance PC.</p>
-        <div class="affiliate-menu">
-          <a class="btn blue" href="#">View Links</a>
-          <div class="affiliate-dropdown">
-            <a href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">PC Tools Link 1</a>
-            <a href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener">PC Tools Link 2</a>
-          </div>
+        <button class="btn blue affiliate-toggle" type="button">View Links</button>
+        <div class="affiliate-info">
+          <a href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">PC Tools Link 1</a>
+          <a href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener">PC Tools Link 2</a>
         </div>
       </div>
 
       <div class="card">
-        <h3>🏠 Useful Home Items</h3>
+        <h3>&#127968; Useful Home Items</h3>
         <p>Produk praktikal untuk kegunaan harian.</p>
-        <a class="btn blue" href="#">View Links</a>
+        <a class="btn blue" href="https://alvo.chat/6nZ2">Ask Links</a>
       </div>
 
-      <div class="card">
-        <h3>📱 Gadgets</h3>
+      <div class="card affiliate-card">
+        <h3>&#128241; Gadgets</h3>
         <p>Gadget menarik untuk kerja dan content creation.</p>
-        <div class="affiliate-menu">
-          <a class="btn blue" href="#">View Links</a>
-          <div class="affiliate-dropdown">
-            <a href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">Gadgets Link 1</a>
-            <a href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener">Gadgets Link 2</a>
-            <a href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">Gadgets Link 3</a>
-          </div>
+        <button class="btn blue affiliate-toggle" type="button">View Links</button>
+        <div class="affiliate-info">
+          <a href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">Gadgets Link 1</a>
+          <a href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener">Gadgets Link 2</a>
+          <a href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">Gadgets Link 3</a>
         </div>
       </div>
     </div>
@@ -1749,6 +1755,33 @@
           event.preventDefault();
           toggleServiceCard(card);
         }
+      });
+    });
+
+    const affiliateCards = document.querySelectorAll('.affiliate-card');
+
+    function toggleAffiliateCard(selectedCard) {
+      const wasOpen = selectedCard.classList.contains('is-open');
+
+      affiliateCards.forEach(function (card) {
+        card.classList.remove('is-open');
+      });
+
+      if (!wasOpen) {
+        selectedCard.classList.add('is-open');
+      }
+    }
+
+    affiliateCards.forEach(function (card) {
+      const trigger = card.querySelector('.affiliate-toggle');
+
+      if (!trigger) {
+        return;
+      }
+
+      trigger.addEventListener('click', function (event) {
+        event.stopPropagation();
+        toggleAffiliateCard(card);
       });
     });
 
