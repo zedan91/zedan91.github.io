@@ -1353,10 +1353,25 @@
       }
     }
 
+    function formatSignupGateTime(remainingMs) {
+      const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      if (minutes > 0 && seconds > 0) {
+        return `${minutes} minit ${seconds} saat`;
+      }
+
+      if (minutes > 0) {
+        return `${minutes} minit`;
+      }
+
+      return `${seconds} saat`;
+    }
+
     function updateSignupGateCountdown(remainingMs) {
-      const seconds = Math.max(0, Math.ceil(remainingMs / 1000));
       signupGateNotice.style.display = 'block';
-      signupGateNotice.textContent = `Signup dibuka untuk 1 pengguna sahaja. Auto tutup dalam ${seconds} saat.`;
+      signupGateNotice.textContent = `Signup dibuka untuk 1 pengguna sahaja. Auto tutup dalam ${formatSignupGateTime(remainingMs)}.`;
     }
 
     async function closeExpiredSignupGate() {
