@@ -167,6 +167,11 @@
       margin-top: 0;
     }
 
+    .country-combo {
+      position: relative;
+      min-width: 0;
+    }
+
     .country-code-search {
       width: 100%;
       box-sizing: border-box;
@@ -176,6 +181,45 @@
       background: #0f172a;
       color: white;
       font-size: 15px;
+    }
+
+    .country-code-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      z-index: 80;
+      display: none;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 6px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0b1222;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .country-code-menu.is-open {
+      display: block;
+    }
+
+    .country-code-option {
+      width: 100%;
+      padding: 10px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #e2e8f0;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .country-code-option:hover,
+    .country-code-option:focus {
+      outline: none;
+      background: #1e293b;
+      color: #ffffff;
     }
 
     @media (max-width: 520px) {
@@ -1194,7 +1238,10 @@
         <label for="siteSignupPhone">
           No HP
           <div class="phone-input-row">
-            <input class="country-code-search" id="siteSignupCountrySearch" list="countryDialCodeOptions" value="Malaysia +60" aria-label="Cari negara atau kod telefon" placeholder="Cari negara / kod">
+            <div class="country-combo">
+              <input class="country-code-search" id="siteSignupCountrySearch" value="Malaysia +60" aria-label="Cari negara atau kod telefon" placeholder="Cari negara / kod" autocomplete="off">
+              <div class="country-code-menu" id="siteSignupCountryMenu"></div>
+            </div>
             <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
           </div>
         </label>
@@ -1424,7 +1471,10 @@
           <label for="signupPhone">
             No HP
             <div class="phone-input-row">
-              <input class="country-code-search" id="signupCountrySearch" list="countryDialCodeOptions" value="Malaysia +60" aria-label="Cari negara atau kod telefon" placeholder="Cari negara / kod">
+              <div class="country-combo">
+                <input class="country-code-search" id="signupCountrySearch" value="Malaysia +60" aria-label="Cari negara atau kod telefon" placeholder="Cari negara / kod" autocomplete="off">
+                <div class="country-code-menu" id="signupCountryMenu"></div>
+              </div>
               <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
             </div>
           </label>
@@ -1634,6 +1684,7 @@
     const signupName = document.getElementById('signupName');
     const signupPhone = document.getElementById('signupPhone');
     const signupCountrySearch = document.getElementById('signupCountrySearch');
+    const signupCountryMenu = document.getElementById('signupCountryMenu');
     const signupEmail = document.getElementById('signupEmail');
     const signupPassword = document.getElementById('signupPassword');
     const signupError = document.getElementById('signupError');
@@ -1666,6 +1717,7 @@
     const siteSignupPassword = document.getElementById('siteSignupPassword');
     const siteSignupPhone = document.getElementById('siteSignupPhone');
     const siteSignupCountrySearch = document.getElementById('siteSignupCountrySearch');
+    const siteSignupCountryMenu = document.getElementById('siteSignupCountryMenu');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
     const siteSignupError = document.getElementById('siteSignupError');
     const paForm = document.getElementById('paForm');
@@ -2131,6 +2183,82 @@
       const cleanPhone = String(phoneValue || '').replace(/[^0-9]/g, '').replace(/^0+/, '');
       return cleanPhone ? `${cleanCode}${cleanPhone}` : '';
     }
+    const countryDialOptions = Array.from(document.querySelectorAll('#countryDialCodeOptions option'))
+      .map(function (option) { return option.value; })
+      .filter(Boolean);
+
+    function closeCountryMenus() {
+      document.querySelectorAll('.country-code-menu.is-open').forEach(function (menu) {
+        menu.classList.remove('is-open');
+      });
+    }
+
+    function renderCountryMenu(input, menu, searchValue) {
+      const query = String(searchValue || '').toLowerCase().trim();
+      const showAll = !query || query === 'malaysia +60';
+      const matches = countryDialOptions
+        .filter(function (value) { return showAll || value.toLowerCase().includes(query); })
+        .slice(0, 90);
+
+      menu.innerHTML = '';
+      matches.forEach(function (value) {
+        const optionButton = document.createElement('button');
+        optionButton.type = 'button';
+        optionButton.className = 'country-code-option';
+        optionButton.textContent = value;
+        optionButton.addEventListener('mousedown', function (event) {
+          event.preventDefault();
+          input.value = value;
+          closeCountryMenus();
+          input.focus();
+        });
+        menu.appendChild(optionButton);
+      });
+
+      if (!matches.length) {
+        const emptyButton = document.createElement('button');
+        emptyButton.type = 'button';
+        emptyButton.className = 'country-code-option';
+        emptyButton.textContent = 'Tiada negara dijumpai';
+        emptyButton.disabled = true;
+        menu.appendChild(emptyButton);
+      }
+
+      menu.classList.add('is-open');
+    }
+
+    function setupCountrySearch(input, menu) {
+      if (!input || !menu) return;
+
+      input.addEventListener('focus', function () {
+        closeCountryMenus();
+        renderCountryMenu(input, menu, '');
+      });
+
+      input.addEventListener('click', function () {
+        closeCountryMenus();
+        renderCountryMenu(input, menu, '');
+      });
+
+      input.addEventListener('input', function () {
+        renderCountryMenu(input, menu, input.value);
+      });
+
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          closeCountryMenus();
+        }
+      });
+    }
+
+    setupCountrySearch(siteSignupCountrySearch, siteSignupCountryMenu);
+    setupCountrySearch(signupCountrySearch, signupCountryMenu);
+
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('.country-combo')) {
+        closeCountryMenus();
+      }
+    });
     function isValidEmail(value) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
