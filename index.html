@@ -155,6 +155,35 @@
       text-align: center;
     }
 
+
+    .phone-input-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 0.42fr) 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .phone-input-row select,
+    .phone-input-row input {
+      margin-top: 0;
+    }
+
+    .phone-input-row select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 12px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0f172a;
+      color: white;
+      font-size: 15px;
+    }
+
+    @media (max-width: 520px) {
+      .phone-input-row {
+        grid-template-columns: 1fr;
+      }
+    }
     .auth-switch-note button {
       border: 0;
       background: transparent;
@@ -938,7 +967,21 @@
         </label>
         <label for="siteSignupPhone">
           No HP
-          <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="Contoh: 0123456789" required>
+          <div class="phone-input-row">
+            <select id="siteSignupCountryCode" aria-label="Kod negara">
+              <option value="+60" selected>MY +60</option>
+              <option value="+65">SG +65</option>
+              <option value="+62">ID +62</option>
+              <option value="+66">TH +66</option>
+              <option value="+673">BN +673</option>
+              <option value="+63">PH +63</option>
+              <option value="+91">IN +91</option>
+              <option value="+61">AU +61</option>
+              <option value="+44">UK +44</option>
+              <option value="+1">US +1</option>
+            </select>
+            <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
+          </div>
         </label>
         <label for="siteSignupEmail">
           Email
@@ -1165,7 +1208,21 @@
 
           <label for="signupPhone">
             No HP
-            <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 0123456789" required>
+            <div class="phone-input-row">
+              <select id="signupCountryCode" aria-label="Kod negara">
+                <option value="+60" selected>MY +60</option>
+                <option value="+65">SG +65</option>
+                <option value="+62">ID +62</option>
+                <option value="+66">TH +66</option>
+                <option value="+673">BN +673</option>
+                <option value="+63">PH +63</option>
+                <option value="+91">IN +91</option>
+                <option value="+61">AU +61</option>
+                <option value="+44">UK +44</option>
+                <option value="+1">US +1</option>
+              </select>
+              <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
+            </div>
           </label>
 
           <label for="signupEmail">
@@ -1372,6 +1429,7 @@
     const signupFields = document.getElementById('signupFields');
     const signupName = document.getElementById('signupName');
     const signupPhone = document.getElementById('signupPhone');
+    const signupCountryCode = document.getElementById('signupCountryCode');
     const signupEmail = document.getElementById('signupEmail');
     const signupPassword = document.getElementById('signupPassword');
     const signupError = document.getElementById('signupError');
@@ -1402,6 +1460,7 @@
     const siteSignupName = document.getElementById('siteSignupName');
     const siteSignupPassword = document.getElementById('siteSignupPassword');
     const siteSignupPhone = document.getElementById('siteSignupPhone');
+    const siteSignupCountryCode = document.getElementById('siteSignupCountryCode');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
     const siteSignupError = document.getElementById('siteSignupError');
     const paForm = document.getElementById('paForm');
@@ -1860,6 +1919,12 @@
     }
 
 
+
+    function buildFullPhone(countryCode, phoneValue) {
+      const cleanCode = String(countryCode || '+60').trim();
+      const cleanPhone = String(phoneValue || '').replace(/[^0-9]/g, '').replace(/^0+/, '');
+      return cleanPhone ? `${cleanCode}${cleanPhone}` : '';
+    }
     function isValidEmail(value) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
@@ -1939,7 +2004,7 @@
     async function signUpSiteUser() {
       const name = siteSignupName.value.trim();
       const password = siteSignupPassword.value.trim();
-      const phone = siteSignupPhone.value.trim();
+      const phone = buildFullPhone(siteSignupCountryCode.value, siteSignupPhone.value);
       const contactEmail = siteSignupEmail.value.trim();
       const usernameKey = normalizeUsername(name);
 
@@ -2023,6 +2088,7 @@
       signupFields.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
+      signupCountryCode.value = '+60';
       signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
@@ -2137,7 +2203,7 @@
       event.preventDefault();
 
       const name = signupName.value.trim();
-      const phone = signupPhone.value.trim();
+      const phone = buildFullPhone(signupCountryCode.value, signupPhone.value);
       const contactEmail = signupEmail.value.trim();
       const password = signupPassword.value.trim();
       const usernameKey = normalizeUsername(name);
@@ -2306,6 +2372,7 @@
       showSignupButton.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
+      signupCountryCode.value = '+60';
       signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
