@@ -259,6 +259,14 @@
       min-width: 168px;
     }
 
+    .hero-actions #heroRequestButton {
+      display: none !important;
+    }
+
+    .hero-actions #heroRequestButton.is-visible {
+      display: inline-block !important;
+    }
+
     .hero-whatsapp {
       display: inline-flex;
       flex-direction: column;
@@ -1020,7 +1028,7 @@
         </span>
         <span class="hero-whatsapp-text">Contact Us Now</span>
       </a>
-      <a class="btn blue" id="heroRequestButton" href="#request" hidden>Request PA / Info Lot</a>
+      <a class="btn blue" id="heroRequestButton" href="#request">Request PA / Info Lot</a>
       <a class="btn orange" href="#software">Software / AutoCAD LISP / E-book</a>
       <a class="btn blue" href="#affiliate">Affiliate Links</a>
     </div>
@@ -2098,8 +2106,7 @@
       loginError.textContent = '';
       const hasPaAccess = isAdminUser(user) || user.paAccess !== false;
       requestCard.classList.toggle('has-pa-access', hasPaAccess);
-      heroRequestButton.hidden = !hasPaAccess;
-      heroRequestButton.style.display = hasPaAccess ? 'inline-block' : 'none';
+      heroRequestButton.classList.toggle('is-visible', hasPaAccess);
       paForm.hidden = !hasPaAccess;
 
       if (hasPaAccess) {
@@ -2359,8 +2366,7 @@
 
       userMenu.style.display = 'none';
       siteAuthActions.style.display = 'flex';
-      heroRequestButton.hidden = true;
-      heroRequestButton.style.display = 'none';
+      heroRequestButton.classList.remove('is-visible');
       signupForm.hidden = false;
       loginForm.hidden = false;
       paForm.hidden = true;
@@ -2373,8 +2379,7 @@
       requestCard.classList.remove('is-authenticated');
       requestCard.classList.remove('is-admin');
       requestCard.classList.remove('has-pa-access');
-      heroRequestButton.hidden = true;
-      heroRequestButton.style.display = 'none';
+      heroRequestButton.classList.remove('is-visible');
       signupFields.style.display = 'none';
       showSignupButton.style.display = 'none';
       signupName.value = '';
