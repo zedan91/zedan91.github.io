@@ -807,13 +807,18 @@
 
         <p class="request-error" id="paError"></p>
 
-        <button class="btn blue" type="submit">
+        <button class="btn blue" id="downloadTifButton" type="submit">
           Muat Turun TIF
         </button>
 
-        <button class="btn" id="confirmDownloadButton" type="button" hidden>
-          Sahkan Berjaya Download
-        </button>
+        <div id="downloadResultActions" hidden>
+          <button class="btn" id="confirmDownloadButton" type="button">
+            Berjaya Download
+          </button>
+          <button class="btn orange" id="failedDownloadButton" type="button">
+            Tidak Berjaya Download
+          </button>
+        </div>
 
         <p class="request-status" id="paStatus"></p>
 
@@ -955,7 +960,10 @@
     const paError = document.getElementById('paError');
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
+    const downloadTifButton = document.getElementById('downloadTifButton');
+    const downloadResultActions = document.getElementById('downloadResultActions');
     const confirmDownloadButton = document.getElementById('confirmDownloadButton');
+    const failedDownloadButton = document.getElementById('failedDownloadButton');
     const adminPurchasePanel = document.getElementById('adminPurchasePanel');
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
     const purchaseAdminError = document.getElementById('purchaseAdminError');
@@ -999,8 +1007,10 @@
       const url = buildTifUrl();
       paError.textContent = '';
       paStatus.style.display = 'none';
-      confirmDownloadButton.hidden = true;
-      confirmDownloadButton.style.display = 'none';
+      downloadTifButton.hidden = false;
+      downloadTifButton.style.display = 'inline-block';
+      downloadResultActions.hidden = true;
+      downloadResultActions.style.display = 'none';
       pendingDownload = null;
       paLinkPreview.textContent = url || 'Link TIF akan dijana selepas nombor PA dan negeri dipilih.';
     }
@@ -1620,8 +1630,10 @@
       signupError.textContent = '';
       loginError.textContent = '';
       paStatus.style.display = 'none';
-      confirmDownloadButton.hidden = true;
-      confirmDownloadButton.style.display = 'none';
+      downloadTifButton.hidden = false;
+      downloadTifButton.style.display = 'inline-block';
+      downloadResultActions.hidden = true;
+      downloadResultActions.style.display = 'none';
       pendingDownload = null;
       restoreSignupAccess();
       showAccessToast('Logout berjaya.');
@@ -1690,9 +1702,11 @@
       };
 
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Download dibuka. Jika fail berjaya dimuat turun, tekan Sahkan Berjaya Download untuk rekod pembelian.';
-      confirmDownloadButton.hidden = false;
-      confirmDownloadButton.style.display = 'inline-block';
+      paStatus.textContent = 'Download dibuka. Pilih Berjaya Download jika fail TIF berjaya dimuat turun, atau Tidak Berjaya Download jika laman JUPEM memaparkan error.';
+      downloadTifButton.hidden = true;
+      downloadTifButton.style.display = 'none';
+      downloadResultActions.hidden = false;
+      downloadResultActions.style.display = 'grid';
     });
 
     confirmDownloadButton.addEventListener('click', async function () {
@@ -1707,13 +1721,25 @@
         paStatus.style.display = 'block';
         paStatus.textContent = `Disahkan dan direkod sebagai 1 pembelian RM${PURCHASE_PRICE}.`;
         pendingDownload = null;
-        confirmDownloadButton.hidden = true;
-        confirmDownloadButton.style.display = 'none';
+        downloadResultActions.hidden = true;
+        downloadResultActions.style.display = 'none';
+        downloadTifButton.hidden = false;
+        downloadTifButton.style.display = 'inline-block';
       } catch (error) {
         paError.textContent = `Rekod pembelian gagal disimpan: ${error.code || error.message}`;
       } finally {
         confirmDownloadButton.disabled = false;
       }
+    });
+
+    failedDownloadButton.addEventListener('click', function () {
+      pendingDownload = null;
+      paStatus.style.display = 'block';
+      paStatus.textContent = 'Download tidak berjaya. Rekod pembelian tidak ditambah.';
+      downloadResultActions.hidden = true;
+      downloadResultActions.style.display = 'none';
+      downloadTifButton.hidden = false;
+      downloadTifButton.style.display = 'inline-block';
     });
 
     const liveVisitors = document.getElementById('liveVisitors');
