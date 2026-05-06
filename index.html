@@ -811,6 +811,10 @@
           Muat Turun TIF
         </button>
 
+        <button class="btn" id="confirmDownloadButton" type="button" hidden>
+          Sahkan Berjaya Download
+        </button>
+
         <p class="request-status" id="paStatus"></p>
 
         <p class="request-note" id="paLinkPreview" hidden></p>
@@ -951,6 +955,7 @@
     const paError = document.getElementById('paError');
     const paStatus = document.getElementById('paStatus');
     const paLinkPreview = document.getElementById('paLinkPreview');
+    const confirmDownloadButton = document.getElementById('confirmDownloadButton');
     const adminPurchasePanel = document.getElementById('adminPurchasePanel');
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
     const purchaseAdminError = document.getElementById('purchaseAdminError');
@@ -968,6 +973,7 @@
     let signupGateOpen = false;
     let currentUser = null;
     let signupGateTimer = null;
+    let pendingDownload = null;
 
     function cleanPaNumber(value) {
       return value
@@ -993,6 +999,9 @@
       const url = buildTifUrl();
       paError.textContent = '';
       paStatus.style.display = 'none';
+      confirmDownloadButton.hidden = true;
+      confirmDownloadButton.style.display = 'none';
+      pendingDownload = null;
       paLinkPreview.textContent = url || 'Link TIF akan dijana selepas nombor PA dan negeri dipilih.';
     }
 
@@ -1611,6 +1620,9 @@
       signupError.textContent = '';
       loginError.textContent = '';
       paStatus.style.display = 'none';
+      confirmDownloadButton.hidden = true;
+      confirmDownloadButton.style.display = 'none';
+      pendingDownload = null;
       restoreSignupAccess();
       showAccessToast('Logout berjaya.');
     });
@@ -1671,14 +1683,36 @@
       }
 
       window.open(url, '_blank');
+      pendingDownload = {
+        paValue,
+        selectedNegeri,
+        url
+      };
+
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Download dibuka. Jika laman JUPEM memaparkan Error, nombor PA ini mungkin tiada dalam sistem atau belum tersedia untuk dimuat turun.';
+      paStatus.textContent = 'Download dibuka. Jika fail berjaya dimuat turun, tekan Sahkan Berjaya Download untuk rekod pembelian.';
+      confirmDownloadButton.hidden = false;
+      confirmDownloadButton.style.display = 'inline-block';
+    });
+
+    confirmDownloadButton.addEventListener('click', async function () {
+      if (!pendingDownload) {
+        paError.textContent = 'Tiada download untuk disahkan.';
+        return;
+      }
 
       try {
-        await recordPurchase(paValue, selectedNegeri, url);
-        paStatus.textContent = `Direkod sebagai 1 pembelian RM${PURCHASE_PRICE}. Jika laman JUPEM memaparkan Error, nombor PA ini mungkin tiada dalam sistem atau belum tersedia untuk dimuat turun.`;
+        confirmDownloadButton.disabled = true;
+        await recordPurchase(pendingDownload.paValue, pendingDownload.selectedNegeri, pendingDownload.url);
+        paStatus.style.display = 'block';
+        paStatus.textContent = `Disahkan dan direkod sebagai 1 pembelian RM${PURCHASE_PRICE}.`;
+        pendingDownload = null;
+        confirmDownloadButton.hidden = true;
+        confirmDownloadButton.style.display = 'none';
       } catch (error) {
-        paError.textContent = `Download dibuka, tetapi rekod pembelian gagal disimpan: ${error.code || error.message}`;
+        paError.textContent = `Rekod pembelian gagal disimpan: ${error.code || error.message}`;
+      } finally {
+        confirmDownloadButton.disabled = false;
       }
     });
 
