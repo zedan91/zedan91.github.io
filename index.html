@@ -1020,7 +1020,7 @@
         </span>
         <span class="hero-whatsapp-text">Contact Us Now</span>
       </a>
-      <a class="btn blue" href="#request">Request PA / Info Lot</a>
+      <a class="btn blue" id="heroRequestButton" href="#request" hidden>Request PA / Info Lot</a>
       <a class="btn orange" href="#software">Software / AutoCAD LISP / E-book</a>
       <a class="btn blue" href="#affiliate">Affiliate Links</a>
     </div>
@@ -1440,6 +1440,7 @@
     const loginInfo = document.getElementById('loginInfo');
     const loginToast = document.getElementById('loginToast');
     const requestCard = document.getElementById('requestCard');
+    const heroRequestButton = document.getElementById('heroRequestButton');
     const userMenu = document.getElementById('userMenu');
     const userAvatar = document.getElementById('userAvatar');
     const signedInName = document.getElementById('signedInName');
@@ -2097,6 +2098,8 @@
       loginError.textContent = '';
       const hasPaAccess = isAdminUser(user) || user.paAccess !== false;
       requestCard.classList.toggle('has-pa-access', hasPaAccess);
+      heroRequestButton.hidden = !hasPaAccess;
+      heroRequestButton.style.display = hasPaAccess ? 'inline-block' : 'none';
       paForm.hidden = !hasPaAccess;
 
       if (hasPaAccess) {
@@ -2356,6 +2359,8 @@
 
       userMenu.style.display = 'none';
       siteAuthActions.style.display = 'flex';
+      heroRequestButton.hidden = true;
+      heroRequestButton.style.display = 'none';
       signupForm.hidden = false;
       loginForm.hidden = false;
       paForm.hidden = true;
@@ -2368,6 +2373,8 @@
       requestCard.classList.remove('is-authenticated');
       requestCard.classList.remove('is-admin');
       requestCard.classList.remove('has-pa-access');
+      heroRequestButton.hidden = true;
+      heroRequestButton.style.display = 'none';
       signupFields.style.display = 'none';
       showSignupButton.style.display = 'none';
       signupName.value = '';
