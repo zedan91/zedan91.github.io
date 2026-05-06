@@ -1009,7 +1009,7 @@
 
     const ADMIN_USERNAME = 'zedan91';
     const PURCHASE_PRICE = 5;
-    const SIGNUP_GATE_DURATION_MS = 60 * 1000;
+    const SIGNUP_GATE_DURATION_MS = 5 * 60 * 1000;
     sessionStorage.removeItem('azobssSignupOpenUntil');
 
     const signupForm = document.getElementById('signupForm');
@@ -1398,7 +1398,7 @@
         mode: 'one-time'
       }, { merge: true });
 
-      showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja. Auto tutup dalam 1 minit.');
+      showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja. Auto tutup dalam 5 minit.');
       showAccessToast('Signup dibuka online untuk 1 pendaftaran sahaja.');
     }
 
