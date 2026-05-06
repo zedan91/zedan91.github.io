@@ -135,6 +135,19 @@
       background: #16a34a;
       transform: translateY(-2px);
     }
+    .tweak-links {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .tweak-links .download-btn {
+      display: block;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.25;
+      border-radius: 9px;
+    }
 
     footer {
       padding: 30px 20px;
@@ -212,10 +225,14 @@
         </div>
 
         <div class="download-card">
-          <div class="download-icon">WR</div>
-          <h3>Windows Repair Tool</h3>
-          <p>Repair utility untuk bantu fix masalah Windows dan sistem error.</p>
-          <a class="download-btn" href="https://www.tweaking.com/features/windows-repair-all-in-one/" target="_blank" rel="noopener">Download Now</a>
+          <div class="download-icon">WT</div>
+          <h3>Windows Tweaks</h3>
+          <p>Registry tweaks untuk lajukan kerja Windows 11 dan ubah setting penting.</p>
+          <div class="tweak-links">
+            <a class="download-btn" href="downloads/disable-windows-update-pause-10-years.reg" download>Pause Windows Update 10 Years</a>
+            <a class="download-btn" href="downloads/make-windows-11-right-click-menu-faster.reg" download>Faster Right-Click Menu</a>
+            <a class="download-btn" href="downloads/bring-back-windows-10-right-click-menu-windows-11.reg" download>Windows 10 Right-Click Menu</a>
+          </div>
         </div>
       </div>
     </div>
