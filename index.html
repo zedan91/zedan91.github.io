@@ -408,6 +408,13 @@
       text-align: left;
     }
 
+    .purchase-panel-layout {
+      display: grid;
+      grid-template-columns: 1fr 170px;
+      gap: 18px;
+      align-items: start;
+    }
+
     .purchase-summary-list {
       display: grid;
       gap: 10px;
@@ -543,6 +550,14 @@
     }
 
     @media (max-width: 700px) {
+      .purchase-panel-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-purchase-panel .payment-qr-wrap {
+        margin-top: 16px;
+      }
+
       .purchase-summary-item {
         grid-template-columns: 1fr;
       }
@@ -830,17 +845,37 @@
       </a>
 
       <div class="admin-purchase-panel" id="adminPurchasePanel">
-        <h3 id="purchasePanelTitle">Rekod Pembelian</h3>
-        <p class="request-note" id="purchasePanelNote">
-          Harga: RM5 untuk 1 PA.
-        </p>
-        <button class="btn blue" id="refreshPurchaseButton" type="button">
-          Refresh Rekod
-        </button>
-        <p class="request-error" id="purchaseAdminError"></p>
-        <div class="purchase-summary-list" id="purchaseSummaryList">
-          <div class="purchase-summary-item">
-            Belum ada rekod pembelian.
+        <div class="purchase-panel-layout">
+          <div>
+            <h3 id="purchasePanelTitle">Rekod Pembelian</h3>
+            <p class="request-note" id="purchasePanelNote">
+              Harga: RM5 untuk 1 PA.
+            </p>
+            <button class="btn blue" id="refreshPurchaseButton" type="button">
+              Refresh Rekod
+            </button>
+            <p class="request-error" id="purchaseAdminError"></p>
+            <div class="purchase-summary-list" id="purchaseSummaryList">
+              <div class="purchase-summary-item">
+                Belum ada rekod pembelian.
+              </div>
+            </div>
+          </div>
+
+          <div class="payment-qr-wrap">
+            <div class="payment-qr-card">
+              <img src="images/payment-qr.jpg" alt="QR pembayaran bank" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <p class="qr-placeholder">Letak QR bank sebagai images/payment-qr.jpg</p>
+              <div class="qr-actions">
+                <button class="qr-action-btn green" id="copyAccountButton" type="button">
+                  Copy No Akaun
+                </button>
+                <a class="qr-action-btn" href="images/payment-qr.jpg" download="azobss-payment-qr.jpg">
+                  Download QR
+                </a>
+                <p class="qr-copy-status" id="qrCopyStatus">No akaun copied: 162405194110</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -859,22 +894,6 @@
             Belum ada rekod user.
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="payment-qr-wrap">
-    <div class="payment-qr-card">
-      <img src="images/payment-qr.jpg" alt="QR pembayaran bank" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-      <p class="qr-placeholder">Letak QR bank sebagai images/payment-qr.jpg</p>
-      <div class="qr-actions">
-        <button class="qr-action-btn green" id="copyAccountButton" type="button">
-          Copy No Akaun
-        </button>
-        <a class="qr-action-btn" href="images/payment-qr.jpg" download="azobss-payment-qr.jpg">
-          Download QR
-        </a>
-        <p class="qr-copy-status" id="qrCopyStatus">No akaun copied: 162405194110</p>
       </div>
     </div>
   </div>
