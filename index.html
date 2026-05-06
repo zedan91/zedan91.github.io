@@ -155,6 +155,71 @@
       text-align: center;
     }
 
+    .member-upgrade-wrap {
+      display: grid;
+      justify-items: end;
+      gap: 4px;
+      margin-top: -2px;
+    }
+
+    .member-upgrade-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .member-upgrade-controls input {
+      width: 112px;
+      margin-top: 0;
+      padding: 9px 10px;
+      border-color: #ef4444;
+      box-shadow: 0 0 0 1px rgba(239,68,68,0.25);
+      font-size: 13px;
+    }
+
+    .member-upgrade-btn {
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 8px;
+      background: #f97316;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .member-upgrade-btn:hover {
+      transform: translateY(-2px);
+      background: #22c55e;
+      box-shadow: 0 10px 22px rgba(34,197,94,0.22);
+    }
+
+    .member-upgrade-label {
+      color: #fecaca;
+      font-size: 12px;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    }
+
+    .member-upgrade-status {
+      min-height: 16px;
+      margin: 0;
+      color: #fecaca;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .user-upgrade-btn {
+      border: 0;
+      border-radius: 999px;
+      background: #f97316;
+      color: white;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
 
     .phone-input-row {
       display: grid;
@@ -1338,6 +1403,14 @@
         <p class="request-error" id="siteSignupError"></p>
         <button class="btn" type="submit">Sign up</button>
         <p class="auth-switch-note">Sudah ada akaun? <button id="switchToSiteSignin" type="button">Sign in</button></p>
+        <div class="member-upgrade-wrap" id="memberUpgradeWrap">
+          <div class="member-upgrade-controls">
+            <input id="memberUpgradeCode" type="password" placeholder="Member Code" autocomplete="off">
+            <button class="member-upgrade-btn" id="memberUpgradeButton" type="button" aria-label="Upgrade member">&gt;</button>
+          </div>
+          <span class="member-upgrade-label">Member Code</span>
+          <p class="member-upgrade-status" id="memberUpgradeStatus"></p>
+        </div>
       </form>
     </div>
   </div>
@@ -1345,6 +1418,7 @@
   <div class="user-menu" id="userMenu">
     <div class="user-avatar" id="userAvatar">AZ</div>
     <div class="user-name" id="signedInName"></div>
+    <button class="user-upgrade-btn" id="userUpgradeButton" type="button" hidden>Upgrade</button>
     <button class="logout-btn" id="logoutButton" type="button">Logout</button>
   </div>
 
@@ -1795,6 +1869,7 @@
     const userAvatar = document.getElementById('userAvatar');
     const signedInName = document.getElementById('signedInName');
     const logoutButton = document.getElementById('logoutButton');
+    const userUpgradeButton = document.getElementById('userUpgradeButton');
     const siteAuthActions = document.getElementById('siteAuthActions');
     const siteSignInButton = document.getElementById('siteSignInButton');
     const siteSignUpButton = document.getElementById('siteSignUpButton');
@@ -1817,6 +1892,9 @@
     const siteSignupPhonePrefix = document.getElementById('siteSignupPhonePrefix');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
     const siteSignupError = document.getElementById('siteSignupError');
+    const memberUpgradeCode = document.getElementById('memberUpgradeCode');
+    const memberUpgradeButton = document.getElementById('memberUpgradeButton');
+    const memberUpgradeStatus = document.getElementById('memberUpgradeStatus');
     const paForm = document.getElementById('paForm');
     const paNumber = document.getElementById('paNumber');
     const negeri = document.getElementById('negeri');
@@ -1924,6 +2002,9 @@
       userAvatar.textContent = getInitials(user.name);
       userMenu.style.display = 'flex';
       siteAuthActions.style.display = 'none';
+      if (userUpgradeButton) {
+        userUpgradeButton.hidden = isAdminUser(user) || user.paAccess !== false;
+      }
     }
 
     function isAdminUser(user) {
@@ -2441,17 +2522,19 @@
     }
 
     function openSiteAuth(mode = 'signin') {
-      const isSignup = mode === 'signup';
+      const isSignup = mode === 'signup' || mode === 'upgrade';
       siteAuthTitle.textContent = isSignup ? 'Sign up' : 'Sign in';
       siteSignInForm.hidden = isSignup;
       siteSignUpForm.hidden = !isSignup;
       siteLoginError.textContent = '';
       siteSignupError.textContent = '';
+      memberUpgradeStatus.textContent = '';
+      memberUpgradeCode.value = '';
       siteAuthModal.classList.add('is-open');
       siteAuthModal.setAttribute('aria-hidden', 'false');
 
       setTimeout(function () {
-        (isSignup ? siteSignupName : siteLoginName).focus();
+        (mode === 'upgrade' ? memberUpgradeCode : (isSignup ? siteSignupName : siteLoginName)).focus();
       }, 50);
     }
 
@@ -2509,6 +2592,53 @@
         setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
       } catch (error) {
         errorElement.textContent = 'Nama atau password salah. Sila cuba semula.';
+      }
+    }
+
+    async function upgradeCurrentUserWithMemberCode() {
+      const code = memberUpgradeCode.value.trim();
+
+      if (!isLoggedIn || !currentUser) {
+        memberUpgradeStatus.textContent = 'Sila sign in dahulu sebelum upgrade.';
+        return;
+      }
+
+      if (isAdminUser(currentUser) || currentUser.paAccess !== false) {
+        memberUpgradeStatus.textContent = 'Akaun ini sudah boleh akses Request PA.';
+        return;
+      }
+
+      if (code !== 'zx6186') {
+        memberUpgradeStatus.textContent = 'Member Code salah.';
+        return;
+      }
+
+      if (!firebaseReady) {
+        memberUpgradeStatus.textContent = 'Firebase belum disambungkan.';
+        return;
+      }
+
+      try {
+        memberUpgradeButton.disabled = true;
+        memberUpgradeStatus.textContent = 'Sedang upgrade...';
+        await setDoc(doc(db, 'users', currentUser.usernameKey), {
+          paAccess: true,
+          upgradedAt: serverTimestamp(),
+          upgradedBy: 'member-code'
+        }, { merge: true });
+
+        const upgradedUser = {
+          ...currentUser,
+          paAccess: true
+        };
+
+        saveCurrentUser(upgradedUser);
+        setLoggedIn(upgradedUser, `Upgrade berjaya. Selamat datang, ${upgradedUser.name}.`);
+        memberUpgradeStatus.textContent = '';
+      } catch (error) {
+        memberUpgradeStatus.textContent = `Upgrade gagal: ${error.code || error.message}`;
+      } finally {
+        memberUpgradeButton.disabled = false;
       }
     }
 
@@ -2660,6 +2790,19 @@
 
     siteSignUpButton.addEventListener('click', function () {
       openSiteAuth('signup');
+    });
+
+    userUpgradeButton.addEventListener('click', function () {
+      openSiteAuth('upgrade');
+    });
+
+    memberUpgradeButton.addEventListener('click', upgradeCurrentUserWithMemberCode);
+
+    memberUpgradeCode.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        upgradeCurrentUserWithMemberCode();
+      }
     });
 
     siteAuthClose.addEventListener('click', closeSiteAuth);
@@ -2867,6 +3010,7 @@
       }
 
       userMenu.style.display = 'none';
+      userUpgradeButton.hidden = true;
       siteAuthActions.style.display = 'flex';
       heroRequestButton.classList.remove('is-visible');
       signupForm.hidden = false;
