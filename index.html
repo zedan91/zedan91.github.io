@@ -1737,8 +1737,8 @@
       try {
         confirmDownloadButton.disabled = true;
         await recordPurchase(pendingDownload.paValue, pendingDownload.selectedNegeri, pendingDownload.url);
-        paStatus.style.display = 'block';
-        paStatus.textContent = `Disahkan dan direkod sebagai 1 pembelian RM${PURCHASE_PRICE}.`;
+        paStatus.style.display = 'none';
+        paStatus.textContent = '';
         pendingDownload = null;
         downloadResultActions.hidden = true;
         downloadResultActions.style.display = 'none';
@@ -1753,8 +1753,8 @@
 
     failedDownloadButton.addEventListener('click', function () {
       pendingDownload = null;
-      paStatus.style.display = 'block';
-      paStatus.textContent = 'Download tidak berjaya. Rekod pembelian tidak ditambah.';
+      paStatus.style.display = 'none';
+      paStatus.textContent = '';
       downloadResultActions.hidden = true;
       downloadResultActions.style.display = 'none';
       downloadTifButton.hidden = false;
