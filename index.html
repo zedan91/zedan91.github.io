@@ -219,10 +219,10 @@
       width: min(300px, calc(100vw - 42px));
       max-height: 320px;
       overflow: hidden;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #334155;
       border-radius: 8px;
-      background: #ffffff;
-      color: #0f172a;
+      background: #0f172a;
+      color: #e2e8f0;
       box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
     }
 
@@ -234,10 +234,10 @@
       width: calc(100% - 16px);
       margin: 8px;
       padding: 10px 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #334155;
       border-radius: 6px;
-      background: #ffffff;
-      color: #0f172a;
+      background: #111827;
+      color: #ffffff;
       font-size: 14px;
     }
 
@@ -257,7 +257,7 @@
       border: 0;
       border-radius: 6px;
       background: transparent;
-      color: #0f172a;
+      color: #e2e8f0;
       font: inherit;
       text-align: left;
       cursor: pointer;
@@ -266,12 +266,34 @@
     .country-code-option:hover,
     .country-code-option:focus {
       outline: none;
-      background: #eef2f7;
+      background: #1e293b;
     }
 
     .country-option-dial {
-      color: #64748b;
+      color: #94a3b8;
       font-size: 14px;
+    }
+
+    .phone-number-wrap {
+      position: relative;
+      min-width: 0;
+    }
+
+    .phone-prefix {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #22c55e;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .phone-number-wrap input {
+      width: 100%;
+      box-sizing: border-box;
+      padding-left: 58px;
     }
 
     @media (max-width: 520px) {
@@ -1303,7 +1325,10 @@
               </button>
               <div class="country-code-menu" id="siteSignupCountryMenu"></div>
             </div>
-            <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
+            <div class="phone-number-wrap">
+              <span class="phone-prefix" id="siteSignupPhonePrefix">+60</span>
+              <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="1135600723" required>
+            </div>
           </div>
         </label>
         <label for="siteSignupEmail">
@@ -1540,7 +1565,10 @@
                 </button>
                 <div class="country-code-menu" id="signupCountryMenu"></div>
               </div>
-              <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
+              <div class="phone-number-wrap">
+                <span class="phone-prefix" id="signupPhonePrefix">+60</span>
+                <input id="signupPhone" type="tel" inputmode="tel" placeholder="1135600723" required>
+              </div>
             </div>
           </label>
 
@@ -1751,6 +1779,7 @@
     const signupCountrySearch = document.getElementById('signupCountrySearch');
     const signupCountryMenu = document.getElementById('signupCountryMenu');
     const signupCountryButton = document.getElementById('signupCountryButton');
+    const signupPhonePrefix = document.getElementById('signupPhonePrefix');
     const signupEmail = document.getElementById('signupEmail');
     const signupPassword = document.getElementById('signupPassword');
     const signupError = document.getElementById('signupError');
@@ -1785,6 +1814,7 @@
     const siteSignupCountrySearch = document.getElementById('siteSignupCountrySearch');
     const siteSignupCountryMenu = document.getElementById('siteSignupCountryMenu');
     const siteSignupCountryButton = document.getElementById('siteSignupCountryButton');
+    const siteSignupPhonePrefix = document.getElementById('siteSignupPhonePrefix');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
     const siteSignupError = document.getElementById('siteSignupError');
     const paForm = document.getElementById('paForm');
@@ -2297,13 +2327,23 @@
       });
     }
 
+    function getSelectedCountry(selectedValue) {
+      return countryDialOptions.find(function (item) { return item.value === selectedValue; }) || countryDialOptions.find(function (item) { return item.name === 'Malaysia'; });
+    }
+
     function updateCountryButton(button, selectedValue) {
       if (!button) return;
-      const selected = countryDialOptions.find(function (item) { return item.value === selectedValue; }) || countryDialOptions.find(function (item) { return item.name === 'Malaysia'; });
+      const selected = getSelectedCountry(selectedValue);
       button.innerHTML = `<span class="country-flag">${selected.flag}</span><span>${selected.dial}</span>`;
     }
 
-    function renderCountryOptions(hiddenInput, optionsWrap, button, searchValue) {
+    function updatePhonePrefix(prefixElement, selectedValue) {
+      if (!prefixElement) return;
+      const selected = getSelectedCountry(selectedValue);
+      prefixElement.textContent = selected.dial;
+    }
+
+    function renderCountryOptions(hiddenInput, optionsWrap, button, prefixElement, searchValue) {
       const rawQuery = String(searchValue || '').toLowerCase().trim();
       const numericQuery = rawQuery.replace(/[^0-9+\-]/g, '');
       const matches = countryDialOptions
@@ -2323,6 +2363,7 @@
           event.preventDefault();
           hiddenInput.value = item.value;
           updateCountryButton(button, item.value);
+          updatePhonePrefix(prefixElement, item.value);
           closeCountryMenus();
         });
         optionsWrap.appendChild(optionButton);
@@ -2338,7 +2379,7 @@
       }
     }
 
-    function renderCountryMenu(hiddenInput, menu, button, searchValue) {
+    function renderCountryMenu(hiddenInput, menu, button, prefixElement, searchValue) {
       menu.innerHTML = '';
 
       const searchInput = document.createElement('input');
@@ -2352,41 +2393,43 @@
       optionsWrap.className = 'country-menu-options';
       menu.appendChild(optionsWrap);
 
-      renderCountryOptions(hiddenInput, optionsWrap, button, searchInput.value);
+      renderCountryOptions(hiddenInput, optionsWrap, button, prefixElement, searchInput.value);
 
       searchInput.addEventListener('input', function () {
-        renderCountryOptions(hiddenInput, optionsWrap, button, searchInput.value);
+        renderCountryOptions(hiddenInput, optionsWrap, button, prefixElement, searchInput.value);
       });
 
       menu.classList.add('is-open');
       button.setAttribute('aria-expanded', 'true');
       setTimeout(function () { searchInput.focus(); }, 0);
     }
-    function setupCountrySearch(hiddenInput, menu, button) {
+    function setupCountrySearch(hiddenInput, menu, button, prefixElement) {
       if (!hiddenInput || !menu || !button) return;
       updateCountryButton(button, hiddenInput.value);
+      updatePhonePrefix(prefixElement, hiddenInput.value);
 
       button.addEventListener('click', function () {
         const isOpen = menu.classList.contains('is-open');
         closeCountryMenus();
         if (!isOpen) {
-          renderCountryMenu(hiddenInput, menu, button, '');
+          renderCountryMenu(hiddenInput, menu, button, prefixElement, '');
         }
       });
 
       hiddenInput.addEventListener('change', function () {
         updateCountryButton(button, hiddenInput.value);
+        updatePhonePrefix(prefixElement, hiddenInput.value);
       });
     }
 
-    function setCountryValue(input, button, value) {
+    function setCountryValue(input, button, prefixElement, value) {
       if (!input) return;
       input.value = value;
       updateCountryButton(button, value);
+      updatePhonePrefix(prefixElement, value);
     }
-
-    setupCountrySearch(siteSignupCountrySearch, siteSignupCountryMenu, siteSignupCountryButton);
-    setupCountrySearch(signupCountrySearch, signupCountryMenu, signupCountryButton);
+    setupCountrySearch(siteSignupCountrySearch, siteSignupCountryMenu, siteSignupCountryButton, siteSignupPhonePrefix);
+    setupCountrySearch(signupCountrySearch, signupCountryMenu, signupCountryButton, signupPhonePrefix);
 
     document.addEventListener('click', function (event) {
       if (!event.target.closest('.country-combo')) {
@@ -2556,7 +2599,7 @@
       signupFields.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
-      setCountryValue(signupCountrySearch, signupCountryButton, 'Malaysia +60');
+      setCountryValue(signupCountrySearch, signupCountryButton, signupPhonePrefix, 'Malaysia +60');
       signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
@@ -2843,7 +2886,7 @@
       showSignupButton.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
-      setCountryValue(signupCountrySearch, signupCountryButton, 'Malaysia +60');
+      setCountryValue(signupCountrySearch, signupCountryButton, signupPhonePrefix, 'Malaysia +60');
       signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
