@@ -159,6 +159,19 @@
       align-items: start;
     }
 
+    .services-grid {
+      grid-template-columns: repeat(6, minmax(150px, 1fr));
+      gap: 16px;
+    }
+
+    .services-grid .card {
+      padding: 14px;
+    }
+
+    .services-grid .card img {
+      height: 120px;
+    }
+
     .card {
       background: #1e293b;
       padding: 18px;
@@ -590,6 +603,20 @@
       line-height: 1.35;
     }
 
+    @media (max-width: 900px) {
+      .services-grid {
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 20px;
+      }
+
+      .services-grid .card {
+        padding: 18px;
+      }
+
+      .services-grid .card img {
+        height: 150px;
+      }
+    }
     @media (max-width: 700px) {
       .purchase-panel-layout {
         grid-template-columns: 1fr;
@@ -659,7 +686,7 @@
   <div class="section">
     <h2>Our Services</h2>
 
-    <div class="grid">
+    <div class="grid services-grid">
       <div class="card service-card" tabindex="0" role="button" aria-label="Lihat info Format Windows">
         <img src="images/format-windows.jpg" alt="Format Windows">
         <p>&#128187; Format Windows</p>
