@@ -173,29 +173,55 @@
     }
 
     .country-code-search {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .country-code-button {
       width: 100%;
-      box-sizing: border-box;
-      padding: 13px 12px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       border: 1px solid #334155;
       border-radius: 10px;
       background: #0f172a;
-      color: white;
-      font-size: 15px;
+      color: #ffffff;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .country-code-button::after {
+      content: '\25BE';
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .country-flag {
+      font-size: 18px;
+      line-height: 1;
     }
 
     .country-code-menu {
       position: absolute;
       top: calc(100% + 6px);
       left: 0;
-      right: 0;
-      z-index: 80;
+      z-index: 120;
       display: none;
-      max-height: 260px;
-      overflow-y: auto;
-      padding: 6px;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      background: #0b1222;
+      width: min(300px, calc(100vw - 42px));
+      max-height: 320px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #0f172a;
       box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35);
     }
 
@@ -203,13 +229,34 @@
       display: block;
     }
 
+    .country-menu-search {
+      width: calc(100% - 16px);
+      margin: 8px;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 14px;
+    }
+
+    .country-menu-options {
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+
     .country-code-option {
       width: 100%;
-      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 26px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 10px;
       border: 0;
-      border-radius: 8px;
+      border-radius: 6px;
       background: transparent;
-      color: #e2e8f0;
+      color: #0f172a;
       font: inherit;
       text-align: left;
       cursor: pointer;
@@ -218,8 +265,12 @@
     .country-code-option:hover,
     .country-code-option:focus {
       outline: none;
-      background: #1e293b;
-      color: #ffffff;
+      background: #eef2f7;
+    }
+
+    .country-option-dial {
+      color: #64748b;
+      font-size: 14px;
     }
 
     @media (max-width: 520px) {
@@ -975,6 +1026,7 @@
   <div class="top-login-toast" id="loginToast"></div>
   <datalist id="countryDialCodeOptions">
     <option value="Afghanistan +93"></option>
+    <option value="Aland Islands +358"></option>
     <option value="Albania +355"></option>
     <option value="Algeria +213"></option>
     <option value="American Samoa +1-684"></option>
@@ -1239,7 +1291,11 @@
           No HP
           <div class="phone-input-row">
             <div class="country-combo">
-              <input class="country-code-search" id="siteSignupCountrySearch" value="Malaysia +60" aria-label="Cari negara atau kod telefon" placeholder="Cari negara / kod" autocomplete="off">
+              <input class="country-code-search" id="siteSignupCountrySearch" value="Malaysia +60" type="hidden">
+              <button class="country-code-button" id="siteSignupCountryButton" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="country-flag">MY</span>
+                <span>+60</span>
+              </button>
               <div class="country-code-menu" id="siteSignupCountryMenu"></div>
             </div>
             <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
@@ -1472,7 +1528,11 @@
             No HP
             <div class="phone-input-row">
               <div class="country-combo">
-                <input class="country-code-search" id="signupCountrySearch" value="Malaysia +60" aria-label="Cari negara atau kod telefon" placeholder="Cari negara / kod" autocomplete="off">
+                <input class="country-code-search" id="signupCountrySearch" value="Malaysia +60" type="hidden">
+                <button class="country-code-button" id="signupCountryButton" type="button" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="country-flag">MY</span>
+                  <span>+60</span>
+                </button>
                 <div class="country-code-menu" id="signupCountryMenu"></div>
               </div>
               <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 123456789" required>
@@ -1685,6 +1745,7 @@
     const signupPhone = document.getElementById('signupPhone');
     const signupCountrySearch = document.getElementById('signupCountrySearch');
     const signupCountryMenu = document.getElementById('signupCountryMenu');
+    const signupCountryButton = document.getElementById('signupCountryButton');
     const signupEmail = document.getElementById('signupEmail');
     const signupPassword = document.getElementById('signupPassword');
     const signupError = document.getElementById('signupError');
@@ -1718,6 +1779,7 @@
     const siteSignupPhone = document.getElementById('siteSignupPhone');
     const siteSignupCountrySearch = document.getElementById('siteSignupCountrySearch');
     const siteSignupCountryMenu = document.getElementById('siteSignupCountryMenu');
+    const siteSignupCountryButton = document.getElementById('siteSignupCountryButton');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
     const siteSignupError = document.getElementById('siteSignupError');
     const paForm = document.getElementById('paForm');
@@ -2183,36 +2245,92 @@
       const cleanPhone = String(phoneValue || '').replace(/[^0-9]/g, '').replace(/^0+/, '');
       return cleanPhone ? `${cleanCode}${cleanPhone}` : '';
     }
+    const countryIsoMap = {
+      'Afghanistan': 'AF', 'Aland Islands': 'AX', 'Albania': 'AL', 'Algeria': 'DZ', 'American Samoa': 'AS', 'Andorra': 'AD', 'Angola': 'AO', 'Anguilla': 'AI', 'Antigua and Barbuda': 'AG', 'Argentina': 'AR', 'Armenia': 'AM', 'Aruba': 'AW', 'Australia': 'AU', 'Austria': 'AT', 'Azerbaijan': 'AZ',
+      'Bahamas': 'BS', 'Bahrain': 'BH', 'Bangladesh': 'BD', 'Barbados': 'BB', 'Belarus': 'BY', 'Belgium': 'BE', 'Belize': 'BZ', 'Benin': 'BJ', 'Bermuda': 'BM', 'Bhutan': 'BT', 'Bolivia': 'BO', 'Bosnia and Herzegovina': 'BA', 'Botswana': 'BW', 'Brazil': 'BR', 'British Virgin Islands': 'VG', 'Brunei': 'BN', 'Bulgaria': 'BG', 'Burkina Faso': 'BF', 'Burundi': 'BI',
+      'Cambodia': 'KH', 'Cameroon': 'CM', 'Canada': 'CA', 'Cape Verde': 'CV', 'Cayman Islands': 'KY', 'Central African Republic': 'CF', 'Chad': 'TD', 'Chile': 'CL', 'China': 'CN', 'Colombia': 'CO', 'Comoros': 'KM', 'Congo': 'CG', 'Costa Rica': 'CR', 'Croatia': 'HR', 'Cuba': 'CU', 'Cyprus': 'CY', 'Czech Republic': 'CZ',
+      'Denmark': 'DK', 'Djibouti': 'DJ', 'Dominica': 'DM', 'Dominican Republic': 'DO', 'Ecuador': 'EC', 'Egypt': 'EG', 'El Salvador': 'SV', 'Equatorial Guinea': 'GQ', 'Eritrea': 'ER', 'Estonia': 'EE', 'Eswatini': 'SZ', 'Ethiopia': 'ET',
+      'Fiji': 'FJ', 'Finland': 'FI', 'France': 'FR', 'French Guiana': 'GF', 'French Polynesia': 'PF', 'Gabon': 'GA', 'Gambia': 'GM', 'Georgia': 'GE', 'Germany': 'DE', 'Ghana': 'GH', 'Gibraltar': 'GI', 'Greece': 'GR', 'Greenland': 'GL', 'Grenada': 'GD', 'Guam': 'GU', 'Guatemala': 'GT', 'Guernsey': 'GG', 'Guinea': 'GN', 'Guinea-Bissau': 'GW', 'Guyana': 'GY',
+      'Haiti': 'HT', 'Honduras': 'HN', 'Hong Kong': 'HK', 'Hungary': 'HU', 'Iceland': 'IS', 'India': 'IN', 'Indonesia': 'ID', 'Iran': 'IR', 'Iraq': 'IQ', 'Ireland': 'IE', 'Isle of Man': 'IM', 'Israel': 'IL', 'Italy': 'IT', 'Ivory Coast': 'CI',
+      'Jamaica': 'JM', 'Japan': 'JP', 'Jersey': 'JE', 'Jordan': 'JO', 'Kazakhstan': 'KZ', 'Kenya': 'KE', 'Kiribati': 'KI', 'Kosovo': 'XK', 'Kuwait': 'KW', 'Kyrgyzstan': 'KG', 'Laos': 'LA', 'Latvia': 'LV', 'Lebanon': 'LB', 'Lesotho': 'LS', 'Liberia': 'LR', 'Libya': 'LY', 'Liechtenstein': 'LI', 'Lithuania': 'LT', 'Luxembourg': 'LU',
+      'Macau': 'MO', 'Madagascar': 'MG', 'Malawi': 'MW', 'Malaysia': 'MY', 'Maldives': 'MV', 'Mali': 'ML', 'Malta': 'MT', 'Marshall Islands': 'MH', 'Mauritania': 'MR', 'Mauritius': 'MU', 'Mexico': 'MX', 'Micronesia': 'FM', 'Moldova': 'MD', 'Monaco': 'MC', 'Mongolia': 'MN', 'Montenegro': 'ME', 'Montserrat': 'MS', 'Morocco': 'MA', 'Mozambique': 'MZ', 'Myanmar': 'MM',
+      'Namibia': 'NA', 'Nauru': 'NR', 'Nepal': 'NP', 'Netherlands': 'NL', 'New Caledonia': 'NC', 'New Zealand': 'NZ', 'Nicaragua': 'NI', 'Niger': 'NE', 'Nigeria': 'NG', 'North Korea': 'KP', 'North Macedonia': 'MK', 'Northern Mariana Islands': 'MP', 'Norway': 'NO',
+      'Oman': 'OM', 'Pakistan': 'PK', 'Palau': 'PW', 'Palestine': 'PS', 'Panama': 'PA', 'Papua New Guinea': 'PG', 'Paraguay': 'PY', 'Peru': 'PE', 'Philippines': 'PH', 'Poland': 'PL', 'Portugal': 'PT', 'Puerto Rico': 'PR', 'Qatar': 'QA',
+      'Romania': 'RO', 'Russia': 'RU', 'Rwanda': 'RW', 'Saint Kitts and Nevis': 'KN', 'Saint Lucia': 'LC', 'Saint Vincent and the Grenadines': 'VC', 'Samoa': 'WS', 'San Marino': 'SM', 'Sao Tome and Principe': 'ST', 'Saudi Arabia': 'SA', 'Senegal': 'SN', 'Serbia': 'RS', 'Seychelles': 'SC', 'Sierra Leone': 'SL', 'Singapore': 'SG', 'Slovakia': 'SK', 'Slovenia': 'SI', 'Solomon Islands': 'SB', 'Somalia': 'SO', 'South Africa': 'ZA', 'South Korea': 'KR', 'South Sudan': 'SS', 'Spain': 'ES', 'Sri Lanka': 'LK', 'Sudan': 'SD', 'Suriname': 'SR', 'Sweden': 'SE', 'Switzerland': 'CH', 'Syria': 'SY',
+      'Taiwan': 'TW', 'Tajikistan': 'TJ', 'Tanzania': 'TZ', 'Thailand': 'TH', 'Timor-Leste': 'TL', 'Togo': 'TG', 'Tonga': 'TO', 'Trinidad and Tobago': 'TT', 'Tunisia': 'TN', 'Turkey': 'TR', 'Turkmenistan': 'TM', 'Turks and Caicos Islands': 'TC', 'Tuvalu': 'TV',
+      'Uganda': 'UG', 'Ukraine': 'UA', 'United Arab Emirates': 'AE', 'United Kingdom': 'GB', 'United States': 'US', 'Uruguay': 'UY', 'Uzbekistan': 'UZ', 'Vanuatu': 'VU', 'Vatican City': 'VA', 'Venezuela': 'VE', 'Vietnam': 'VN', 'Yemen': 'YE', 'Zambia': 'ZM', 'Zimbabwe': 'ZW'
+    };
+
+    function isoToFlag(isoCode) {
+      if (!isoCode) return 'UN';
+      return isoCode.toUpperCase().replace(/./g, function (char) {
+        return String.fromCodePoint(127397 + char.charCodeAt(0));
+      });
+    }
+
     const countryDialOptions = Array.from(document.querySelectorAll('#countryDialCodeOptions option'))
-      .map(function (option) { return option.value; })
-      .filter(Boolean);
+      .map(function (option) {
+        const value = option.value;
+        const match = value.match(/^(.+)\s(\+\d+(?:-\d+)?)$/);
+        const name = match ? match[1] : value;
+        const dial = match ? match[2] : '';
+        return {
+          name,
+          dial,
+          value,
+          flag: isoToFlag(countryIsoMap[name])
+        };
+      })
+      .filter(function (item) { return item.value; });
 
     function closeCountryMenus() {
       document.querySelectorAll('.country-code-menu.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
       });
+      document.querySelectorAll('.country-code-button[aria-expanded="true"]').forEach(function (button) {
+        button.setAttribute('aria-expanded', 'false');
+      });
     }
 
-    function renderCountryMenu(input, menu, searchValue) {
+    function updateCountryButton(button, selectedValue) {
+      if (!button) return;
+      const selected = countryDialOptions.find(function (item) { return item.value === selectedValue; }) || countryDialOptions.find(function (item) { return item.name === 'Malaysia'; });
+      button.innerHTML = `<span class="country-flag">${selected.flag}</span><span>${selected.dial}</span>`;
+    }
+
+    function renderCountryMenu(hiddenInput, menu, button, searchValue) {
       const query = String(searchValue || '').toLowerCase().trim();
-      const showAll = !query || query === 'malaysia +60';
       const matches = countryDialOptions
-        .filter(function (value) { return showAll || value.toLowerCase().includes(query); })
-        .slice(0, 90);
+        .filter(function (item) {
+          return !query || item.name.toLowerCase().includes(query) || item.dial.includes(query.replace(/[^0-9+\-]/g, ''));
+        })
+        .slice(0, 120);
 
       menu.innerHTML = '';
-      matches.forEach(function (value) {
+
+      const searchInput = document.createElement('input');
+      searchInput.className = 'country-menu-search';
+      searchInput.type = 'search';
+      searchInput.placeholder = 'Search country...';
+      searchInput.value = searchValue || '';
+      menu.appendChild(searchInput);
+
+      const optionsWrap = document.createElement('div');
+      optionsWrap.className = 'country-menu-options';
+      menu.appendChild(optionsWrap);
+
+      matches.forEach(function (item) {
         const optionButton = document.createElement('button');
         optionButton.type = 'button';
         optionButton.className = 'country-code-option';
-        optionButton.textContent = value;
+        optionButton.innerHTML = `<span>${item.flag}</span><span>${item.name}</span><span class="country-option-dial">${item.dial}</span>`;
         optionButton.addEventListener('mousedown', function (event) {
           event.preventDefault();
-          input.value = value;
+          hiddenInput.value = item.value;
+          updateCountryButton(button, item.value);
           closeCountryMenus();
-          input.focus();
         });
-        menu.appendChild(optionButton);
+        optionsWrap.appendChild(optionButton);
       });
 
       if (!matches.length) {
@@ -2221,38 +2339,43 @@
         emptyButton.className = 'country-code-option';
         emptyButton.textContent = 'Tiada negara dijumpai';
         emptyButton.disabled = true;
-        menu.appendChild(emptyButton);
+        optionsWrap.appendChild(emptyButton);
       }
 
+      searchInput.addEventListener('input', function () {
+        renderCountryMenu(hiddenInput, menu, button, searchInput.value);
+      });
+
       menu.classList.add('is-open');
+      button.setAttribute('aria-expanded', 'true');
+      setTimeout(function () { searchInput.focus(); }, 0);
     }
 
-    function setupCountrySearch(input, menu) {
-      if (!input || !menu) return;
+    function setupCountrySearch(hiddenInput, menu, button) {
+      if (!hiddenInput || !menu || !button) return;
+      updateCountryButton(button, hiddenInput.value);
 
-      input.addEventListener('focus', function () {
+      button.addEventListener('click', function () {
+        const isOpen = menu.classList.contains('is-open');
         closeCountryMenus();
-        renderCountryMenu(input, menu, '');
-      });
-
-      input.addEventListener('click', function () {
-        closeCountryMenus();
-        renderCountryMenu(input, menu, '');
-      });
-
-      input.addEventListener('input', function () {
-        renderCountryMenu(input, menu, input.value);
-      });
-
-      input.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-          closeCountryMenus();
+        if (!isOpen) {
+          renderCountryMenu(hiddenInput, menu, button, '');
         }
       });
+
+      hiddenInput.addEventListener('change', function () {
+        updateCountryButton(button, hiddenInput.value);
+      });
     }
 
-    setupCountrySearch(siteSignupCountrySearch, siteSignupCountryMenu);
-    setupCountrySearch(signupCountrySearch, signupCountryMenu);
+    function setCountryValue(input, button, value) {
+      if (!input) return;
+      input.value = value;
+      updateCountryButton(button, value);
+    }
+
+    setupCountrySearch(siteSignupCountrySearch, siteSignupCountryMenu, siteSignupCountryButton);
+    setupCountrySearch(signupCountrySearch, signupCountryMenu, signupCountryButton);
 
     document.addEventListener('click', function (event) {
       if (!event.target.closest('.country-combo')) {
@@ -2422,7 +2545,7 @@
       signupFields.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
-      signupCountrySearch.value = 'Malaysia +60';
+      setCountryValue(signupCountrySearch, signupCountryButton, 'Malaysia +60');
       signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
@@ -2709,7 +2832,7 @@
       showSignupButton.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
-      signupCountrySearch.value = 'Malaysia +60';
+      setCountryValue(signupCountrySearch, signupCountryButton, 'Malaysia +60');
       signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
