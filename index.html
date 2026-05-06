@@ -30,6 +30,139 @@
       font-weight: bold;
     }
 
+
+    .site-auth-actions {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 998;
+    }
+
+    .site-auth-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid rgba(148,163,184,0.45);
+      border-radius: 8px;
+      background: rgba(15,23,42,0.86);
+      color: #e2e8f0;
+      padding: 9px 13px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .site-auth-btn.primary {
+      border-color: rgba(34,197,94,0.5);
+      background: #22c55e;
+      color: #052e16;
+    }
+
+    .site-auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+    }
+
+    .site-auth-btn svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    .auth-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(2,6,23,0.72);
+      backdrop-filter: blur(8px);
+      z-index: 1001;
+    }
+
+    .auth-modal.is-open {
+      display: flex;
+    }
+
+    .auth-modal-card {
+      width: min(460px, 100%);
+      padding: 22px;
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 14px;
+      background: #1e293b;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.4);
+      text-align: left;
+    }
+
+    .auth-modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .auth-modal-top h3 {
+      margin: 0;
+    }
+
+    .auth-close-btn {
+      border: 0;
+      border-radius: 8px;
+      background: #334155;
+      color: white;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .auth-modal-form {
+      display: grid;
+      gap: 13px;
+    }
+
+    .auth-modal-form[hidden] {
+      display: none;
+    }
+
+    .auth-modal-form label {
+      color: #e2e8f0;
+      font-weight: bold;
+    }
+
+    .auth-modal-form input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 8px;
+      padding: 13px 14px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0f172a;
+      color: white;
+      font-size: 15px;
+    }
+
+    .auth-switch-note {
+      margin: 4px 0 0;
+      color: #cbd5e1;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .auth-switch-note button {
+      border: 0;
+      background: transparent;
+      color: #22c55e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
     .user-menu {
       position: fixed;
       top: 14px;
@@ -761,6 +894,63 @@
 
   <div class="top-login-toast" id="loginToast"></div>
 
+
+  <div class="site-auth-actions" id="siteAuthActions">
+    <button class="site-auth-btn" id="siteSignInButton" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17v-3H3v-4h7V7l5 5-5 5Zm2 4v-2h7V5h-7V3h9v18h-9Z"/></svg>
+      Sign in
+    </button>
+    <button class="site-auth-btn primary" id="siteSignUpButton" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12c2.2 0 4-1.8 4-4s-1.8-4-4-4-4 1.8-4 4 1.8 4 4 4Zm-8-2V7H4V5h3V2h2v3h3v2H9v3H7Zm8 4c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4Z"/></svg>
+      Sign up
+    </button>
+  </div>
+
+  <div class="auth-modal" id="siteAuthModal" aria-hidden="true">
+    <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="siteAuthTitle">
+      <div class="auth-modal-top">
+        <h3 id="siteAuthTitle">Sign in</h3>
+        <button class="auth-close-btn" id="siteAuthClose" type="button" aria-label="Tutup">&times;</button>
+      </div>
+
+      <form class="auth-modal-form" id="siteSignInForm">
+        <label for="siteLoginName">
+          Nama
+          <input id="siteLoginName" type="text" placeholder="Nama pengguna" required>
+        </label>
+        <label for="siteLoginPassword">
+          Password
+          <input id="siteLoginPassword" type="password" placeholder="Password" required>
+        </label>
+        <p class="request-error" id="siteLoginError"></p>
+        <button class="btn blue" type="submit">Sign in</button>
+        <p class="auth-switch-note">Belum ada akaun? <button id="switchToSiteSignup" type="button">Sign up</button></p>
+      </form>
+
+      <form class="auth-modal-form" id="siteSignUpForm" hidden>
+        <label for="siteSignupName">
+          Nama
+          <input id="siteSignupName" type="text" placeholder="Nama pengguna" required>
+        </label>
+        <label for="siteSignupPassword">
+          Password
+          <input id="siteSignupPassword" type="password" placeholder="Cipta password" required>
+        </label>
+        <label for="siteSignupPhone">
+          No HP
+          <input id="siteSignupPhone" type="tel" inputmode="tel" placeholder="Contoh: 0123456789" required>
+        </label>
+        <label for="siteSignupEmail">
+          Email
+          <input id="siteSignupEmail" type="email" inputmode="email" placeholder="Contoh: nama@email.com" required>
+        </label>
+        <p class="request-error" id="siteSignupError"></p>
+        <button class="btn" type="submit">Sign up</button>
+        <p class="auth-switch-note">Sudah ada akaun? <button id="switchToSiteSignin" type="button">Sign in</button></p>
+      </form>
+    </div>
+  </div>
+
   <div class="user-menu" id="userMenu">
     <div class="user-avatar" id="userAvatar">AZ</div>
     <div class="user-name" id="signedInName"></div>
@@ -1196,6 +1386,24 @@
     const userAvatar = document.getElementById('userAvatar');
     const signedInName = document.getElementById('signedInName');
     const logoutButton = document.getElementById('logoutButton');
+    const siteAuthActions = document.getElementById('siteAuthActions');
+    const siteSignInButton = document.getElementById('siteSignInButton');
+    const siteSignUpButton = document.getElementById('siteSignUpButton');
+    const siteAuthModal = document.getElementById('siteAuthModal');
+    const siteAuthTitle = document.getElementById('siteAuthTitle');
+    const siteAuthClose = document.getElementById('siteAuthClose');
+    const siteSignInForm = document.getElementById('siteSignInForm');
+    const siteSignUpForm = document.getElementById('siteSignUpForm');
+    const switchToSiteSignup = document.getElementById('switchToSiteSignup');
+    const switchToSiteSignin = document.getElementById('switchToSiteSignin');
+    const siteLoginName = document.getElementById('siteLoginName');
+    const siteLoginPassword = document.getElementById('siteLoginPassword');
+    const siteLoginError = document.getElementById('siteLoginError');
+    const siteSignupName = document.getElementById('siteSignupName');
+    const siteSignupPassword = document.getElementById('siteSignupPassword');
+    const siteSignupPhone = document.getElementById('siteSignupPhone');
+    const siteSignupEmail = document.getElementById('siteSignupEmail');
+    const siteSignupError = document.getElementById('siteSignupError');
     const paForm = document.getElementById('paForm');
     const paNumber = document.getElementById('paNumber');
     const negeri = document.getElementById('negeri');
@@ -1302,6 +1510,7 @@
       signedInName.textContent = user.name;
       userAvatar.textContent = getInitials(user.name);
       userMenu.style.display = 'flex';
+      siteAuthActions.style.display = 'none';
     }
 
     function isAdminUser(user) {
@@ -1650,6 +1859,154 @@
       });
     }
 
+
+    function isValidEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    function openSiteAuth(mode = 'signin') {
+      const isSignup = mode === 'signup';
+      siteAuthTitle.textContent = isSignup ? 'Sign up' : 'Sign in';
+      siteSignInForm.hidden = isSignup;
+      siteSignUpForm.hidden = !isSignup;
+      siteLoginError.textContent = '';
+      siteSignupError.textContent = '';
+      siteAuthModal.classList.add('is-open');
+      siteAuthModal.setAttribute('aria-hidden', 'false');
+
+      setTimeout(function () {
+        (isSignup ? siteSignupName : siteLoginName).focus();
+      }, 50);
+    }
+
+    function closeSiteAuth() {
+      siteAuthModal.classList.remove('is-open');
+      siteAuthModal.setAttribute('aria-hidden', 'true');
+    }
+
+    async function signInSiteUser(name, password, errorElement) {
+      const usernameKey = normalizeUsername(name);
+
+      if (!name || !password) {
+        errorElement.textContent = 'Sila isi nama dan password.';
+        return;
+      }
+
+      if (!firebaseReady) {
+        errorElement.textContent = 'Firebase belum disambungkan.';
+        return;
+      }
+
+      if (!usernameKey) {
+        errorElement.textContent = 'Nama hanya boleh mengandungi huruf, nombor atau underscore.';
+        return;
+      }
+
+      try {
+        const credential = await signInWithEmailAndPassword(auth, buildUserEmail(usernameKey), password);
+        const userRef = doc(db, 'users', usernameKey);
+        const userSnap = await getDoc(userRef);
+        const profile = userSnap.exists() ? userSnap.data() : {
+          uid: credential.user.uid,
+          name,
+          usernameKey,
+          phone: '',
+          email: credential.user.email,
+          contactEmail: ''
+        };
+
+        const user = {
+          uid: profile.uid || credential.user.uid,
+          name: profile.name,
+          usernameKey: profile.usernameKey,
+          phone: profile.phone || '',
+          email: profile.email || credential.user.email,
+          contactEmail: profile.contactEmail || ''
+        };
+
+        saveCurrentUser(user);
+        sessionStorage.setItem('azobssLoggedIn', '1');
+        errorElement.textContent = '';
+        closeSiteAuth();
+        setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
+      } catch (error) {
+        errorElement.textContent = 'Nama atau password salah. Sila cuba semula.';
+      }
+    }
+
+    async function signUpSiteUser() {
+      const name = siteSignupName.value.trim();
+      const password = siteSignupPassword.value.trim();
+      const phone = siteSignupPhone.value.trim();
+      const contactEmail = siteSignupEmail.value.trim();
+      const usernameKey = normalizeUsername(name);
+
+      if (!name || !password || !phone || !contactEmail) {
+        siteSignupError.textContent = 'Sila isi nama, password, no HP dan email.';
+        return;
+      }
+
+      if (!isValidEmail(contactEmail)) {
+        siteSignupError.textContent = 'Sila masukkan email yang sah.';
+        return;
+      }
+
+      if (!firebaseReady) {
+        siteSignupError.textContent = 'Firebase belum disambungkan.';
+        return;
+      }
+
+      if (!usernameKey) {
+        siteSignupError.textContent = 'Nama hanya boleh mengandungi huruf, nombor atau underscore.';
+        return;
+      }
+
+      if (password.length < 6) {
+        siteSignupError.textContent = 'Password mesti sekurang-kurangnya 6 aksara.';
+        return;
+      }
+
+      try {
+        const email = buildUserEmail(usernameKey);
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = {
+          uid: credential.user.uid,
+          name,
+          usernameKey,
+          phone,
+          email,
+          contactEmail
+        };
+
+        await setDoc(doc(db, 'users', usernameKey), {
+          uid: user.uid,
+          name,
+          usernameKey,
+          phone,
+          email,
+          contactEmail,
+          createdAt: serverTimestamp()
+        });
+
+        saveCurrentUser(user);
+        sessionStorage.setItem('azobssLoggedIn', '1');
+        siteSignupError.textContent = '';
+        closeSiteAuth();
+        setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
+      } catch (error) {
+        if (error.code === 'auth/email-already-in-use') {
+          siteSignupError.textContent = 'Nama ini sudah didaftarkan. Sila Sign in.';
+        } else if (error.code === 'auth/weak-password') {
+          siteSignupError.textContent = 'Password terlalu pendek. Guna sekurang-kurangnya 6 aksara.';
+        } else if (error.code === 'auth/operation-not-allowed') {
+          siteSignupError.textContent = 'Email/Password belum diaktifkan dalam Firebase Authentication.';
+        } else if (error.code === 'permission-denied') {
+          siteSignupError.textContent = 'Firestore rules belum membenarkan simpan data user.';
+        } else {
+          siteSignupError.textContent = `Signup gagal: ${error.code || error.message}`;
+        }
+      }
+    }
     function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
       currentUser = user;
@@ -1696,11 +2053,47 @@
 
       loadPurchaseRecords();
 
+      closeSiteAuth();
+
       if (toastMessage) {
         showAccessToast(toastMessage);
       }
     }
 
+
+    siteSignInButton.addEventListener('click', function () {
+      openSiteAuth('signin');
+    });
+
+    siteSignUpButton.addEventListener('click', function () {
+      openSiteAuth('signup');
+    });
+
+    siteAuthClose.addEventListener('click', closeSiteAuth);
+
+    siteAuthModal.addEventListener('click', function (event) {
+      if (event.target === siteAuthModal) {
+        closeSiteAuth();
+      }
+    });
+
+    switchToSiteSignup.addEventListener('click', function () {
+      openSiteAuth('signup');
+    });
+
+    switchToSiteSignin.addEventListener('click', function () {
+      openSiteAuth('signin');
+    });
+
+    siteSignInForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      await signInSiteUser(siteLoginName.value.trim(), siteLoginPassword.value.trim(), siteLoginError);
+    });
+
+    siteSignUpForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      await signUpSiteUser();
+    });
     unlockSignupButton.addEventListener('click', async function () {
       if (!firebaseReady) {
         signupGateNotice.style.display = 'block';
@@ -1877,6 +2270,7 @@
       }
 
       userMenu.style.display = 'none';
+      siteAuthActions.style.display = 'flex';
       signupForm.hidden = false;
       loginForm.hidden = false;
       paForm.hidden = true;
