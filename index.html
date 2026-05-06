@@ -224,6 +224,7 @@
 
     .affiliate-card {
       cursor: pointer;
+      overflow: visible;
     }
 
     .affiliate-toggle {
@@ -234,21 +235,15 @@
     }
 
     .affiliate-info {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      display: grid;
+      display: none;
       gap: 8px;
-      margin-top: 0;
-      transition: max-height 0.28s ease, opacity 0.28s ease, margin-top 0.28s ease;
+      margin-top: 14px;
     }
 
     .affiliate-card:hover .affiliate-info,
     .affiliate-card:focus-within .affiliate-info,
     .affiliate-card.is-open .affiliate-info {
-      max-height: 240px;
-      opacity: 1;
-      margin-top: 14px;
+      display: grid;
     }
 
     .affiliate-info a {
@@ -1769,6 +1764,8 @@
 
       if (!wasOpen) {
         selectedCard.classList.add('is-open');
+      } else {
+        selectedCard.blur();
       }
     }
 
