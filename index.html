@@ -181,6 +181,41 @@
       display: block;
     }
 
+    .service-card {
+      cursor: pointer;
+    }
+
+    .service-info {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.28s ease, opacity 0.28s ease, margin-top 0.28s ease;
+      margin-top: 0;
+      padding: 0 4px;
+      color: #cbd5e1;
+      text-align: left;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .service-card:hover .service-info,
+    .service-card:focus-within .service-info,
+    .service-card.is-open .service-info {
+      max-height: 360px;
+      opacity: 1;
+      margin-top: 12px;
+    }
+
+    .service-info ul,
+    .service-info ol {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
+    .service-info li {
+      margin: 6px 0;
+    }
+
     .price {
       color: #22c55e;
       font-size: 24px;
@@ -619,19 +654,41 @@
     <h2>Our Services</h2>
 
     <div class="grid">
-      <div class="card">
+      <div class="card service-card" tabindex="0" role="button" aria-label="Lihat info Format Windows">
         <img src="images/format-windows.jpg" alt="Format Windows">
-        <p>💻 Format Windows</p>
+        <p>&#128187; Format Windows</p>
+        <div class="service-info">
+          <p><strong>Format Windows</strong></p>
+          <ol>
+            <li>Format Windows 10/11 RM50</li>
+            <li>Format Windows 10/11 (On-Site) RM80</li>
+          </ol>
+          <p>*Servis datang terus di lokasi anda (Area Batu Caves dan Sri Gombak)</p>
+        </div>
       </div>
 
-      <div class="card">
+      <div class="card service-card" tabindex="0" role="button" aria-label="Lihat info PC Repair">
         <img src="images/pc-repair.jpg" alt="PC Repair">
-        <p>🛠️ PC Repair</p>
+        <p>&#128736;&#65039; PC Repair</p>
+        <div class="service-info">
+          <p>&#10004;&#65039; LCD Screen Laptop replacement (RM250 ~ RM450) bergantung pada size screen</p>
+          <p>&#10004;&#65039; Keyboard Laptop replacement (RM120)</p>
+          <p>&#10004;&#65039; Adapter charger (RM70)</p>
+          <p>&#10004;&#65039; Bateri (RM120)</p>
+          <p>&#10004;&#65039; SSD Storage</p>
+        </div>
       </div>
 
-      <div class="card">
+      <div class="card service-card" tabindex="0" role="button" aria-label="Lihat info Troubleshoot Windows Online">
         <img src="images/remote-support.jpg" alt="Troubleshoot Windows Online">
-        <p>🧠 Troubleshoot Windows Online</p>
+        <p>&#129504; Troubleshoot Windows Online</p>
+        <div class="service-info">
+          <p>&#128176; RM30</p>
+          <p>&#10004;&#65039; Reformat Windows 10/11</p>
+          <p>&#10004;&#65039; Install software asas</p>
+          <p>&#10004;&#65039; Troubleshoot Problem Slow &amp; Lain-lain</p>
+          <p>&#10004;&#65039; Dilakukan secara remote Anydesk</p>
+        </div>
       </div>
 
       <div class="card">
@@ -1665,6 +1722,35 @@
     } else {
       restoreSignupAccess();
     }
+
+    const serviceCards = document.querySelectorAll('.service-card');
+
+    function toggleServiceCard(selectedCard) {
+      const wasOpen = selectedCard.classList.contains('is-open');
+
+      serviceCards.forEach(function (card) {
+        card.classList.remove('is-open');
+      });
+
+      if (!wasOpen) {
+        selectedCard.classList.add('is-open');
+      } else {
+        selectedCard.blur();
+      }
+    }
+
+    serviceCards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        toggleServiceCard(card);
+      });
+
+      card.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          toggleServiceCard(card);
+        }
+      });
+    });
 
     paNumber.addEventListener('input', updatePreview);
     negeri.addEventListener('change', updatePreview);
