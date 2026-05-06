@@ -158,7 +158,7 @@
 
     .phone-input-row {
       display: grid;
-      grid-template-columns: minmax(130px, 0.42fr) 1fr;
+      grid-template-columns: 118px minmax(0, 1fr);
       gap: 10px;
       margin-top: 8px;
     }
@@ -189,6 +189,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      min-width: 118px;
       border: 1px solid #334155;
       border-radius: 10px;
       background: #0f172a;
@@ -275,7 +276,11 @@
 
     @media (max-width: 520px) {
       .phone-input-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: 108px minmax(0, 1fr);
+      }
+
+      .country-code-button {
+        min-width: 108px;
       }
     }
     .auth-switch-note button {
@@ -2298,27 +2303,17 @@
       button.innerHTML = `<span class="country-flag">${selected.flag}</span><span>${selected.dial}</span>`;
     }
 
-    function renderCountryMenu(hiddenInput, menu, button, searchValue) {
-      const query = String(searchValue || '').toLowerCase().trim();
+    function renderCountryOptions(hiddenInput, optionsWrap, button, searchValue) {
+      const rawQuery = String(searchValue || '').toLowerCase().trim();
+      const numericQuery = rawQuery.replace(/[^0-9+\-]/g, '');
       const matches = countryDialOptions
         .filter(function (item) {
-          return !query || item.name.toLowerCase().includes(query) || item.dial.includes(query.replace(/[^0-9+\-]/g, ''));
+          const countryName = item.name.toLowerCase();
+          return !rawQuery || countryName.startsWith(rawQuery) || countryName.includes(rawQuery) || (numericQuery && item.dial.includes(numericQuery));
         })
         .slice(0, 120);
 
-      menu.innerHTML = '';
-
-      const searchInput = document.createElement('input');
-      searchInput.className = 'country-menu-search';
-      searchInput.type = 'search';
-      searchInput.placeholder = 'Search country...';
-      searchInput.value = searchValue || '';
-      menu.appendChild(searchInput);
-
-      const optionsWrap = document.createElement('div');
-      optionsWrap.className = 'country-menu-options';
-      menu.appendChild(optionsWrap);
-
+      optionsWrap.innerHTML = '';
       matches.forEach(function (item) {
         const optionButton = document.createElement('button');
         optionButton.type = 'button';
@@ -2341,16 +2336,32 @@
         emptyButton.disabled = true;
         optionsWrap.appendChild(emptyButton);
       }
+    }
+
+    function renderCountryMenu(hiddenInput, menu, button, searchValue) {
+      menu.innerHTML = '';
+
+      const searchInput = document.createElement('input');
+      searchInput.className = 'country-menu-search';
+      searchInput.type = 'search';
+      searchInput.placeholder = 'Search country...';
+      searchInput.value = searchValue || '';
+      menu.appendChild(searchInput);
+
+      const optionsWrap = document.createElement('div');
+      optionsWrap.className = 'country-menu-options';
+      menu.appendChild(optionsWrap);
+
+      renderCountryOptions(hiddenInput, optionsWrap, button, searchInput.value);
 
       searchInput.addEventListener('input', function () {
-        renderCountryMenu(hiddenInput, menu, button, searchInput.value);
+        renderCountryOptions(hiddenInput, optionsWrap, button, searchInput.value);
       });
 
       menu.classList.add('is-open');
       button.setAttribute('aria-expanded', 'true');
       setTimeout(function () { searchInput.focus(); }, 0);
     }
-
     function setupCountrySearch(hiddenInput, menu, button) {
       if (!hiddenInput || !menu || !button) return;
       updateCountryButton(button, hiddenInput.value);
