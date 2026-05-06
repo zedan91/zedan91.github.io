@@ -776,7 +776,7 @@
       <a href="https://www.threads.com/@zedan910706?hl=en" target="_blank" rel="noopener" aria-label="Threads"><img src="images/threads.svg" alt="" loading="lazy"></a>
       <a href="https://www.youtube.com/@AZTech-d3b" target="_blank" rel="noopener" aria-label="YouTube"><img src="images/youtube.svg" alt="" loading="lazy"></a>
       <a href="https://www.carousell.com.my/u/azobss_07/" target="_blank" rel="noopener" aria-label="Carousell"><img src="images/carousell.svg" alt="" loading="lazy"></a>
-      <a href="mailto:zedan9107@gmail.com" aria-label="Email"><img src="images/email.svg" alt="" loading="lazy"></a>
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=zedan9107@gmail.com" target="_blank" rel="noopener" aria-label="Gmail"><img src="images/email.svg" alt="" loading="lazy"></a>
     </div>
     <div class="hero-actions">
       <a class="hero-whatsapp" href="https://alvo.chat/6nZ2" aria-label="Contact Us Now melalui WhatsApp">
@@ -965,17 +965,22 @@
 
           <label for="signupName">
             Nama
-            <input id="signupName" type="text" placeholder="Nama anda">
+            <input id="signupName" type="text" placeholder="Nama anda" required>
           </label>
 
           <label for="signupPhone">
             No HP
-            <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 0123456789">
+            <input id="signupPhone" type="tel" inputmode="tel" placeholder="Contoh: 0123456789" required>
+          </label>
+
+          <label for="signupEmail">
+            Email
+            <input id="signupEmail" type="email" inputmode="email" placeholder="Contoh: nama@email.com" required>
           </label>
 
           <label for="signupPassword">
             Password
-            <input id="signupPassword" type="password" placeholder="Cipta password">
+            <input id="signupPassword" type="password" placeholder="Cipta password" required>
           </label>
 
           <p class="request-error" id="signupError"></p>
@@ -1177,6 +1182,7 @@
     const signupFields = document.getElementById('signupFields');
     const signupName = document.getElementById('signupName');
     const signupPhone = document.getElementById('signupPhone');
+    const signupEmail = document.getElementById('signupEmail');
     const signupPassword = document.getElementById('signupPassword');
     const signupError = document.getElementById('signupError');
     const loginForm = document.getElementById('loginForm');
@@ -1402,7 +1408,7 @@
       registeredUsersList.innerHTML = users.map(function (user) {
         return `
           <div class="purchase-summary-item">
-            <span><strong>${user.name || user.usernameKey}</strong><br>${user.phone || '-'}</span>
+            <span><strong>${user.name || user.usernameKey}</strong><br>${user.phone || '-'}<br>${user.contactEmail || '-'}</span>
             <span>Username: <strong>${user.usernameKey || '-'}</strong></span>
             <span>Role: <strong>${user.usernameKey === ADMIN_USERNAME ? 'Admin' : 'User'}</strong></span>
             <span>UID: <strong>${user.uid ? user.uid.slice(0, 8) : '-'}</strong></span>
@@ -1656,6 +1662,7 @@
       signupFields.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
+      signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
       loginPassword.value = '';
@@ -1723,6 +1730,7 @@
 
       const name = signupName.value.trim();
       const phone = signupPhone.value.trim();
+      const contactEmail = signupEmail.value.trim();
       const password = signupPassword.value.trim();
       const usernameKey = normalizeUsername(name);
 
@@ -1734,8 +1742,13 @@
         return;
       }
 
-      if (!name || !phone || !password) {
-        signupError.textContent = 'Sila isi nama, no HP dan password.';
+      if (!name || !phone || !contactEmail || !password) {
+        signupError.textContent = 'Sila isi nama, no HP, email dan password.';
+        return;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+        signupError.textContent = 'Sila masukkan email yang sah.';
         return;
       }
 
@@ -1770,7 +1783,8 @@
           name,
           usernameKey,
           phone,
-          email
+          email,
+          contactEmail
         };
 
         await setDoc(userRef, {
@@ -1779,6 +1793,7 @@
           usernameKey,
           phone,
           email,
+          contactEmail,
           createdAt: serverTimestamp()
         });
 
@@ -1829,7 +1844,8 @@
           name,
           usernameKey,
           phone: '',
-          email: credential.user.email
+          email: credential.user.email,
+          contactEmail: ''
         };
 
         const user = {
@@ -1837,7 +1853,8 @@
           name: profile.name,
           usernameKey: profile.usernameKey,
           phone: profile.phone || '',
-          email: profile.email || credential.user.email
+          email: profile.email || credential.user.email,
+          contactEmail: profile.contactEmail || ''
         };
 
         saveCurrentUser(user);
@@ -1875,6 +1892,7 @@
       showSignupButton.style.display = 'none';
       signupName.value = '';
       signupPhone.value = '';
+      signupEmail.value = '';
       signupPassword.value = '';
       loginName.value = '';
       loginPassword.value = '';
