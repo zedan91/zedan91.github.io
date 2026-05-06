@@ -282,6 +282,66 @@
       border-color: rgba(34,197,94,0.55);
       color: #22c55e;
     }
+    .downloads-section {
+      max-width: 1180px;
+    }
+
+    .downloads-intro {
+      max-width: 720px;
+      margin: 0 auto 34px;
+      text-align: center;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .downloads-grid {
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 22px;
+    }
+
+    .download-card {
+      border: 1px solid rgba(34,197,94,0.16);
+      background: linear-gradient(180deg, #1e293b, #162033);
+      min-height: 245px;
+    }
+
+    .download-card:hover {
+      border-color: rgba(34,197,94,0.48);
+      box-shadow: 0 18px 34px rgba(0,0,0,0.28), 0 0 22px rgba(34,197,94,0.16);
+    }
+
+    .download-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 15px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: #0f172a;
+      border: 1px solid rgba(148,163,184,0.25);
+      color: #22c55e;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 0;
+    }
+
+    .download-card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .download-card p {
+      min-height: 54px;
+      margin: 0 0 18px;
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .download-card .btn {
+      border-radius: 10px;
+      margin-top: 0;
+    }
 
     .request-form {
       display: grid;
@@ -779,6 +839,56 @@
     </div>
   </div>
 
+  <div class="section downloads-section">
+    <h2>&#128187; Windows Utility Downloads</h2>
+    <p class="downloads-intro">
+      Essential tools and utilities for repair, troubleshooting and optimizing Windows PCs.
+    </p>
+
+    <div class="grid downloads-grid">
+      <div class="card download-card">
+        <div class="download-icon">CD</div>
+        <h3>CrystalDiskMark</h3>
+        <p>Benchmark utility untuk test speed SSD dan hard disk Windows.</p>
+        <a class="btn" href="#">Download Now</a>
+      </div>
+
+      <div class="card download-card">
+        <div class="download-icon">HW</div>
+        <h3>HWInfo</h3>
+        <p>Tool monitor suhu, sensor, hardware details dan keadaan sistem PC.</p>
+        <a class="btn" href="#">Download Now</a>
+      </div>
+
+      <div class="card download-card">
+        <div class="download-icon">AD</div>
+        <h3>AnyDesk</h3>
+        <p>Remote support tool untuk troubleshoot PC secara online.</p>
+        <a class="btn" href="#">Download Now</a>
+      </div>
+
+      <div class="card download-card">
+        <div class="download-icon">RD</div>
+        <h3>RustDesk</h3>
+        <p>Alternative remote desktop tool untuk bantuan dan akses jarak jauh.</p>
+        <a class="btn" href="#">Download Now</a>
+      </div>
+
+      <div class="card download-card">
+        <div class="download-icon">FC</div>
+        <h3>File Converter</h3>
+        <p>Utility untuk convert fail, imej, dokumen dan media format.</p>
+        <a class="btn" href="#">Download Now</a>
+      </div>
+
+      <div class="card download-card">
+        <div class="download-icon">WR</div>
+        <h3>Windows Repair Tool</h3>
+        <p>Repair utility untuk bantu fix masalah Windows dan sistem error.</p>
+        <a class="btn" href="#">Download Now</a>
+      </div>
+    </div>
+  </div>
   <div class="section">
     <h2>E-book, Software & AutoCAD LISP</h2>
 
