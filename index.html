@@ -559,15 +559,15 @@
       display: none !important;
     }
 
-    .is-authenticated #paForm {
+    .has-pa-access #paForm {
       display: grid !important;
     }
 
-    .is-authenticated .login-only {
+    .has-pa-access .login-only {
       display: inline-block !important;
     }
 
-    .is-authenticated #adminPurchasePanel {
+    .has-pa-access #adminPurchasePanel {
       display: block !important;
     }
 
@@ -1912,7 +1912,8 @@
           usernameKey,
           phone: '',
           email: credential.user.email,
-          contactEmail: ''
+          contactEmail: '',
+          paAccess: true
         };
 
         const user = {
@@ -1921,7 +1922,8 @@
           usernameKey: profile.usernameKey,
           phone: profile.phone || '',
           email: profile.email || credential.user.email,
-          contactEmail: profile.contactEmail || ''
+          contactEmail: profile.contactEmail || '',
+          paAccess: profile.paAccess !== false
         };
 
         saveCurrentUser(user);
@@ -1975,7 +1977,8 @@
           usernameKey,
           phone,
           email,
-          contactEmail
+          contactEmail,
+          paAccess: false
         };
 
         await setDoc(doc(db, 'users', usernameKey), {
@@ -1985,6 +1988,7 @@
           phone,
           email,
           contactEmail,
+          paAccess: false,
           createdAt: serverTimestamp()
         });
 
@@ -2025,9 +2029,18 @@
       loginPassword.value = '';
       signupError.textContent = '';
       loginError.textContent = '';
-      paForm.hidden = false;
-      loginInfo.style.display = 'none';
-      loginInfo.textContent = '';
+      const hasPaAccess = isAdminUser(user) || user.paAccess !== false;
+      requestCard.classList.toggle('has-pa-access', hasPaAccess);
+      paForm.hidden = !hasPaAccess;
+
+      if (hasPaAccess) {
+        loginInfo.style.display = 'none';
+        loginInfo.textContent = '';
+      } else {
+        loginInfo.style.display = 'block';
+        loginInfo.textContent = 'Akaun biasa tidak mempunyai akses Request PA / Info Lot. Sila WhatsApp Admin untuk buka akses PA.';
+      }
+
       showSignedInUser(user);
 
       if (isAdminUser(user)) {
@@ -2051,7 +2064,9 @@
         signupGateNotice.textContent = '';
       }
 
-      loadPurchaseRecords();
+      if (hasPaAccess) {
+        loadPurchaseRecords();
+      }
 
       closeSiteAuth();
 
@@ -2177,7 +2192,8 @@
           usernameKey,
           phone,
           email,
-          contactEmail
+          contactEmail,
+          paAccess: true
         };
 
         await setDoc(userRef, {
@@ -2187,6 +2203,7 @@
           phone,
           email,
           contactEmail,
+          paAccess: true,
           createdAt: serverTimestamp()
         });
 
@@ -2238,7 +2255,8 @@
           usernameKey,
           phone: '',
           email: credential.user.email,
-          contactEmail: ''
+          contactEmail: '',
+          paAccess: true
         };
 
         const user = {
@@ -2247,7 +2265,8 @@
           usernameKey: profile.usernameKey,
           phone: profile.phone || '',
           email: profile.email || credential.user.email,
-          contactEmail: profile.contactEmail || ''
+          contactEmail: profile.contactEmail || '',
+          paAccess: profile.paAccess !== false
         };
 
         saveCurrentUser(user);
@@ -2282,6 +2301,7 @@
       loginForm.style.display = 'grid';
       requestCard.classList.remove('is-authenticated');
       requestCard.classList.remove('is-admin');
+      requestCard.classList.remove('has-pa-access');
       signupFields.style.display = 'none';
       showSignupButton.style.display = 'none';
       signupName.value = '';
@@ -2400,6 +2420,11 @@
 
     paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
+
+      if (!isAdminUser(currentUser) && currentUser && currentUser.paAccess === false) {
+        paError.textContent = 'Akaun biasa tidak mempunyai akses Request PA / Info Lot.';
+        return;
+      }
 
       const url = buildTifUrl();
       const paValue = cleanPaNumber(paNumber.value);
