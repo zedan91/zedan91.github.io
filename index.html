@@ -1396,13 +1396,13 @@
     <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="siteAuthTitle">
       <div class="auth-modal-top">
         <h3 id="siteAuthTitle">Sign in</h3>
-        <button class="auth-close-btn" id="siteAuthClose" type="button" aria-label="Tutup">&times;</button>
+        <button class="auth-close-btn" id="siteAuthClose" type="button" aria-label="Close">&times;</button>
       </div>
 
       <form class="auth-modal-form" id="siteSignInForm">
         <label for="siteLoginName">
-          Nama
-          <input id="siteLoginName" type="text" placeholder="Nama pengguna" required>
+          Name
+          <input id="siteLoginName" type="text" placeholder="Username" required>
         </label>
         <label for="siteLoginPassword">
           Password
@@ -1410,20 +1410,20 @@
         </label>
         <p class="request-error" id="siteLoginError"></p>
         <button class="btn blue" type="submit">Sign in</button>
-        <p class="auth-switch-note">Belum ada akaun? <button id="switchToSiteSignup" type="button">Sign up</button></p>
+        <p class="auth-switch-note">Don't have an account? <button id="switchToSiteSignup" type="button">Sign up</button></p>
       </form>
 
       <form class="auth-modal-form" id="siteSignUpForm" hidden>
         <label for="siteSignupName">
-          Nama
-          <input id="siteSignupName" type="text" placeholder="Nama pengguna" required>
+          Name
+          <input id="siteSignupName" type="text" placeholder="Username" required>
         </label>
         <label for="siteSignupPassword">
           Password
-          <input id="siteSignupPassword" type="password" placeholder="Cipta password" required>
+          <input id="siteSignupPassword" type="password" placeholder="Create password" required>
         </label>
         <label for="siteSignupPhone">
-          No HP
+          Phone Number
           <div class="phone-input-row">
             <div class="country-combo">
               <input class="country-code-search" id="siteSignupCountrySearch" value="Malaysia +60" type="hidden">
@@ -1441,11 +1441,11 @@
         </label>
         <label for="siteSignupEmail">
           Email
-          <input id="siteSignupEmail" type="email" inputmode="email" placeholder="Contoh: nama@email.com" required>
+          <input id="siteSignupEmail" type="email" inputmode="email" placeholder="Example: name@email.com" required>
         </label>
         <p class="request-error" id="siteSignupError"></p>
         <button class="btn" type="submit">Sign up</button>
-        <p class="auth-switch-note">Sudah ada akaun? <button id="switchToSiteSignin" type="button">Sign in</button></p>
+        <p class="auth-switch-note">Already have an account? <button id="switchToSiteSignin" type="button">Sign in</button></p>
         <div class="member-upgrade-wrap" id="memberUpgradeWrap">
           <div class="member-upgrade-controls">
             <input id="memberUpgradeCode" type="password" placeholder="Member Code" autocomplete="off">
@@ -1535,32 +1535,32 @@
         <div class="service-info">
           <p>&#128176; RM30</p>
           <p>&#10004;&#65039; Reformat Windows 10/11</p>
-          <p>&#10004;&#65039; Install software asas</p>
-          <p>&#10004;&#65039; Troubleshoot Problem Slow &amp; Lain-lain</p>
-          <p>&#10004;&#65039; Dilakukan secara remote Anydesk</p>
+          <p>&#10004;&#65039; Install basic software</p>
+          <p>&#10004;&#65039; Troubleshoot slow PC and other issues</p>
+          <p>&#10004;&#65039; Handled remotely via AnyDesk</p>
         </div>
       </div>
 
-      <div class="card service-card" tabindex="0" role="button" aria-label="Lihat info Semakan Info Lot Kadaster">
-        <img src="images/info-lot.jpg" alt="Semakan Info Lot Kadaster">
+      <div class="card service-card" tabindex="0" role="button" aria-label="View Cadastral Lot Info Check details">
+        <img src="images/info-lot.jpg" alt="Cadastral Lot Info Check">
         <p>&#128205; Info Lot Kadaster</p>
         <div class="service-info">
-          <p>&#10004;&#65039; Semak no lot, mukim &amp; daerah</p>
-          <p>&#10004;&#65039; Lokasi rujukan atas peta</p>
-          <p>&#10004;&#65039; Kategori tanah jika tersedia</p>
-          <p>&#10004;&#65039; Rujukan awal, bukan carian rasmi</p>
+          <p>&#10004;&#65039; Check lot number, mukim and district</p>
+          <p>&#10004;&#65039; Reference location on map</p>
+          <p>&#10004;&#65039; Land category if available</p>
+          <p>&#10004;&#65039; Early reference only, not an official search</p>
         </div>
       </div>
 
-      <div class="card service-card" tabindex="0" role="button" aria-label="Lihat info Semakan Lot dan Batu Sempadan">
-        <img src="images/ukur-tanah.jpg" alt="Semakan Lot dan Batu Sempadan">
-        <p>&#128207; Semakan Lot &amp; Batu Sempadan</p>
+      <div class="card service-card" tabindex="0" role="button" aria-label="View Lot and Boundary Stone Check details">
+        <img src="images/ukur-tanah.jpg" alt="Lot and Boundary Stone Check">
+        <p>&#128207; Lot &amp; Boundary Stone Check</p>
         <div class="service-info">
-          <p>&#10004;&#65039; Cari batu sempadan</p>
-          <p>&#10004;&#65039; Tunjuk lokasi lot</p>
-          <p>&#10004;&#65039; Pancang paip sementara</p>
-          <p>&#10004;&#65039; Semakan kasar kedudukan</p>
-          <p>&#10004;&#65039; Bukan ukur rasmi tepat</p>
+          <p>&#10004;&#65039; Find boundary stones</p>
+          <p>&#10004;&#65039; Show lot location</p>
+          <p>&#10004;&#65039; Install temporary pipe markers</p>
+          <p>&#10004;&#65039; Rough position check</p>
+          <p>&#10004;&#65039; Not an official precise survey</p>
         </div>
       </div>
 
@@ -1577,21 +1577,21 @@
     <div class="grid">
       <div class="card">
         <h3>&#129513; Software Tools</h3>
-        <p>Tools pilihan untuk repair, troubleshoot dan optimize Windows PC.</p>
+        <p>Selected tools for repairing, troubleshooting and optimizing Windows PCs.</p>
         <div class="price">Windows Utilities</div>
         <a class="btn" href="https://www.azobss.com/Software%20Tools/">View Downloads</a>
       </div>
 
       <div class="card">
         <h3>&#128208; AutoCAD LISP</h3>
-        <p>LISP untuk percepat kerja AutoCAD, text, layer, area dan drafting.</p>
+        <p>LISP tools to speed up AutoCAD text, layers, area tasks and drafting.</p>
         <div class="price">From RM10</div>
         <a class="btn orange" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">Buy / Request LISP</a>
       </div>
 
       <div class="card">
         <h3>&#128216; Windows Guide E-book</h3>
-        <p>Panduan basic troubleshoot Windows untuk pengguna biasa.</p>
+        <p>A basic Windows troubleshooting guide for everyday users.</p>
         <div class="price">Coming Soon</div>
         <a class="btn" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">Ask Availability</a>
       </div>
@@ -1599,12 +1599,12 @@
   </div>
   <div class="section" id="affiliate">
     <h2>Affiliate Links</h2>
-    <p style="text-align:center;">Senarai barang pilihan yang berguna untuk kerja, rumah dan setup PC.</p>
+    <p style="text-align:center;">A curated list of useful items for work, home and PC setups.</p>
 
     <div class="grid">
       <div class="card affiliate-card">
         <h3>&#128722; PC Tools</h3>
-        <p>Barang berguna untuk repair, setup dan maintenance PC.</p>
+        <p>Useful items for PC repair, setup and maintenance.</p>
         <button class="btn blue affiliate-toggle" type="button">View Links</button>
         <div class="affiliate-info">
           <a href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">PC Tools Link 1</a>
@@ -1614,13 +1614,13 @@
 
       <div class="card">
         <h3>&#127968; Useful Home Items</h3>
-        <p>Produk praktikal untuk kegunaan harian.</p>
+        <p>Practical products for everyday use.</p>
         <a class="btn blue" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">Ask Links</a>
       </div>
 
       <div class="card affiliate-card">
         <h3>&#128241; Gadgets</h3>
-        <p>Gadget menarik untuk kerja dan content creation.</p>
+        <p>Useful gadgets for work and content creation.</p>
         <button class="btn blue affiliate-toggle" type="button">View Links</button>
         <div class="affiliate-info">
           <a href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">Gadgets Link 1</a>
@@ -1635,16 +1635,16 @@
     <h2>Request PA / Info Lot</h2>
 
     <div class="card" id="requestCard" style="max-width:700px;margin:auto;">
-      <h3>📂 Request PA, PDUK, Info Lot & Kawasan</h3>
+      <h3>📂 Request PA, PDUK, Lot Info & Area</h3>
       <p>
-        Sila signup atau login terlebih dahulu untuk akses download PA.
+        Please sign up or log in first to access PA downloads.
       </p>
 
       <form class="login-panel" id="signupForm">
         <div class="register-title-row">
-          <h3 class="admin-register-only">Buka Pendaftaran</h3>
+          <h3 class="admin-register-only">Open Registration</h3>
           <a class="admin-whatsapp-link" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
-            Sila WhatsApp Admin untuk buka pendaftaran
+            WhatsApp Admin to open registration
           </a>
         </div>
 
@@ -1655,24 +1655,24 @@
         <p class="request-status" id="signupGateNotice"></p>
 
         <button class="btn" id="showSignupButton" type="button" hidden>
-          Signup Pengguna Baru
+          New User Signup
         </button>
 
         <div id="signupFields" hidden>
-          <h3>Signup Pengguna Baru</h3>
+          <h3>New User Signup</h3>
 
           <label for="signupName">
-            Nama
-            <input id="signupName" type="text" placeholder="Nama anda" required>
+            Name
+            <input id="signupName" type="text" placeholder="Your name" required>
           </label>
 
           <label for="signupPassword">
             Password
-            <input id="signupPassword" type="password" placeholder="Cipta password" required>
+            <input id="signupPassword" type="password" placeholder="Create password" required>
           </label>
 
           <label for="signupPhone">
-            No HP
+            Phone Number
             <div class="phone-input-row">
               <div class="country-combo">
                 <input class="country-code-search" id="signupCountrySearch" value="Malaysia +60" type="hidden">
@@ -1691,7 +1691,7 @@
 
           <label for="signupEmail">
             Email
-            <input id="signupEmail" type="email" inputmode="email" placeholder="Contoh: nama@email.com" required>
+            <input id="signupEmail" type="email" inputmode="email" placeholder="Example: name@email.com" required>
           </label>
 
           <p class="request-error" id="signupError"></p>
@@ -1703,16 +1703,16 @@
       </form>
 
       <form class="login-panel" id="loginForm">
-        <h3>Login Pengguna</h3>
+        <h3>User Login</h3>
 
         <label for="loginName">
-          Nama
-          <input id="loginName" type="text" placeholder="Masukkan nama">
+          Name
+          <input id="loginName" type="text" placeholder="Enter username">
         </label>
 
         <label for="loginPassword">
           Password
-          <input id="loginPassword" type="password" placeholder="Masukkan password" required>
+          <input id="loginPassword" type="password" placeholder="Enter password" required>
         </label>
 
         <p class="request-error" id="loginError"></p>
@@ -1731,9 +1731,9 @@
         </label>
 
         <label for="negeri">
-          Pilih Negeri
+          Select State
           <select id="negeri" required>
-            <option value="">-- Pilih Negeri --</option>
+            <option value="">-- Select State --</option>
             <option value="JOHOR">JOHOR</option>
             <option value="KEDAH">KEDAH</option>
             <option value="KELANTAN">KELANTAN</option>
@@ -1756,15 +1756,15 @@
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue" id="downloadTifButton" type="submit">
-          Muat Turun TIF
+          Download TIF
         </button>
 
         <div id="downloadResultActions" hidden>
           <button class="btn" id="confirmDownloadButton" type="button">
-            Berjaya Download
+            Successful Download
           </button>
           <button class="btn orange" id="failedDownloadButton" type="button">
-            Tidak Berjaya Download
+            Failed Download
           </button>
         </div>
 
@@ -1774,23 +1774,23 @@
       </form>
 
       <a class="btn blue login-only" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
-        WhatsApp Untuk Bantuan
+        WhatsApp For Help
       </a>
 
       <div class="admin-purchase-panel" id="adminPurchasePanel">
         <div class="purchase-panel-layout">
           <div>
-            <h3 id="purchasePanelTitle">Rekod Pembelian</h3>
+            <h3 id="purchasePanelTitle">Purchase Records</h3>
             <p class="request-note" id="purchasePanelNote">
-              Harga: RM5 untuk 1 PA.
+              Price: RM5 for 1 PA.
             </p>
             <button class="btn blue" id="refreshPurchaseButton" type="button">
-              Refresh Rekod
+              Refresh Records
             </button>
             <p class="request-error" id="purchaseAdminError"></p>
             <div class="purchase-summary-list" id="purchaseSummaryList">
               <div class="purchase-summary-item">
-                Belum ada rekod pembelian.
+                No purchase records yet.
               </div>
             </div>
           </div>
@@ -1801,12 +1801,12 @@
               <p class="qr-placeholder">Letak QR bank sebagai images/payment-qr.jpg</p>
               <div class="qr-actions">
                 <button class="qr-action-btn green" id="copyAccountButton" type="button">
-                  Copy No Akaun
+                  Copy Account Number
                 </button>
                 <a class="qr-action-btn" href="images/payment-qr.jpg" download="azobss-payment-qr.jpg">
                   Download QR
                 </a>
-                <p class="qr-copy-status" id="qrCopyStatus">No akaun copied: 162405194110</p>
+                <p class="qr-copy-status" id="qrCopyStatus">Account number copied: 162405194110</p>
               </div>
             </div>
           </div>
@@ -1814,9 +1814,9 @@
       </div>
 
       <div class="registered-users-panel" id="registeredUsersPanel">
-        <h3>Rekod User Berdaftar</h3>
+        <h3>Registered User Records</h3>
         <p class="request-note">
-          Senarai ini hanya dipaparkan kepada admin.
+          This list is only shown to admin.
         </p>
         <button class="btn blue" id="refreshUsersButton" type="button">
           Refresh User
@@ -1824,7 +1824,7 @@
         <p class="request-error" id="registeredUsersError"></p>
         <div class="purchase-summary-list" id="registeredUsersList">
           <div class="purchase-summary-item">
-            Belum ada rekod user.
+            No user records yet.
           </div>
         </div>
       </div>
@@ -1835,7 +1835,7 @@
     <div class="card member-login-card">
       <h3>🔐 Member Login</h3>
       <p>
-        Akses ahli untuk pengguna berdaftar dan pemilik.
+        Member access for registered users and the owner.
       </p>
     </div>
   </div>
@@ -2056,7 +2056,7 @@
 
     function renderPurchaseSummaries(summaries) {
       if (!summaries.length) {
-        purchaseSummaryList.innerHTML = '<div class="purchase-summary-item">Belum ada rekod pembelian.</div>';
+        purchaseSummaryList.innerHTML = '<div class="purchase-summary-item">No purchase records yet.</div>';
         return;
       }
 
@@ -2085,7 +2085,7 @@
         return;
       }
 
-      if (!confirm(`Reset rekod pembelian untuk ${usernameKey}?`)) {
+      if (!confirm(`Reset purchase records for ${usernameKey}?`)) {
         return;
       }
 
@@ -2102,7 +2102,7 @@
 
         await loadPurchaseRecords();
       } catch (error) {
-        purchaseAdminError.textContent = `Gagal reset rekod pembelian: ${error.code || error.message}`;
+        purchaseAdminError.textContent = `Failed to reset purchase records: ${error.code || error.message}`;
       }
     }
 
@@ -2116,8 +2116,8 @@
         const summaries = [];
 
         if (isAdminUser(currentUser)) {
-          purchasePanelTitle.textContent = 'Rekod Pembelian Admin';
-          purchasePanelNote.textContent = 'Harga: RM5 untuk 1 PA. Admin boleh lihat kesemua rekod user.';
+          purchasePanelTitle.textContent = 'Purchase Records Admin';
+          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all user records.';
 
           const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
 
@@ -2125,8 +2125,8 @@
             summaries.push(item.data());
           });
         } else {
-          purchasePanelTitle.textContent = 'Rekod Pembelian Saya';
-          purchasePanelNote.textContent = 'Harga: RM5 untuk 1 PA. Anda hanya boleh lihat rekod sendiri.';
+          purchasePanelTitle.textContent = 'Purchase Records Saya';
+          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. You can only view your own records.';
 
           const summarySnapshot = await getDoc(doc(db, 'purchaseSummaries', currentUser.usernameKey));
 
@@ -2141,13 +2141,13 @@
 
         renderPurchaseSummaries(summaries);
       } catch (error) {
-        purchaseAdminError.textContent = `Gagal baca rekod pembelian: ${error.code || error.message}`;
+        purchaseAdminError.textContent = `Failed to read purchase records: ${error.code || error.message}`;
       }
     }
 
     function renderRegisteredUsers(users) {
       if (!users.length) {
-        registeredUsersList.innerHTML = '<div class="purchase-summary-item">Belum ada rekod user.</div>';
+        registeredUsersList.innerHTML = '<div class="purchase-summary-item">No user records yet.</div>';
         return;
       }
 
@@ -2183,7 +2183,7 @@
 
         renderRegisteredUsers(users);
       } catch (error) {
-        registeredUsersError.textContent = `Gagal baca rekod user: ${error.code || error.message}`;
+        registeredUsersError.textContent = `Failed to read user records: ${error.code || error.message}`;
       }
     }
 
@@ -2281,7 +2281,7 @@
 
     function updateSignupGateCountdown(remainingMs) {
       signupGateNotice.style.display = 'block';
-      signupGateNotice.textContent = `Signup dibuka untuk 1 pengguna sahaja. Auto tutup dalam ${formatSignupGateTime(remainingMs)}.`;
+      signupGateNotice.textContent = `Signup is open for 1 user only. Auto closes in ${formatSignupGateTime(remainingMs)}.`;
     }
 
     async function closeExpiredSignupGate() {
@@ -2293,7 +2293,7 @@
         }, { merge: true });
       } catch (error) {
         signupGateNotice.style.display = 'block';
-        signupGateNotice.textContent = `Gagal tutup signup tamat masa: ${error.code || error.message}`;
+        signupGateNotice.textContent = `Failed to close expired signup: ${error.code || error.message}`;
       }
     }
 
@@ -2308,8 +2308,8 @@
         mode: 'one-time'
       }, { merge: true });
 
-      showGlobalSignupAccess('Signup dibuka online untuk 1 pendaftaran sahaja. Auto tutup dalam 5 minit.');
-      showAccessToast('Signup dibuka online untuk 1 pendaftaran sahaja.');
+      showGlobalSignupAccess('Online signup is open for 1 registration only. Auto closes in 5 minutes.');
+      showAccessToast('Online signup is open for 1 registration only.');
     }
 
     function restoreSignupAccess() {
@@ -2366,7 +2366,7 @@
                 closeSignupAccess();
               } else {
                 signupGateNotice.style.display = 'block';
-                signupGateNotice.textContent = 'Signup tamat masa. Tekan Buka Signup 1 Kali untuk buka semula.';
+                signupGateNotice.textContent = 'Signup time has expired. Click Open Signup Once to reopen.';
               }
 
               return;
@@ -2382,17 +2382,17 @@
             closeSignupAccess();
           } else {
             signupGateNotice.style.display = 'block';
-            signupGateNotice.textContent = 'Signup tamat masa. Tekan Buka Signup 1 Kali untuk buka semula.';
+            signupGateNotice.textContent = 'Signup time has expired. Click Open Signup Once to reopen.';
           }
         } else if (!isLoggedIn) {
           closeSignupAccess();
         } else if (isAdminUser(currentUser)) {
           signupGateNotice.style.display = 'block';
-          signupGateNotice.textContent = 'Signup belum dibuka. Tekan Buka Signup 1 Kali untuk buka pendaftaran.';
+          signupGateNotice.textContent = 'Signup is not open yet. Click Open Signup Once to open registration.';
         }
       }, function () {
         signupGateNotice.style.display = 'block';
-        signupGateNotice.textContent = 'Gate signup online belum boleh dibaca. Semak Firestore Rules untuk settings/signupGate.';
+        signupGateNotice.textContent = 'Online signup gate cannot be read yet. Check Firestore Rules for settings/signupGate.';
       });
     }
 
@@ -2496,7 +2496,7 @@
         const emptyButton = document.createElement('button');
         emptyButton.type = 'button';
         emptyButton.className = 'country-code-option';
-        emptyButton.textContent = 'Tiada negara dijumpai';
+        emptyButton.textContent = 'No country found';
         emptyButton.disabled = true;
         optionsWrap.appendChild(emptyButton);
       }
@@ -2589,7 +2589,7 @@
       const usernameKey = normalizeUsername(name);
 
       if (!name || !password) {
-        errorElement.textContent = 'Sila isi nama dan password.';
+        errorElement.textContent = 'Please enter username and password.';
         return;
       }
 
@@ -2599,7 +2599,7 @@
       }
 
       if (!usernameKey) {
-        errorElement.textContent = 'Nama hanya boleh mengandungi huruf, nombor atau underscore.';
+        errorElement.textContent = 'Username can only contain letters, numbers or underscores.';
         return;
       }
 
@@ -2631,9 +2631,9 @@
         sessionStorage.setItem('azobssLoggedIn', '1');
         errorElement.textContent = '';
         closeSiteAuth();
-        setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
+        setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
-        errorElement.textContent = 'Nama atau password salah. Sila cuba semula.';
+        errorElement.textContent = 'Username or password is incorrect. Please try again.';
       }
     }
 
@@ -2641,17 +2641,17 @@
       const code = memberUpgradeCode.value.trim();
 
       if (!isLoggedIn || !currentUser) {
-        memberUpgradeStatus.textContent = 'Sila sign in dahulu sebelum upgrade.';
+        memberUpgradeStatus.textContent = 'Please sign in before upgrading.';
         return;
       }
 
       if (isAdminUser(currentUser) || currentUser.paAccess !== false) {
-        memberUpgradeStatus.textContent = 'Akaun ini sudah boleh akses Request PA.';
+        memberUpgradeStatus.textContent = 'This account already has Request PA access.';
         return;
       }
 
       if (code !== 'zx6186') {
-        memberUpgradeStatus.textContent = 'Member Code salah.';
+        memberUpgradeStatus.textContent = 'Incorrect Member Code.';
         return;
       }
 
@@ -2675,10 +2675,10 @@
         };
 
         saveCurrentUser(upgradedUser);
-        setLoggedIn(upgradedUser, `Upgrade berjaya. Selamat datang, ${upgradedUser.name}.`);
+        setLoggedIn(upgradedUser, `Upgrade successful. Welcome, ${upgradedUser.name}.`);
         memberUpgradeStatus.textContent = '';
       } catch (error) {
-        memberUpgradeStatus.textContent = `Upgrade gagal: ${error.code || error.message}`;
+        memberUpgradeStatus.textContent = `Upgrade failed: ${error.code || error.message}`;
       } finally {
         memberUpgradeButton.disabled = false;
       }
@@ -2692,12 +2692,12 @@
       const usernameKey = normalizeUsername(name);
 
       if (!name || !password || !phone || !contactEmail) {
-        siteSignupError.textContent = 'Sila isi nama, password, no HP dan email.';
+        siteSignupError.textContent = 'Please enter username, password, phone number and email.';
         return;
       }
 
       if (!isValidEmail(contactEmail)) {
-        siteSignupError.textContent = 'Sila masukkan email yang sah.';
+        siteSignupError.textContent = 'Please enter a valid email address.';
         return;
       }
 
@@ -2707,7 +2707,7 @@
       }
 
       if (!usernameKey) {
-        siteSignupError.textContent = 'Nama hanya boleh mengandungi huruf, nombor atau underscore.';
+        siteSignupError.textContent = 'Username can only contain letters, numbers or underscores.';
         return;
       }
 
@@ -2744,18 +2744,18 @@
         sessionStorage.setItem('azobssLoggedIn', '1');
         siteSignupError.textContent = '';
         closeSiteAuth();
-        setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
+        setLoggedIn(user, `Signup successful. Welcome, ${user.name}.`);
       } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-          siteSignupError.textContent = 'Nama ini sudah didaftarkan. Sila Sign in.';
+          siteSignupError.textContent = 'This username is already registered. Please sign in.';
         } else if (error.code === 'auth/weak-password') {
-          siteSignupError.textContent = 'Password terlalu pendek. Guna sekurang-kurangnya 6 aksara.';
+          siteSignupError.textContent = 'Password is too short. Use at least 6 characters.';
         } else if (error.code === 'auth/operation-not-allowed') {
           siteSignupError.textContent = 'Email/Password belum diaktifkan dalam Firebase Authentication.';
         } else if (error.code === 'permission-denied') {
           siteSignupError.textContent = 'Firestore rules belum membenarkan simpan data user.';
         } else {
-          siteSignupError.textContent = `Signup gagal: ${error.code || error.message}`;
+          siteSignupError.textContent = `Signup failed: ${error.code || error.message}`;
         }
       }
     }
@@ -2796,8 +2796,8 @@
         signupFields.style.display = 'block';
         signupGateNotice.style.display = 'block';
         signupGateNotice.textContent = signupGateOpen
-          ? 'Signup dibuka untuk 1 pengguna sahaja.'
-          : 'Signup belum dibuka. Tekan Buka Signup 1 Kali untuk buka pendaftaran.';
+          ? 'Signup is open for 1 user only.'
+          : 'Signup is not open yet. Click Open Signup Once to open registration.';
         loadRegisteredUsers();
       } else {
         requestCard.classList.remove('is-admin');
@@ -2880,7 +2880,7 @@
         await openSignupAccess();
       } catch (error) {
         signupGateNotice.style.display = 'block';
-        signupGateNotice.textContent = `Gagal buka signup online: ${error.code || error.message}`;
+        signupGateNotice.textContent = `Failed to open online signup: ${error.code || error.message}`;
       }
     });
 
@@ -2909,12 +2909,12 @@
       }
 
       if (!name || !phone || !contactEmail || !password) {
-        signupError.textContent = 'Sila isi nama, no HP, email dan password.';
+        signupError.textContent = 'Please enter username, phone number, email and password.';
         return;
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
-        signupError.textContent = 'Sila masukkan email yang sah.';
+        signupError.textContent = 'Please enter a valid email address.';
         return;
       }
 
@@ -2924,7 +2924,7 @@
       }
 
       if (!usernameKey) {
-        signupError.textContent = 'Nama hanya boleh mengandungi huruf, nombor atau underscore.';
+        signupError.textContent = 'Username can only contain letters, numbers or underscores.';
         return;
       }
 
@@ -2934,7 +2934,7 @@
       }
 
       if (!signupGateOpen) {
-        signupError.textContent = 'Signup belum dibuka oleh admin. Sila WhatsApp Admin untuk buka pendaftaran.';
+        signupError.textContent = 'Signup has not been opened by admin. WhatsApp Admin to open registration.';
         return;
       }
 
@@ -2968,20 +2968,20 @@
         saveCurrentUser(user);
         sessionStorage.setItem('azobssLoggedIn', '1');
         signupError.textContent = '';
-        setLoggedIn(user, `Signup berjaya. Selamat datang, ${user.name}.`);
+        setLoggedIn(user, `Signup successful. Welcome, ${user.name}.`);
       } catch (error) {
         if (error.message === 'signup-gate-closed') {
-          signupError.textContent = 'Signup sudah digunakan oleh pengguna lain. Admin perlu buka semula.';
+          signupError.textContent = 'Signup has already been used by another user. Admin needs to reopen it.';
         } else if (error.code === 'auth/email-already-in-use') {
-          signupError.textContent = 'Nama ini sudah didaftarkan. Sila guna nama lain.';
+          signupError.textContent = 'This username is already registered. Please use another name.';
         } else if (error.code === 'auth/weak-password') {
-          signupError.textContent = 'Password terlalu pendek. Guna sekurang-kurangnya 6 aksara.';
+          signupError.textContent = 'Password is too short. Use at least 6 characters.';
         } else if (error.code === 'auth/operation-not-allowed') {
           signupError.textContent = 'Email/Password belum diaktifkan dalam Firebase Authentication.';
         } else if (error.code === 'permission-denied') {
           signupError.textContent = 'Firestore rules belum membenarkan simpan data user.';
         } else {
-          signupError.textContent = `Signup gagal: ${error.code || error.message}`;
+          signupError.textContent = `Signup failed: ${error.code || error.message}`;
         }
       }
     });
@@ -2994,7 +2994,7 @@
       const usernameKey = normalizeUsername(name);
 
       if (!name || !password) {
-        loginError.textContent = 'Sila isi nama dan password.';
+        loginError.textContent = 'Please enter username and password.';
         return;
       }
 
@@ -3030,9 +3030,9 @@
         saveCurrentUser(user);
         loginError.textContent = '';
         sessionStorage.setItem('azobssLoggedIn', '1');
-        setLoggedIn(user, `Login berjaya. Selamat datang, ${user.name}.`);
+        setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
-        loginError.textContent = 'Nama atau password salah. Sila cuba semula.';
+        loginError.textContent = 'Username or password is incorrect. Please try again.';
       }
     });
 
@@ -3081,7 +3081,7 @@
       downloadResultActions.style.display = 'none';
       pendingDownload = null;
       restoreSignupAccess();
-      showAccessToast('Logout berjaya.');
+      showAccessToast('Logout successful.');
     });
 
     const savedUser = getSavedUser();
@@ -3168,9 +3168,9 @@
     copyAccountButton.addEventListener('click', async function () {
       try {
         await navigator.clipboard.writeText(BANK_ACCOUNT_NUMBER);
-        qrCopyStatus.textContent = `No akaun copied: ${BANK_ACCOUNT_NUMBER}`;
+        qrCopyStatus.textContent = `Account number copied: ${BANK_ACCOUNT_NUMBER}`;
       } catch (error) {
-        qrCopyStatus.textContent = `Copy gagal. No akaun: ${BANK_ACCOUNT_NUMBER}`;
+        qrCopyStatus.textContent = `Copy failed. Account number: ${BANK_ACCOUNT_NUMBER}`;
       }
 
       qrCopyStatus.style.display = 'block';
@@ -3184,7 +3184,7 @@
       event.preventDefault();
 
       if (!isAdminUser(currentUser) && currentUser && currentUser.paAccess === false) {
-        paError.textContent = 'Akaun biasa tidak mempunyai akses Request PA / Info Lot.';
+        paError.textContent = 'Standard accounts do not have Request PA / Info Lot access.';
         return;
       }
 
@@ -3193,12 +3193,12 @@
       const selectedNegeri = negeri.value;
 
       if (!isLoggedIn) {
-        paError.textContent = 'Sila login dahulu sebelum download PA.';
+        paError.textContent = 'Please log in before downloading PA.';
         return;
       }
 
       if (!url) {
-        paError.textContent = 'Sila isi nombor PA dan pilih negeri dahulu.';
+        paError.textContent = 'Please enter the PA number and select a state first.';
         return;
       }
 
@@ -3210,7 +3210,7 @@
       };
 
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Download dibuka. Pilih Berjaya Download jika fail TIF berjaya dimuat turun, atau Tidak Berjaya Download jika laman JUPEM memaparkan error.';
+      paStatus.textContent = 'Download opened. Choose Successful Download if the TIF file downloaded, or Failed Download if the JUPEM page shows an error.';
       downloadTifButton.hidden = true;
       downloadTifButton.style.display = 'none';
       downloadResultActions.hidden = false;
@@ -3219,7 +3219,7 @@
 
     confirmDownloadButton.addEventListener('click', async function () {
       if (!pendingDownload) {
-        paError.textContent = 'Tiada download untuk disahkan.';
+        paError.textContent = 'No download to confirm.';
         return;
       }
 
@@ -3234,7 +3234,7 @@
         downloadTifButton.hidden = false;
         downloadTifButton.style.display = 'inline-block';
       } catch (error) {
-        paError.textContent = `Rekod pembelian gagal disimpan: ${error.code || error.message}`;
+        paError.textContent = `Failed to save purchase record: ${error.code || error.message}`;
       } finally {
         confirmDownloadButton.disabled = false;
       }
