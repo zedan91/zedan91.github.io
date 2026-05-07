@@ -2058,7 +2058,8 @@
       getAuth,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      signOut
+      signOut,
+      onAuthStateChanged
     } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
     import {
       getFirestore,
@@ -2330,6 +2331,10 @@
         return;
       }
 
+      if (firebaseReady && auth && !auth.currentUser) {
+        return;
+      }
+
       try {
         purchaseAdminError.textContent = '';
         const summaries = [];
@@ -2590,6 +2595,10 @@
         return;
       }
 
+      if (firebaseReady && auth && !auth.currentUser) {
+        return;
+      }
+
       try {
         registeredUsersError.textContent = '';
         const snapshot = await getDocs(collection(db, 'users'));
@@ -2631,7 +2640,7 @@
     }
 
     function startLiveUsersListener() {
-      if (!firebaseReady || !isAdminUser(currentUser) || liveUsersUnsubscribe) {
+      if (!firebaseReady || !auth.currentUser || !isAdminUser(currentUser) || liveUsersUnsubscribe) {
         return;
       }
 
@@ -2755,7 +2764,7 @@
     }
 
     function startGuestOnlineListener() {
-      if (!firebaseReady || !isAdminUser(currentUser) || guestOnlineUnsubscribe) {
+      if (!firebaseReady || !auth.currentUser || !isAdminUser(currentUser) || guestOnlineUnsubscribe) {
         return;
       }
 
@@ -3774,14 +3783,49 @@
       updatePresence(false);
       updateVisitorPresence(false);
     });
+    function initializeSavedSession() {
+      const savedUser = getSavedUser();
 
-    const savedUser = getSavedUser();
+      if (!savedUser || sessionStorage.getItem('azobssLoggedIn') !== '1') {
+        restoreSignupAccess();
+        return;
+      }
 
-    if (savedUser && sessionStorage.getItem('azobssLoggedIn') === '1') {
-      setLoggedIn(savedUser);
-    } else {
-      restoreSignupAccess();
+      if (!firebaseReady || !auth) {
+        setLoggedIn(savedUser);
+        return;
+      }
+
+      onAuthStateChanged(auth, function (firebaseUser) {
+        if (!firebaseUser) {
+          clearCurrentUser();
+          sessionStorage.removeItem('azobssLoggedIn');
+          restoreSignupAccess();
+          return;
+        }
+
+        const expectedEmail = buildUserEmail(savedUser.usernameKey).toLowerCase();
+        const activeEmail = (firebaseUser.email || '').toLowerCase();
+
+        if (activeEmail !== expectedEmail) {
+          clearCurrentUser();
+          sessionStorage.removeItem('azobssLoggedIn');
+          restoreSignupAccess();
+          return;
+        }
+
+        setLoggedIn({
+          ...savedUser,
+          uid: firebaseUser.uid
+        });
+      }, function () {
+        clearCurrentUser();
+        sessionStorage.removeItem('azobssLoggedIn');
+        restoreSignupAccess();
+      });
     }
+
+    initializeSavedSession();
 
     function removeRegistrationWhatsAppPrompt() {
       document.querySelectorAll('#signupForm .admin-whatsapp-link, #signupForm .register-title-row a[href*="alvo.chat"]').forEach(function (element) {
