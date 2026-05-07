@@ -586,6 +586,14 @@
       margin: auto;
     }
 
+    #request {
+      display: none;
+    }
+
+    #request.is-visible {
+      display: block;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -1903,6 +1911,7 @@
     const loginInfo = document.getElementById('loginInfo');
     const loginToast = document.getElementById('loginToast');
     const requestCard = document.getElementById('requestCard');
+    const requestSection = document.getElementById('request');
     const heroRequestButton = document.getElementById('heroRequestButton');
     const userMenu = document.getElementById('userMenu');
     const userAvatar = document.getElementById('userAvatar');
@@ -2776,6 +2785,7 @@
       loginError.textContent = '';
       const hasPaAccess = isAdminUser(user) || user.paAccess !== false;
       requestCard.classList.toggle('has-pa-access', hasPaAccess);
+      requestSection.classList.toggle('is-visible', hasPaAccess);
       heroRequestButton.classList.toggle('is-visible', hasPaAccess);
       paForm.hidden = !hasPaAccess;
 
@@ -3058,6 +3068,7 @@
       requestCard.classList.remove('is-authenticated');
       requestCard.classList.remove('is-admin');
       requestCard.classList.remove('has-pa-access');
+      requestSection.classList.remove('is-visible');
       heroRequestButton.classList.remove('is-visible');
       signupFields.style.display = 'none';
       showSignupButton.style.display = 'none';
