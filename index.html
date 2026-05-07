@@ -864,22 +864,6 @@
       display: block;
     }
 
-    .admin-whatsapp-link {
-      display: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      background: #25d366;
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
-      text-decoration: none;
-      box-shadow: 0 8px 18px rgba(37,211,102,0.22);
-    }
-
-    .admin-whatsapp-link:hover {
-      background: #16a34a;
-      text-decoration: none;
-    }
 
     .login-info {
       display: none;
@@ -1641,11 +1625,8 @@
       </p>
 
       <form class="login-panel" id="signupForm">
-        <div class="register-title-row">
-          <h3 class="admin-register-only">Open Registration</h3>
-          <a class="admin-whatsapp-link" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
-            WhatsApp Admin to open registration
-          </a>
+        <div class="register-title-row admin-register-only">
+          <h3>Open Registration</h3>
         </div>
 
         <button class="btn orange admin-register-only" id="unlockSignupButton" type="button">
@@ -2934,7 +2915,7 @@
       }
 
       if (!signupGateOpen) {
-        signupError.textContent = 'Signup has not been opened by admin. WhatsApp Admin to open registration.';
+        signupError.textContent = 'Signup has not been opened by admin.';
         return;
       }
 
