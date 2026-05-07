@@ -2317,6 +2317,8 @@
     let liveUsersUnsubscribe = null;
     let guestOnlineUnsubscribe = null;
     let visitorPresenceTimer = null;
+    let visitorIpAddress = sessionStorage.getItem('azobssVisitorIpAddress') || '';
+    let visitorIpPromise = null;
     let authRestoreUnsubscribe = null;
     let authStateReady = false;
 
@@ -3222,26 +3224,44 @@
       }
     }
 
-    function buildGuestNameFromVisitorId(visitorId) {
-      let hash = 0;
-      const source = String(visitorId || 'guest');
-
-      for (let index = 0; index < source.length; index += 1) {
-        hash = ((hash << 5) - hash) + source.charCodeAt(index);
-        hash |= 0;
-      }
-
-      return `Guest${String((Math.abs(hash) % 9000) + 1000)}`;
+    function buildGuestNameFromIp(ipAddress) {
+      return ipAddress ? `Guest(${ipAddress})` : 'Guest(unknown IP)';
     }
 
-    function getGuestName(visitorId) {
-      let guestName = sessionStorage.getItem('azobssGuestName');
-
-      if (!guestName) {
-        guestName = buildGuestNameFromVisitorId(visitorId);
-        sessionStorage.setItem('azobssGuestName', guestName);
+    async function resolveVisitorIpAddress() {
+      if (visitorIpAddress) {
+        return visitorIpAddress;
       }
 
+      if (!visitorIpPromise) {
+        visitorIpPromise = fetch('https://api64.ipify.org?format=json', { cache: 'no-store' })
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error('IP lookup failed');
+            }
+
+            return response.json();
+          })
+          .then(function (data) {
+            visitorIpAddress = typeof data.ip === 'string' ? data.ip : '';
+
+            if (visitorIpAddress) {
+              sessionStorage.setItem('azobssVisitorIpAddress', visitorIpAddress);
+            }
+
+            return visitorIpAddress;
+          })
+          .catch(function () {
+            return '';
+          });
+      }
+
+      return visitorIpPromise;
+    }
+
+    function getGuestName(ipAddress) {
+      const guestName = buildGuestNameFromIp(ipAddress);
+      sessionStorage.setItem('azobssGuestName', guestName);
       return guestName;
     }
 
@@ -3256,9 +3276,8 @@
       return firstSeenMs;
     }
 
-    function getGuestDisplayName(data, visitorId) {
-      const name = data.guestName || data.name;
-      return name && name !== 'Guest' ? name : buildGuestNameFromVisitorId(visitorId);
+    function getGuestDisplayName(data) {
+      return buildGuestNameFromIp(data.ipAddress || '');
     }
 
     async function updateVisitorPresence(online) {
@@ -3268,7 +3287,8 @@
 
       const visitorId = getVisitorId();
       const isSignedInVisitor = Boolean(currentUser);
-      const guestName = isSignedInVisitor ? '' : getGuestName(visitorId);
+      const ipAddress = isSignedInVisitor ? '' : await resolveVisitorIpAddress();
+      const guestName = isSignedInVisitor ? '' : getGuestName(ipAddress);
       const lastSeenMs = Date.now();
 
       try {
@@ -3279,6 +3299,7 @@
           usernameKey: isSignedInVisitor ? currentUser.usernameKey : '',
           name: isSignedInVisitor ? currentUser.name : guestName,
           guestName,
+          ipAddress: isSignedInVisitor ? '' : ipAddress,
           firstSeenMs: isSignedInVisitor ? null : getGuestFirstSeenMs(),
           lastSeenMs,
           updatedAt: serverTimestamp()
