@@ -996,6 +996,35 @@
       color: #22c55e;
     }
 
+    .purchase-record-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .purchase-record-actions .btn {
+      margin: 0;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+
+    #purchaseSummaryList {
+      gap: 6px;
+    }
+
+    #purchaseSummaryList .purchase-summary-item {
+      grid-template-columns: minmax(130px, 1.1fr) auto auto auto auto;
+      gap: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    #purchaseSummaryList .small-action-btn {
+      padding: 7px 10px;
+      border-radius: 7px;
+      font-size: 12px;
+    }
     .small-action-btn {
       width: fit-content;
       margin: 0;
@@ -2023,9 +2052,14 @@
             <p class="request-note" id="purchasePanelNote">
               Price: RM5 for 1 PA.
             </p>
-            <button class="btn blue" id="refreshPurchaseButton" type="button">
-              Refresh Records
-            </button>
+            <div class="purchase-record-actions">
+              <button class="btn blue" id="refreshPurchaseButton" type="button">
+                Refresh Records
+              </button>
+              <button class="btn blue" id="togglePurchaseRecordsButton" type="button">
+                Hide Records
+              </button>
+            </div>
             <div class="admin-user-tools" id="purchaseRecordTools" hidden>
               <label for="purchaseRecordSearch">
                 Search purchase record
@@ -2271,6 +2305,7 @@
     const failedDownloadButton = document.getElementById('failedDownloadButton');
     const adminPurchasePanel = document.getElementById('adminPurchasePanel');
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
+    const togglePurchaseRecordsButton = document.getElementById('togglePurchaseRecordsButton');
     const purchaseRecordTools = document.getElementById('purchaseRecordTools');
     const purchaseRecordSearch = document.getElementById('purchaseRecordSearch');
     const purchaseRecordSort = document.getElementById('purchaseRecordSort');
@@ -2309,6 +2344,7 @@
     let pendingDownload = null;
     let allPurchaseSummaries = [];
     let purchaseRecordsPage = 1;
+    let purchaseRecordsVisible = true;
     let allRegisteredUsers = [];
     let registeredUsersPage = 1;
     let allLiveUsers = [];
@@ -2318,6 +2354,7 @@
     let allGuestHistory = [];
     let guestHistoryPage = 1;
     const HISTORY_PAGE_SIZE = 3;
+    const PURCHASE_RECORDS_PAGE_SIZE = 10;
     const HISTORY_PAGINATION_MAX_BUTTONS = 10;
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
@@ -2442,7 +2479,7 @@
         return;
       }
 
-      const pageData = getHistoryPageItems(summaries, requestedPage);
+      const pageData = getHistoryPageItems(summaries, requestedPage, PURCHASE_RECORDS_PAGE_SIZE);
       purchaseRecordsPage = pageData.page;
 
       purchaseSummaryList.innerHTML = pageData.pageItems.map(function (summary) {
@@ -2539,6 +2576,25 @@
     function applyPurchaseRecordFilters(requestedPage = 1) {
       renderPurchaseSummaries(getFilteredPurchaseSummaries(), requestedPage);
     }
+    function setPurchaseRecordsVisible(visible) {
+      purchaseRecordsVisible = visible;
+
+      if (togglePurchaseRecordsButton) {
+        togglePurchaseRecordsButton.textContent = visible ? 'Hide Records' : 'Show Records';
+      }
+
+      if (purchaseSummaryList) {
+        purchaseSummaryList.hidden = !visible;
+      }
+
+      if (purchaseRecordsPagination) {
+        purchaseRecordsPagination.hidden = !visible;
+      }
+
+      if (purchaseRecordTools && isAdminUser(currentUser)) {
+        purchaseRecordTools.hidden = !visible;
+      }
+    }
     async function resetPurchaseSummary(usernameKey) {
       if (!isAdminUser(currentUser) || !usernameKey) {
         return;
@@ -2577,7 +2633,10 @@
       try {
         purchaseAdminError.textContent = '';
         const summaries = [];
-        purchaseRecordTools.hidden = !isAdminUser(currentUser);
+        purchaseRecordTools.hidden = !isAdminUser(currentUser) || !purchaseRecordsVisible;
+        if (togglePurchaseRecordsButton) {
+          togglePurchaseRecordsButton.style.display = isAdminUser(currentUser) ? 'inline-block' : 'none';
+        }
 
         if (isAdminUser(currentUser)) {
           purchasePanelTitle.textContent = 'Purchase Records Users';
@@ -2644,6 +2703,7 @@
         }
 
         allPurchaseSummaries = summaries;
+        setPurchaseRecordsVisible(purchaseRecordsVisible);
         applyPurchaseRecordFilters();
       } catch (error) {
         purchaseAdminError.textContent = `Failed to read purchase records: ${error.code || error.message}`;
@@ -2976,28 +3036,28 @@
 
       const windowRange = getPaginationWindow(currentPage, totalPages);
       const buttons = [];
-      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-page="1" ${currentPage === 1 ? 'disabled' : ''}>&lt;&lt; First</button>`);
-      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="previous" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-page="1" ${currentPage === 1 ? 'disabled' : ''}>&lt;&lt;</button>`);
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="previous" ${currentPage === 1 ? 'disabled' : ''}>P</button>`);
 
       for (let page = windowRange.startPage; page <= windowRange.endPage; page += 1) {
         const activeClass = page === currentPage ? ' is-active' : '';
         buttons.push(`<button class="guest-history-page-btn${activeClass}" type="button" data-history-type="${historyType}" data-history-page="${page}">${page}</button>`);
       }
 
-      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
-      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last &gt;&gt;</button>`);
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="next" ${currentPage === totalPages ? 'disabled' : ''}>N</button>`);
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>&gt;&gt;</button>`);
       container.innerHTML = buttons.join('');
     }
 
-    function getHistoryPageItems(items, requestedPage) {
-      const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
+    function getHistoryPageItems(items, requestedPage, pageSize = HISTORY_PAGE_SIZE) {
+      const totalPages = Math.ceil(items.length / pageSize);
       const page = Math.min(Math.max(requestedPage, 1), totalPages || 1);
-      const startIndex = (page - 1) * HISTORY_PAGE_SIZE;
+      const startIndex = (page - 1) * pageSize;
 
       return {
         page,
         totalPages,
-        pageItems: items.slice(startIndex, startIndex + HISTORY_PAGE_SIZE)
+        pageItems: items.slice(startIndex, startIndex + pageSize)
       };
     }
 
@@ -4411,6 +4471,7 @@
       paForm.hidden = true;
       adminPurchasePanel.style.display = 'none';
       registeredUsersPanel.style.display = 'none';
+      setPurchaseRecordsVisible(true);
       purchaseRecordSearch.value = '';
       purchaseRecordSort.value = 'amountDesc';
       allPurchaseSummaries = [];
@@ -4580,6 +4641,9 @@
     negeri.addEventListener('change', updatePreview);
 
     refreshPurchaseButton.addEventListener('click', loadPurchaseRecords);
+    togglePurchaseRecordsButton.addEventListener('click', function () {
+      setPurchaseRecordsVisible(!purchaseRecordsVisible);
+    });
     purchaseRecordSearch.addEventListener('input', function () { applyPurchaseRecordFilters(1); });
     purchaseRecordSort.addEventListener('change', function () { applyPurchaseRecordFilters(1); });
     purchaseSummaryList.addEventListener('click', function (event) {
