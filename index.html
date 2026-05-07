@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>AZOBSS | PC Service, Info Lot & Digital Tools</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="description" content="AZOBSS menyediakan servis PC, troubleshoot Windows online, info lot, PA, affiliate links, e-book, software dan AutoCAD LISP.">
 
   <style>
@@ -858,6 +861,18 @@
 
     .admin-register-only {
       display: none;
+    }
+
+    #signupForm .admin-whatsapp-link,
+    #signupForm .force-hide-registration-whatsapp,
+    #signupForm .register-title-row a[href*="alvo.chat"] {
+      display: none !important;
+      visibility: hidden !important;
+      width: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
     }
 
     .is-admin .admin-register-only {
@@ -3072,6 +3087,14 @@
     } else {
       restoreSignupAccess();
     }
+
+    function removeRegistrationWhatsAppPrompt() {
+      document.querySelectorAll('#signupForm .admin-whatsapp-link, #signupForm .register-title-row a[href*="alvo.chat"]').forEach(function (element) {
+        element.remove();
+      });
+    }
+
+    removeRegistrationWhatsAppPrompt();
 
     const serviceCards = document.querySelectorAll('.service-card');
 
