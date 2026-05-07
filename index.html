@@ -865,7 +865,7 @@
     }
 
     .admin-whatsapp-link {
-      display: inline-block;
+      display: none;
       padding: 10px 14px;
       border-radius: 10px;
       background: #25d366;
@@ -1649,7 +1649,7 @@
         </div>
 
         <button class="btn orange admin-register-only" id="unlockSignupButton" type="button">
-          Buka Signup 1 Kali
+          Open Signup Once
         </button>
 
         <p class="request-status" id="signupGateNotice"></p>
@@ -2876,7 +2876,7 @@
 
       try {
         signupGateNotice.style.display = 'block';
-        signupGateNotice.textContent = 'Membuka signup online...';
+        signupGateNotice.textContent = 'Opening online signup...';
         await openSignupAccess();
       } catch (error) {
         signupGateNotice.style.display = 'block';
