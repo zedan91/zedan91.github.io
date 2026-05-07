@@ -2265,12 +2265,28 @@
 
         if (isAdminUser(currentUser)) {
           purchasePanelTitle.textContent = 'Purchase Records Admin';
-          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all user records.';
+          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all active user records.';
+
+          const userSnapshot = await getDocs(collection(db, 'users'));
+          const activeUsers = new Set();
+
+          userSnapshot.forEach(function (item) {
+            const data = item.data();
+
+            if (!data.deleted) {
+              activeUsers.add(data.usernameKey || item.id);
+            }
+          });
 
           const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
 
           snapshot.forEach(function (item) {
-            summaries.push(item.data());
+            const data = item.data();
+            const usernameKey = data.usernameKey || item.id;
+
+            if (!data.deleted && activeUsers.has(usernameKey)) {
+              summaries.push(data);
+            }
           });
         } else {
           purchasePanelTitle.textContent = 'Purchase Records Saya';
@@ -2466,7 +2482,7 @@
         return;
       }
 
-      if (!confirm(`Delete user record for ${usernameKey}? This removes the Firestore profile only.`)) {
+      if (!confirm(`Delete user record for ${usernameKey}? This also hides the user from admin purchase records.`)) {
         return;
       }
 
@@ -2477,7 +2493,20 @@
           deletedAt: serverTimestamp(),
           deletedBy: currentUser.usernameKey
         }, { merge: true });
+
+        await setDoc(doc(db, 'purchaseSummaries', usernameKey), {
+          usernameKey,
+          totalUnits: 0,
+          totalAmount: 0,
+          lastPa: '',
+          lastNegeri: '',
+          deleted: true,
+          deletedAt: serverTimestamp(),
+          deletedBy: currentUser.usernameKey
+        }, { merge: true });
+
         await loadRegisteredUsers();
+        await loadPurchaseRecords();
       } catch (error) {
         registeredUsersError.textContent = `Failed to delete user record: ${error.code || error.message}`;
       }
@@ -2637,6 +2666,9 @@
           totalAmount,
           lastPa: paValue,
           lastNegeri: selectedNegeri,
+          deleted: false,
+          deletedAt: null,
+          deletedBy: null,
           updatedAt: serverTimestamp()
         }, { merge: true });
       });
