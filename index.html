@@ -2169,6 +2169,16 @@
         <p class="request-note">
           This list is only shown to admin.
         </p>
+        <div class="guest-history-stats">
+          <div class="guest-history-stat">
+            Today Registered
+            <strong id="registeredUsersToday">0</strong>
+          </div>
+          <div class="guest-history-stat">
+            This Month Registered
+            <strong id="registeredUsersMonth">0</strong>
+          </div>
+        </div>
         <div class="admin-user-tools">
           <label for="registeredUserSearch">
             Search user
@@ -2381,6 +2391,8 @@
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
     const registeredUsersPagination = document.getElementById('registeredUsersPagination');
+    const registeredUsersToday = document.getElementById('registeredUsersToday');
+    const registeredUsersMonth = document.getElementById('registeredUsersMonth');
     const liveUsersList = document.getElementById('liveUsersList');
     const liveUsersPagination = document.getElementById('liveUsersPagination');
     const loginHistoryList = document.getElementById('loginHistoryList');
@@ -3037,6 +3049,7 @@
         });
 
         allRegisteredUsers = users;
+        updateHistoryTotals(users, registeredUsersToday, registeredUsersMonth, getUserCreatedMs);
         applyRegisteredUserFilters();
         renderLoginHistory(users);
       } catch (error) {
