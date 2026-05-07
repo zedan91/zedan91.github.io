@@ -968,6 +968,69 @@
       text-align: left;
     }
 
+    .admin-user-tools {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 240px) auto;
+      gap: 10px;
+      align-items: end;
+      margin: 14px 0;
+    }
+
+    .admin-user-tools label {
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .admin-user-tools input,
+    .admin-user-tools select {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 5px;
+      padding: 10px 12px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: white;
+    }
+
+    .admin-live-panel {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(148,163,184,0.18);
+    }
+
+    .admin-live-panel h4 {
+      margin: 0 0 10px;
+      color: #e2e8f0;
+      font-size: 16px;
+    }
+
+    .live-user-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .live-user-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 9px;
+      background: rgba(30,41,59,0.75);
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    .live-user-item strong {
+      color: #22c55e;
+    }
+
+    .live-user-time {
+      color: #94a3b8;
+      white-space: nowrap;
+    }
     .user-edit-item {
       grid-template-columns: 1fr;
       align-items: stretch;
@@ -1013,6 +1076,10 @@
     }
 
     @media (max-width: 640px) {
+      .admin-user-tools {
+        grid-template-columns: 1fr;
+      }
+
       .user-edit-grid {
         grid-template-columns: 1fr;
       }
@@ -1871,13 +1938,33 @@
         <p class="request-note">
           This list is only shown to admin.
         </p>
-        <button class="btn blue" id="refreshUsersButton" type="button">
-          Refresh User
-        </button>
+        <div class="admin-user-tools">
+          <label for="registeredUserSearch">
+            Search user
+            <input id="registeredUserSearch" type="search" placeholder="Search username, phone or email">
+          </label>
+          <label for="registeredUserSort">
+            Sort by
+            <select id="registeredUserSort">
+              <option value="username">Username A-Z</option>
+              <option value="dateNewest">Date registered: newest</option>
+              <option value="dateOldest">Date registered: oldest</option>
+            </select>
+          </label>
+          <button class="btn blue" id="refreshUsersButton" type="button">
+            Search / Refresh
+          </button>
+        </div>
         <p class="request-error" id="registeredUsersError"></p>
         <div class="purchase-summary-list" id="registeredUsersList">
           <div class="purchase-summary-item">
             No user records yet.
+          </div>
+        </div>
+        <div class="admin-live-panel" id="liveUsersPanel">
+          <h4>Live Logged-In Users</h4>
+          <div class="live-user-list" id="liveUsersList">
+            <div class="purchase-summary-item">No users are online right now.</div>
           </div>
         </div>
       </div>
@@ -2011,8 +2098,11 @@
     const purchasePanelNote = document.getElementById('purchasePanelNote');
     const registeredUsersPanel = document.getElementById('registeredUsersPanel');
     const refreshUsersButton = document.getElementById('refreshUsersButton');
+    const registeredUserSearch = document.getElementById('registeredUserSearch');
+    const registeredUserSort = document.getElementById('registeredUserSort');
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
+    const liveUsersList = document.getElementById('liveUsersList');
     const copyAccountButton = document.getElementById('copyAccountButton');
     const qrCopyStatus = document.getElementById('qrCopyStatus');
     const BANK_ACCOUNT_NUMBER = '162405194110';
@@ -2021,6 +2111,9 @@
     let currentUser = null;
     let signupGateTimer = null;
     let pendingDownload = null;
+    let allRegisteredUsers = [];
+    let presenceHeartbeatTimer = null;
+    let liveUsersUnsubscribe = null;
 
     function cleanPaNumber(value) {
       return value
@@ -2209,9 +2302,67 @@
         .replace(/'/g, '&#39;');
     }
 
+    function getUserCreatedMs(user) {
+      const createdAt = user.createdAt;
+
+      if (createdAt && typeof createdAt.toMillis === 'function') {
+        return createdAt.toMillis();
+      }
+
+      if (createdAt && typeof createdAt.seconds === 'number') {
+        return createdAt.seconds * 1000;
+      }
+
+      return 0;
+    }
+
+    function formatUserCreatedDate(user) {
+      const createdMs = getUserCreatedMs(user);
+      return createdMs ? new Date(createdMs).toLocaleString('en-MY') : '-';
+    }
+
+    function getFilteredRegisteredUsers() {
+      const queryText = (registeredUserSearch.value || '').trim().toLowerCase();
+      const sortMode = registeredUserSort.value || 'username';
+      let users = allRegisteredUsers.slice();
+
+      if (queryText) {
+        users = users.filter(function (user) {
+          const usernameKey = user.usernameKey || normalizeUsername(user.name || '');
+          const searchable = [
+            usernameKey,
+            user.name || '',
+            user.phone || '',
+            user.contactEmail || '',
+            user.email || ''
+          ].join(' ').toLowerCase();
+
+          return searchable.includes(queryText);
+        });
+      }
+
+      users.sort(function (a, b) {
+        if (sortMode === 'dateNewest') {
+          return getUserCreatedMs(b) - getUserCreatedMs(a);
+        }
+
+        if (sortMode === 'dateOldest') {
+          return getUserCreatedMs(a) - getUserCreatedMs(b);
+        }
+
+        return (a.usernameKey || '').localeCompare(b.usernameKey || '');
+      });
+
+      return users;
+    }
+
+    function applyRegisteredUserFilters() {
+      renderRegisteredUsers(getFilteredRegisteredUsers());
+    }
+
     function renderRegisteredUsers(users) {
       if (!users.length) {
-        registeredUsersList.innerHTML = '<div class="purchase-summary-item">No user records yet.</div>';
+        registeredUsersList.innerHTML = '<div class="purchase-summary-item">No matching user records found.</div>';
         return;
       }
 
@@ -2226,6 +2377,7 @@
               <strong>${escapeHtml(user.name || usernameKey)}</strong>
               <div>Username: <strong>${escapeHtml(usernameKey || '-')}</strong></div>
               <div>Role: <strong>${isAdminRecord ? 'Admin' : 'User'}</strong></div>
+              <div>Date registered: <strong>${escapeHtml(formatUserCreatedDate(user))}</strong></div>
               <div>UID: <strong>${escapeHtml(user.uid ? user.uid.slice(0, 8) : '-')}</strong></div>
             </div>
             <div class="user-edit-grid">
@@ -2257,7 +2409,6 @@
         `;
       }).join('');
     }
-
     async function saveRegisteredUserDetails(usernameKey, itemElement) {
       if (!isAdminUser(currentUser) || !usernameKey || !itemElement) {
         return;
@@ -2349,16 +2500,106 @@
           }
         });
 
-        users.sort(function (a, b) {
-          return (a.usernameKey || '').localeCompare(b.usernameKey || '');
-        });
-
-        renderRegisteredUsers(users);
+        allRegisteredUsers = users;
+        applyRegisteredUserFilters();
       } catch (error) {
         registeredUsersError.textContent = `Failed to read user records: ${error.code || error.message}`;
       }
     }
 
+    function renderLiveUsers(users) {
+      if (!liveUsersList) {
+        return;
+      }
+
+      if (!users.length) {
+        liveUsersList.innerHTML = '<div class="purchase-summary-item">No users are online right now.</div>';
+        return;
+      }
+
+      liveUsersList.innerHTML = users.map(function (user) {
+        const lastSeen = user.lastSeenMs ? new Date(user.lastSeenMs).toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' }) : 'now';
+        return `
+          <div class="live-user-item">
+            <span><strong>${escapeHtml(user.name || user.usernameKey || '-')}</strong> ${escapeHtml(user.phone || '')}</span>
+            <span class="live-user-time">${escapeHtml(lastSeen)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function startLiveUsersListener() {
+      if (!firebaseReady || !isAdminUser(currentUser) || liveUsersUnsubscribe) {
+        return;
+      }
+
+      liveUsersUnsubscribe = onSnapshot(collection(db, 'users'), function (snapshot) {
+        const now = Date.now();
+        const liveUsers = [];
+
+        snapshot.forEach(function (item) {
+          const data = item.data();
+          if (!data.deleted && data.online === true && data.lastSeenMs && now - data.lastSeenMs <= 90000) {
+            liveUsers.push(data);
+          }
+        });
+
+        liveUsers.sort(function (a, b) {
+          return (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        });
+
+        renderLiveUsers(liveUsers);
+      }, function () {
+        renderLiveUsers([]);
+      });
+    }
+
+    function stopLiveUsersListener() {
+      if (liveUsersUnsubscribe) {
+        liveUsersUnsubscribe();
+        liveUsersUnsubscribe = null;
+      }
+
+      renderLiveUsers([]);
+    }
+
+    async function updatePresence(online) {
+      if (!firebaseReady || !currentUser || !currentUser.usernameKey) {
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, 'users', currentUser.usernameKey), {
+          uid: currentUser.uid,
+          usernameKey: currentUser.usernameKey,
+          name: currentUser.name || currentUser.usernameKey,
+          phone: currentUser.phone || '',
+          online,
+          lastSeenMs: Date.now(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        // Presence is optional; keep the main login flow working if rules block it.
+      }
+    }
+
+    function startPresenceHeartbeat() {
+      if (presenceHeartbeatTimer) {
+        clearInterval(presenceHeartbeatTimer);
+      }
+
+      updatePresence(true);
+      presenceHeartbeatTimer = setInterval(function () {
+        updatePresence(true);
+      }, 30000);
+    }
+
+    function stopPresenceHeartbeat() {
+      if (presenceHeartbeatTimer) {
+        clearInterval(presenceHeartbeatTimer);
+        presenceHeartbeatTimer = null;
+      }
+    }
     async function recordPurchase(paValue, selectedNegeri, url) {
       if (!currentUser) {
         return;
@@ -2968,6 +3209,7 @@
       loginInfo.textContent = '';
 
       showSignedInUser(user);
+      startPresenceHeartbeat();
 
       if (isAdminUser(user)) {
         requestCard.classList.add('is-admin');
@@ -2980,6 +3222,7 @@
           ? 'Signup is open for 1 user only.'
           : 'Signup is not open yet. Click Open Signup Once to open registration.';
         loadRegisteredUsers();
+        startLiveUsersListener();
       } else {
         requestCard.classList.remove('is-admin');
         signupForm.hidden = false;
@@ -2988,6 +3231,7 @@
         signupFields.style.display = 'none';
         signupGateNotice.style.display = 'none';
         signupGateNotice.textContent = '';
+        stopLiveUsersListener();
       }
 
       if (hasPaAccess) {
@@ -3224,6 +3468,10 @@
     });
 
     logoutButton.addEventListener('click', async function () {
+      await updatePresence(false);
+      stopPresenceHeartbeat();
+      stopLiveUsersListener();
+      allRegisteredUsers = [];
       isLoggedIn = false;
       currentUser = null;
       sessionStorage.removeItem('azobssLoggedIn');
@@ -3242,6 +3490,8 @@
       paForm.hidden = true;
       adminPurchasePanel.style.display = 'none';
       registeredUsersPanel.style.display = 'none';
+      registeredUserSearch.value = '';
+      registeredUserSort.value = 'username';
       signupFields.hidden = true;
       showSignupButton.hidden = true;
       signupForm.style.display = 'grid';
@@ -3270,6 +3520,11 @@
       pendingDownload = null;
       restoreSignupAccess();
       showAccessToast('Logout successful.');
+    });
+
+    window.addEventListener('beforeunload', function () {
+      stopPresenceHeartbeat();
+      updatePresence(false);
     });
 
     const savedUser = getSavedUser();
@@ -3361,6 +3616,8 @@
     });
 
     refreshUsersButton.addEventListener('click', loadRegisteredUsers);
+    registeredUserSearch.addEventListener('input', applyRegisteredUserFilters);
+    registeredUserSort.addEventListener('change', applyRegisteredUserFilters);
     registeredUsersList.addEventListener('click', function (event) {
       const saveButton = event.target.closest('[data-save-user]');
       const deleteButton = event.target.closest('[data-delete-user]');
