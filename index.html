@@ -1133,6 +1133,10 @@
       background: #22c55e;
       color: #ffffff;
     }
+    .guest-history-page-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
 
     .user-edit-item {
       grid-template-columns: 1fr;
@@ -2100,12 +2104,24 @@
           <div class="live-user-list" id="liveUsersList">
             <div class="purchase-summary-item">No users are online right now.</div>
           </div>
+          <div class="guest-history-pagination" id="liveUsersPagination"></div>
         </div>
         <div class="admin-live-panel" id="loginHistoryPanel">
           <h4>Logged-In Users History</h4>
+          <div class="guest-history-stats">
+            <div class="guest-history-stat">
+              Today Logins
+              <strong id="loginHistoryToday">0</strong>
+            </div>
+            <div class="guest-history-stat">
+              This Month Logins
+              <strong id="loginHistoryMonth">0</strong>
+            </div>
+          </div>
           <div class="live-user-list" id="loginHistoryList">
             <div class="purchase-summary-item">No login history yet.</div>
           </div>
+          <div class="guest-history-pagination" id="loginHistoryPagination"></div>
         </div>
         <div class="admin-live-panel" id="guestHistoryPanel">
           <h4>Guest Visit History</h4>
@@ -2267,7 +2283,11 @@
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
     const liveUsersList = document.getElementById('liveUsersList');
+    const liveUsersPagination = document.getElementById('liveUsersPagination');
     const loginHistoryList = document.getElementById('loginHistoryList');
+    const loginHistoryPagination = document.getElementById('loginHistoryPagination');
+    const loginHistoryToday = document.getElementById('loginHistoryToday');
+    const loginHistoryMonth = document.getElementById('loginHistoryMonth');
     const guestHistoryList = document.getElementById('guestHistoryList');
     const guestHistoryPagination = document.getElementById('guestHistoryPagination');
     const guestVisitsToday = document.getElementById('guestVisitsToday');
@@ -2285,9 +2305,14 @@
     let pendingDownload = null;
     let allPurchaseSummaries = [];
     let allRegisteredUsers = [];
+    let allLiveUsers = [];
+    let liveUsersPage = 1;
+    let allLoginHistory = [];
+    let loginHistoryPage = 1;
     let allGuestHistory = [];
     let guestHistoryPage = 1;
-    const GUEST_HISTORY_PAGE_SIZE = 3;
+    const HISTORY_PAGE_SIZE = 3;
+    const HISTORY_PAGINATION_MAX_BUTTONS = 12;
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
     let guestOnlineUnsubscribe = null;
@@ -2866,17 +2891,118 @@
       }
     }
 
-    function renderLiveUsers(users) {
+    function getStartOfTodayMs() {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+
+    function getStartOfMonthMs() {
+      const date = new Date();
+      date.setDate(1);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+
+    function updateHistoryTotals(items, todayElement, monthElement, timestampGetter) {
+      if (!todayElement || !monthElement) {
+        return;
+      }
+
+      const startOfToday = getStartOfTodayMs();
+      const startOfMonth = getStartOfMonthMs();
+      let todayCount = 0;
+      let monthCount = 0;
+
+      items.forEach(function (item) {
+        const eventMs = timestampGetter(item) || 0;
+
+        if (eventMs >= startOfToday) {
+          todayCount += 1;
+        }
+
+        if (eventMs >= startOfMonth) {
+          monthCount += 1;
+        }
+      });
+
+      todayElement.textContent = todayCount;
+      monthElement.textContent = monthCount;
+    }
+
+    function getPaginationWindow(currentPage, totalPages) {
+      const maxButtons = HISTORY_PAGINATION_MAX_BUTTONS;
+      let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+      if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+
+      return { startPage, endPage };
+    }
+
+    function renderHistoryPagination(container, totalPages, currentPage, historyType) {
+      if (!container) {
+        return;
+      }
+
+      if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const windowRange = getPaginationWindow(currentPage, totalPages);
+      const buttons = [];
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="previous" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
+
+      for (let page = windowRange.startPage; page <= windowRange.endPage; page += 1) {
+        const activeClass = page === currentPage ? ' is-active' : '';
+        buttons.push(`<button class="guest-history-page-btn${activeClass}" type="button" data-history-type="${historyType}" data-history-page="${page}">${page}</button>`);
+      }
+
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
+      container.innerHTML = buttons.join('');
+    }
+
+    function getHistoryPageItems(items, requestedPage) {
+      const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
+      const page = Math.min(Math.max(requestedPage, 1), totalPages || 1);
+      const startIndex = (page - 1) * HISTORY_PAGE_SIZE;
+
+      return {
+        page,
+        totalPages,
+        pageItems: items.slice(startIndex, startIndex + HISTORY_PAGE_SIZE)
+      };
+    }
+
+    function renderLiveUsers(users, requestedPage = liveUsersPage) {
       if (!liveUsersList) {
         return;
       }
 
-      if (!users.length) {
+      const onlineUsers = users
+        .filter(function (user) {
+          return !user.deleted;
+        })
+        .sort(function (a, b) {
+          return (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        });
+
+      allLiveUsers = onlineUsers;
+
+      if (!onlineUsers.length) {
+        liveUsersPage = 1;
         liveUsersList.innerHTML = '<div class="purchase-summary-item">No users are online right now.</div>';
+        renderHistoryPagination(liveUsersPagination, 0, liveUsersPage, 'liveUsers');
         return;
       }
 
-      liveUsersList.innerHTML = users.map(function (user) {
+      const pageData = getHistoryPageItems(onlineUsers, requestedPage);
+      liveUsersPage = pageData.page;
+
+      liveUsersList.innerHTML = pageData.pageItems.map(function (user) {
         const lastSeen = user.lastSeenMs ? new Date(user.lastSeenMs).toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' }) : 'now';
         return `
           <div class="live-user-item">
@@ -2885,9 +3011,11 @@
           </div>
         `;
       }).join('');
+
+      renderHistoryPagination(liveUsersPagination, pageData.totalPages, liveUsersPage, 'liveUsers');
     }
 
-    function renderLoginHistory(users) {
+    function renderLoginHistory(users, requestedPage = loginHistoryPage) {
       if (!loginHistoryList) {
         return;
       }
@@ -2898,15 +3026,24 @@
         })
         .sort(function (a, b) {
           return (b.lastLoginMs || 0) - (a.lastLoginMs || 0);
-        })
-        .slice(0, 15);
+        });
+
+      allLoginHistory = historyUsers;
+      updateHistoryTotals(historyUsers, loginHistoryToday, loginHistoryMonth, function (user) {
+        return user.lastLoginMs || 0;
+      });
 
       if (!historyUsers.length) {
+        loginHistoryPage = 1;
         loginHistoryList.innerHTML = '<div class="purchase-summary-item">No login history yet.</div>';
+        renderHistoryPagination(loginHistoryPagination, 0, loginHistoryPage, 'loginHistory');
         return;
       }
 
-      loginHistoryList.innerHTML = historyUsers.map(function (user) {
+      const pageData = getHistoryPageItems(historyUsers, requestedPage);
+      loginHistoryPage = pageData.page;
+
+      loginHistoryList.innerHTML = pageData.pageItems.map(function (user) {
         const loginTime = new Date(user.lastLoginMs).toLocaleString('en-MY', {
           day: '2-digit',
           month: '2-digit',
@@ -2923,61 +3060,8 @@
           </div>
         `;
       }).join('');
-    }
-    function getStartOfTodayMs() {
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-      return date.getTime();
-    }
 
-    function getStartOfMonthMs() {
-      const date = new Date();
-      date.setDate(1);
-      date.setHours(0, 0, 0, 0);
-      return date.getTime();
-    }
-
-    function updateGuestVisitTotals(historyGuests) {
-      if (!guestVisitsToday || !guestVisitsMonth) {
-        return;
-      }
-
-      const startOfToday = getStartOfTodayMs();
-      const startOfMonth = getStartOfMonthMs();
-      let todayCount = 0;
-      let monthCount = 0;
-
-      historyGuests.forEach(function (guest) {
-        const visitMs = guest.firstSeenMs || guest.lastSeenMs || 0;
-
-        if (visitMs >= startOfToday) {
-          todayCount += 1;
-        }
-
-        if (visitMs >= startOfMonth) {
-          monthCount += 1;
-        }
-      });
-
-      guestVisitsToday.textContent = todayCount;
-      guestVisitsMonth.textContent = monthCount;
-    }
-
-    function renderGuestHistoryPagination(totalPages) {
-      if (!guestHistoryPagination) {
-        return;
-      }
-
-      if (totalPages <= 1) {
-        guestHistoryPagination.innerHTML = '';
-        return;
-      }
-
-      guestHistoryPagination.innerHTML = Array.from({ length: totalPages }, function (_, index) {
-        const page = index + 1;
-        const activeClass = page === guestHistoryPage ? ' is-active' : '';
-        return `<button class="guest-history-page-btn${activeClass}" type="button" data-guest-page="${page}">${page}</button>`;
-      }).join('');
+      renderHistoryPagination(loginHistoryPagination, pageData.totalPages, loginHistoryPage, 'loginHistory');
     }
 
     function renderGuestHistory(guests, requestedPage = guestHistoryPage) {
@@ -2994,21 +3078,21 @@
         });
 
       allGuestHistory = historyGuests;
-      updateGuestVisitTotals(historyGuests);
+      updateHistoryTotals(historyGuests, guestVisitsToday, guestVisitsMonth, function (guest) {
+        return guest.firstSeenMs || guest.lastSeenMs || 0;
+      });
 
       if (!historyGuests.length) {
         guestHistoryPage = 1;
         guestHistoryList.innerHTML = '<div class="purchase-summary-item">No guest history yet.</div>';
-        renderGuestHistoryPagination(0);
+        renderHistoryPagination(guestHistoryPagination, 0, guestHistoryPage, 'guestHistory');
         return;
       }
 
-      const totalPages = Math.ceil(historyGuests.length / GUEST_HISTORY_PAGE_SIZE);
-      guestHistoryPage = Math.min(Math.max(requestedPage, 1), totalPages);
-      const startIndex = (guestHistoryPage - 1) * GUEST_HISTORY_PAGE_SIZE;
-      const pageGuests = historyGuests.slice(startIndex, startIndex + GUEST_HISTORY_PAGE_SIZE);
+      const pageData = getHistoryPageItems(historyGuests, requestedPage);
+      guestHistoryPage = pageData.page;
 
-      guestHistoryList.innerHTML = pageGuests.map(function (guest) {
+      guestHistoryList.innerHTML = pageData.pageItems.map(function (guest) {
         const lastSeen = new Date(guest.lastSeenMs).toLocaleString('en-MY', {
           day: '2-digit',
           month: '2-digit',
@@ -3026,7 +3110,7 @@
         `;
       }).join('');
 
-      renderGuestHistoryPagination(totalPages);
+      renderHistoryPagination(guestHistoryPagination, pageData.totalPages, guestHistoryPage, 'guestHistory');
     }
 
     function startLiveUsersListener() {
@@ -4012,17 +4096,41 @@
     });
 
     memberUpgradeButton.addEventListener('click', upgradeCurrentUserWithMemberCode);
-    if (guestHistoryPagination) {
-      guestHistoryPagination.addEventListener('click', function (event) {
-        const pageButton = event.target.closest('[data-guest-page]');
 
-        if (!pageButton) {
-          return;
-        }
+    function handleHistoryPaginationClick(event) {
+      const pageButton = event.target.closest('[data-history-page], [data-history-action]');
 
-        renderGuestHistory(allGuestHistory, Number(pageButton.dataset.guestPage));
-      });
+      if (!pageButton || pageButton.disabled) {
+        return;
+      }
+
+      const historyType = pageButton.dataset.historyType;
+      const action = pageButton.dataset.historyAction;
+      const pageValue = Number(pageButton.dataset.historyPage);
+
+      if (historyType === 'liveUsers') {
+        const nextPage = action === 'previous' ? liveUsersPage - 1 : action === 'next' ? liveUsersPage + 1 : pageValue;
+        renderLiveUsers(allLiveUsers, nextPage);
+        return;
+      }
+
+      if (historyType === 'loginHistory') {
+        const nextPage = action === 'previous' ? loginHistoryPage - 1 : action === 'next' ? loginHistoryPage + 1 : pageValue;
+        renderLoginHistory(allLoginHistory, nextPage);
+        return;
+      }
+
+      if (historyType === 'guestHistory') {
+        const nextPage = action === 'previous' ? guestHistoryPage - 1 : action === 'next' ? guestHistoryPage + 1 : pageValue;
+        renderGuestHistory(allGuestHistory, nextPage);
+      }
     }
+
+    [liveUsersPagination, loginHistoryPagination, guestHistoryPagination].forEach(function (container) {
+      if (container) {
+        container.addEventListener('click', handleHistoryPaginationClick);
+      }
+    });
 
     memberUpgradeCode.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') {
