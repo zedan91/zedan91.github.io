@@ -1503,12 +1503,11 @@
         <p class="request-error" id="siteSignupError"></p>
         <button class="btn" type="submit">Sign up</button>
         <p class="auth-switch-note">Already have an account? <button id="switchToSiteSignin" type="button">Sign in</button></p>
-        <div class="member-upgrade-wrap" id="memberUpgradeWrap">
+        <div class="member-upgrade-wrap" id="memberUpgradeWrap" hidden>
           <div class="member-upgrade-controls">
             <input id="memberUpgradeCode" type="password" placeholder="Member Code" autocomplete="off">
             <button class="member-upgrade-btn" id="memberUpgradeButton" type="button" aria-label="Upgrade member">&gt;</button>
           </div>
-          <span class="member-upgrade-label">Member Code</span>
           <p class="member-upgrade-status" id="memberUpgradeStatus"></p>
         </div>
       </form>
@@ -1990,6 +1989,7 @@
     const siteSignupPhonePrefix = document.getElementById('siteSignupPhonePrefix');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
     const siteSignupError = document.getElementById('siteSignupError');
+    const memberUpgradeWrap = document.getElementById('memberUpgradeWrap');
     const memberUpgradeCode = document.getElementById('memberUpgradeCode');
     const memberUpgradeButton = document.getElementById('memberUpgradeButton');
     const memberUpgradeStatus = document.getElementById('memberUpgradeStatus');
@@ -2744,11 +2744,13 @@
       siteSignupError.textContent = '';
       memberUpgradeStatus.textContent = '';
       memberUpgradeCode.value = '';
+      memberUpgradeWrap.hidden = mode !== 'upgrade' || !isLoggedIn;
+      memberUpgradeWrap.style.display = mode === 'upgrade' && isLoggedIn ? 'grid' : 'none';
       siteAuthModal.classList.add('is-open');
       siteAuthModal.setAttribute('aria-hidden', 'false');
 
       setTimeout(function () {
-        (mode === 'upgrade' ? memberUpgradeCode : (isSignup ? siteSignupName : siteLoginName)).focus();
+        (mode === 'upgrade' && isLoggedIn ? memberUpgradeCode : (isSignup ? siteSignupName : siteLoginName)).focus();
       }, 50);
     }
 
