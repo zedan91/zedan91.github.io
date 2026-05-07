@@ -2371,16 +2371,51 @@
 
         if (isAdminUser(currentUser)) {
           purchasePanelTitle.textContent = 'Purchase Records Users';
-          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all user purchase records.';
+          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all active user purchase records.';
 
-          const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
+          const activeUsersByKey = new Map();
+          const usersSnapshot = await getDocs(collection(db, 'users'));
 
-          snapshot.forEach(function (item) {
+          usersSnapshot.forEach(function (item) {
             const data = item.data();
+            const usernameKey = data.usernameKey || item.id;
 
-            summaries.push({
-              usernameKey: data.usernameKey || item.id,
-              ...data
+            if (!data.deleted && usernameKey) {
+              activeUsersByKey.set(usernameKey, {
+                usernameKey,
+                ...data
+              });
+            }
+          });
+
+          const summarySnapshot = await getDocs(collection(db, 'purchaseSummaries'));
+          const summariesByKey = new Map();
+
+          summarySnapshot.forEach(function (item) {
+            const data = item.data();
+            const usernameKey = data.usernameKey || item.id;
+
+            if (data.deleted || !activeUsersByKey.has(usernameKey)) {
+              return;
+            }
+
+            summariesByKey.set(usernameKey, {
+              ...activeUsersByKey.get(usernameKey),
+              ...data,
+              usernameKey
+            });
+          });
+
+          activeUsersByKey.forEach(function (user, usernameKey) {
+            summaries.push(summariesByKey.get(usernameKey) || {
+              usernameKey,
+              uid: user.uid,
+              name: user.name || usernameKey,
+              phone: user.phone || '',
+              totalUnits: 0,
+              totalAmount: 0,
+              lastPa: '',
+              lastNegeri: ''
             });
           });
         } else {
@@ -2390,7 +2425,11 @@
           const summarySnapshot = await getDoc(doc(db, 'purchaseSummaries', currentUser.usernameKey));
 
           if (summarySnapshot.exists()) {
-            summaries.push(summarySnapshot.data());
+            const data = summarySnapshot.data();
+
+            if (!data.deleted) {
+              summaries.push(data);
+            }
           }
         }
 
