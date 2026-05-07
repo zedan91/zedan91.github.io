@@ -75,6 +75,58 @@
       fill: currentColor;
     }
 
+
+    .admin-online-summary {
+      position: fixed;
+      top: 64px;
+      right: 18px;
+      display: none;
+      grid-template-columns: repeat(2, minmax(78px, 1fr));
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(34,197,94,0.28);
+      border-radius: 14px;
+      background: rgba(15,23,42,0.92);
+      box-shadow: 0 16px 34px rgba(0,0,0,0.28);
+      z-index: 997;
+    }
+
+    .admin-online-summary.is-visible {
+      display: grid;
+    }
+
+    .admin-online-chip {
+      display: grid;
+      gap: 2px;
+      min-width: 76px;
+      padding: 8px 10px;
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 10px;
+      background: rgba(2,6,23,0.78);
+      text-align: center;
+    }
+
+    .admin-online-chip span {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .admin-online-chip strong {
+      color: #22c55e;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    @media (max-width: 760px) {
+      .admin-online-summary {
+        top: 70px;
+        right: 12px;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
     .auth-modal {
       position: fixed;
       inset: 0;
@@ -1588,6 +1640,18 @@
     <button class="logout-btn" id="logoutButton" type="button">Logout</button>
   </div>
 
+
+  <div class="admin-online-summary" id="adminOnlineSummary" hidden>
+    <div class="admin-online-chip">
+      <span>Guests</span>
+      <strong id="onlineGuestCount">0</strong>
+    </div>
+    <div class="admin-online-chip">
+      <span>Users</span>
+      <strong id="onlineUserCount">0</strong>
+    </div>
+  </div>
+
   <div class="hero">
     <h1>AZOBSS</h1>
     <p>PC Service • Info Lot • Digital Tools • AutoCAD LISP</p>
@@ -2104,6 +2168,9 @@
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
     const liveUsersList = document.getElementById('liveUsersList');
+    const adminOnlineSummary = document.getElementById('adminOnlineSummary');
+    const onlineGuestCount = document.getElementById('onlineGuestCount');
+    const onlineUserCount = document.getElementById('onlineUserCount');
     const copyAccountButton = document.getElementById('copyAccountButton');
     const qrCopyStatus = document.getElementById('qrCopyStatus');
     const BANK_ACCOUNT_NUMBER = '162405194110';
@@ -2115,6 +2182,8 @@
     let allRegisteredUsers = [];
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
+    let guestOnlineUnsubscribe = null;
+    let visitorPresenceTimer = null;
 
     function cleanPaNumber(value) {
       return value
@@ -2598,6 +2667,7 @@
         });
 
         renderLiveUsers(liveUsers);
+        onlineUserCount.textContent = liveUsers.length;
 
         if (registeredUserSort.value === 'onlineNow') {
           allRegisteredUsers = registeredUsersFromSnapshot;
@@ -2615,6 +2685,7 @@
       }
 
       renderLiveUsers([]);
+      onlineUserCount.textContent = '0';
     }
 
     async function updatePresence(online) {
@@ -2653,6 +2724,82 @@
         clearInterval(presenceHeartbeatTimer);
         presenceHeartbeatTimer = null;
       }
+    }
+
+    async function updateVisitorPresence(online) {
+      if (!firebaseReady) {
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, 'sitePresence', getVisitorId()), {
+          visitorId: getVisitorId(),
+          online,
+          type: currentUser ? 'user' : 'guest',
+          usernameKey: currentUser ? currentUser.usernameKey : '',
+          name: currentUser ? currentUser.name : 'Guest',
+          lastSeenMs: Date.now(),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        // Visitor presence is optional; keep the website usable if rules block it.
+      }
+    }
+
+    function startVisitorPresenceHeartbeat() {
+      if (visitorPresenceTimer) {
+        clearInterval(visitorPresenceTimer);
+      }
+
+      updateVisitorPresence(true);
+      visitorPresenceTimer = setInterval(function () {
+        updateVisitorPresence(true);
+      }, 30000);
+    }
+
+    function setAdminOnlineSummaryVisible(visible) {
+      if (!adminOnlineSummary) {
+        return;
+      }
+
+      adminOnlineSummary.hidden = !visible;
+      adminOnlineSummary.classList.toggle('is-visible', visible);
+    }
+
+    function startGuestOnlineListener() {
+      if (!firebaseReady || !isAdminUser(currentUser) || guestOnlineUnsubscribe) {
+        return;
+      }
+
+      setAdminOnlineSummaryVisible(true);
+
+      guestOnlineUnsubscribe = onSnapshot(collection(db, 'sitePresence'), function (snapshot) {
+        const now = Date.now();
+        let guests = 0;
+
+        snapshot.forEach(function (item) {
+          const data = item.data();
+
+          if (data.online === true && data.type === 'guest' && data.lastSeenMs && now - data.lastSeenMs <= 90000) {
+            guests += 1;
+          }
+        });
+
+        onlineGuestCount.textContent = guests;
+      }, function () {
+        onlineGuestCount.textContent = '0';
+      });
+    }
+
+    function stopGuestOnlineListener() {
+      if (guestOnlineUnsubscribe) {
+        guestOnlineUnsubscribe();
+        guestOnlineUnsubscribe = null;
+      }
+
+      onlineGuestCount.textContent = '0';
+      onlineUserCount.textContent = '0';
+      setAdminOnlineSummaryVisible(false);
     }
     async function recordPurchase(paValue, selectedNegeri, url) {
       if (!currentUser) {
@@ -3318,6 +3465,7 @@
 
       showSignedInUser(user);
       startPresenceHeartbeat();
+      updateVisitorPresence(true);
 
       if (isAdminUser(user)) {
         requestCard.classList.add('is-admin');
@@ -3331,6 +3479,7 @@
           : 'Signup is not open yet. Click Open Signup Once to open registration.';
         loadRegisteredUsers();
         startLiveUsersListener();
+        startGuestOnlineListener();
       } else {
         requestCard.classList.remove('is-admin');
         signupForm.hidden = false;
@@ -3340,6 +3489,7 @@
         signupGateNotice.style.display = 'none';
         signupGateNotice.textContent = '';
         stopLiveUsersListener();
+        stopGuestOnlineListener();
       }
 
       if (hasPaAccess) {
@@ -3566,9 +3716,11 @@
       await updatePresence(false);
       stopPresenceHeartbeat();
       stopLiveUsersListener();
+      stopGuestOnlineListener();
       allRegisteredUsers = [];
       isLoggedIn = false;
       currentUser = null;
+      updateVisitorPresence(true);
       sessionStorage.removeItem('azobssLoggedIn');
       clearCurrentUser();
 
@@ -3620,6 +3772,7 @@
     window.addEventListener('beforeunload', function () {
       stopPresenceHeartbeat();
       updatePresence(false);
+      updateVisitorPresence(false);
     });
 
     const savedUser = getSavedUser();
@@ -3861,6 +4014,7 @@
     }
 
     updateTraffic();
+    startVisitorPresenceHeartbeat();
   </script>
 
 </body>
