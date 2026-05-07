@@ -1084,6 +1084,56 @@
       color: #94a3b8;
       white-space: nowrap;
     }
+
+    .guest-history-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 12px;
+    }
+
+    .guest-history-stat {
+      padding: 10px 12px;
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 9px;
+      background: rgba(15,23,42,0.72);
+      color: #cbd5e1;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .guest-history-stat strong {
+      display: block;
+      margin-top: 4px;
+      color: #22c55e;
+      font-size: 22px;
+    }
+
+    .guest-history-pagination {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .guest-history-page-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid rgba(37,99,235,0.55);
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .guest-history-page-btn.is-active {
+      border-color: #22c55e;
+      background: #22c55e;
+      color: #ffffff;
+    }
+
     .user-edit-item {
       grid-template-columns: 1fr;
       align-items: stretch;
@@ -2059,9 +2109,20 @@
         </div>
         <div class="admin-live-panel" id="guestHistoryPanel">
           <h4>Guest Visit History</h4>
+          <div class="guest-history-stats">
+            <div class="guest-history-stat">
+              Today Visits
+              <strong id="guestVisitsToday">0</strong>
+            </div>
+            <div class="guest-history-stat">
+              This Month Visits
+              <strong id="guestVisitsMonth">0</strong>
+            </div>
+          </div>
           <div class="live-user-list" id="guestHistoryList">
             <div class="purchase-summary-item">No guest history yet.</div>
           </div>
+          <div class="guest-history-pagination" id="guestHistoryPagination"></div>
         </div>
       </div>
     </div>
@@ -2208,6 +2269,9 @@
     const liveUsersList = document.getElementById('liveUsersList');
     const loginHistoryList = document.getElementById('loginHistoryList');
     const guestHistoryList = document.getElementById('guestHistoryList');
+    const guestHistoryPagination = document.getElementById('guestHistoryPagination');
+    const guestVisitsToday = document.getElementById('guestVisitsToday');
+    const guestVisitsMonth = document.getElementById('guestVisitsMonth');
     const adminOnlineSummary = document.getElementById('adminOnlineSummary');
     const onlineGuestCount = document.getElementById('onlineGuestCount');
     const onlineUserCount = document.getElementById('onlineUserCount');
@@ -2221,6 +2285,9 @@
     let pendingDownload = null;
     let allPurchaseSummaries = [];
     let allRegisteredUsers = [];
+    let allGuestHistory = [];
+    let guestHistoryPage = 1;
+    const GUEST_HISTORY_PAGE_SIZE = 3;
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
     let guestOnlineUnsubscribe = null;
@@ -2857,7 +2924,63 @@
         `;
       }).join('');
     }
-    function renderGuestHistory(guests) {
+    function getStartOfTodayMs() {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+
+    function getStartOfMonthMs() {
+      const date = new Date();
+      date.setDate(1);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+
+    function updateGuestVisitTotals(historyGuests) {
+      if (!guestVisitsToday || !guestVisitsMonth) {
+        return;
+      }
+
+      const startOfToday = getStartOfTodayMs();
+      const startOfMonth = getStartOfMonthMs();
+      let todayCount = 0;
+      let monthCount = 0;
+
+      historyGuests.forEach(function (guest) {
+        const visitMs = guest.firstSeenMs || guest.lastSeenMs || 0;
+
+        if (visitMs >= startOfToday) {
+          todayCount += 1;
+        }
+
+        if (visitMs >= startOfMonth) {
+          monthCount += 1;
+        }
+      });
+
+      guestVisitsToday.textContent = todayCount;
+      guestVisitsMonth.textContent = monthCount;
+    }
+
+    function renderGuestHistoryPagination(totalPages) {
+      if (!guestHistoryPagination) {
+        return;
+      }
+
+      if (totalPages <= 1) {
+        guestHistoryPagination.innerHTML = '';
+        return;
+      }
+
+      guestHistoryPagination.innerHTML = Array.from({ length: totalPages }, function (_, index) {
+        const page = index + 1;
+        const activeClass = page === guestHistoryPage ? ' is-active' : '';
+        return `<button class="guest-history-page-btn${activeClass}" type="button" data-guest-page="${page}">${page}</button>`;
+      }).join('');
+    }
+
+    function renderGuestHistory(guests, requestedPage = guestHistoryPage) {
       if (!guestHistoryList) {
         return;
       }
@@ -2868,15 +2991,24 @@
         })
         .sort(function (a, b) {
           return (b.lastSeenMs || 0) - (a.lastSeenMs || 0);
-        })
-        .slice(0, 15);
+        });
+
+      allGuestHistory = historyGuests;
+      updateGuestVisitTotals(historyGuests);
 
       if (!historyGuests.length) {
+        guestHistoryPage = 1;
         guestHistoryList.innerHTML = '<div class="purchase-summary-item">No guest history yet.</div>';
+        renderGuestHistoryPagination(0);
         return;
       }
 
-      guestHistoryList.innerHTML = historyGuests.map(function (guest) {
+      const totalPages = Math.ceil(historyGuests.length / GUEST_HISTORY_PAGE_SIZE);
+      guestHistoryPage = Math.min(Math.max(requestedPage, 1), totalPages);
+      const startIndex = (guestHistoryPage - 1) * GUEST_HISTORY_PAGE_SIZE;
+      const pageGuests = historyGuests.slice(startIndex, startIndex + GUEST_HISTORY_PAGE_SIZE);
+
+      guestHistoryList.innerHTML = pageGuests.map(function (guest) {
         const lastSeen = new Date(guest.lastSeenMs).toLocaleString('en-MY', {
           day: '2-digit',
           month: '2-digit',
@@ -2893,7 +3025,10 @@
           </div>
         `;
       }).join('');
+
+      renderGuestHistoryPagination(totalPages);
     }
+
     function startLiveUsersListener() {
       if (!firebaseReady || !auth.currentUser || !isAdminUser(currentUser) || liveUsersUnsubscribe) {
         return;
@@ -3877,6 +4012,17 @@
     });
 
     memberUpgradeButton.addEventListener('click', upgradeCurrentUserWithMemberCode);
+    if (guestHistoryPagination) {
+      guestHistoryPagination.addEventListener('click', function (event) {
+        const pageButton = event.target.closest('[data-guest-page]');
+
+        if (!pageButton) {
+          return;
+        }
+
+        renderGuestHistory(allGuestHistory, Number(pageButton.dataset.guestPage));
+      });
+    }
 
     memberUpgradeCode.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') {
