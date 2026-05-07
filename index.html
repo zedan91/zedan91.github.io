@@ -2219,6 +2219,7 @@
     let guestOnlineUnsubscribe = null;
     let visitorPresenceTimer = null;
     let authRestoreUnsubscribe = null;
+    let authStateReady = false;
 
     function stopAuthRestoreListener() {
       if (authRestoreUnsubscribe) {
@@ -2960,7 +2961,7 @@
     }
 
     async function updateVisitorPresence(online) {
-      if (!firebaseReady) {
+      if (!firebaseReady || !authStateReady) {
         return;
       }
 
@@ -2980,6 +2981,10 @@
     }
 
     function startVisitorPresenceHeartbeat() {
+      if (!authStateReady) {
+        return;
+      }
+
       if (visitorPresenceTimer) {
         clearInterval(visitorPresenceTimer);
       }
@@ -3716,7 +3721,9 @@
       loginInfo.textContent = '';
 
       showSignedInUser(user);
+      authStateReady = true;
       startPresenceHeartbeat();
+      startVisitorPresenceHeartbeat();
       updateVisitorPresence(true);
 
       if (isAdminUser(user)) {
@@ -4039,11 +4046,14 @@
       const savedUser = getSavedUser();
 
       if (!savedUser || sessionStorage.getItem('azobssLoggedIn') !== '1') {
+        authStateReady = true;
         restoreSignupAccess();
+        startVisitorPresenceHeartbeat();
         return;
       }
 
       if (!firebaseReady || !auth) {
+        authStateReady = true;
         setLoggedIn(savedUser);
         return;
       }
@@ -4054,9 +4064,11 @@
         stopAuthRestoreListener();
 
         if (!firebaseUser) {
+          authStateReady = true;
           clearCurrentUser();
           sessionStorage.removeItem('azobssLoggedIn');
           restoreSignupAccess();
+          startVisitorPresenceHeartbeat();
           return;
         }
 
@@ -4064,9 +4076,11 @@
         const activeEmail = (firebaseUser.email || '').toLowerCase();
 
         if (activeEmail !== expectedEmail) {
+          authStateReady = true;
           clearCurrentUser();
           sessionStorage.removeItem('azobssLoggedIn');
           restoreSignupAccess();
+          startVisitorPresenceHeartbeat();
           return;
         }
 
@@ -4076,9 +4090,11 @@
         });
       }, function () {
         stopAuthRestoreListener();
+        authStateReady = true;
         clearCurrentUser();
         sessionStorage.removeItem('azobssLoggedIn');
         restoreSignupAccess();
+        startVisitorPresenceHeartbeat();
       });
     }
 
@@ -4317,7 +4333,6 @@
     }
 
     updateTraffic();
-    startVisitorPresenceHeartbeat();
   </script>
 
 </body>
