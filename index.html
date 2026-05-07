@@ -1189,24 +1189,37 @@
     }
 
     .user-record-summary-main {
-      display: grid;
-      gap: 2px;
-      font-size: 13px;
-      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      line-height: 1.15;
     }
 
     .user-record-summary-main span,
     .user-record-extra {
       color: #e2e8f0;
-      font-size: 13px;
+      font-size: 12px;
+    }
+
+    .user-record-summary-main strong {
+      color: #22c55e;
     }
 
     .user-compact-actions {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
       justify-content: flex-end;
       flex-wrap: wrap;
+    }
+
+    .user-compact-actions .small-action-btn {
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1;
     }
 
     .user-edit-details {
@@ -2854,7 +2867,7 @@
         return;
       }
 
-      const pageData = getHistoryPageItems(users, requestedPage);
+      const pageData = getHistoryPageItems(users, requestedPage, PURCHASE_RECORDS_PAGE_SIZE);
       registeredUsersPage = pageData.page;
 
       registeredUsersList.innerHTML = pageData.pageItems.map(function (user) {
