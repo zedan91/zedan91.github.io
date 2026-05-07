@@ -2474,8 +2474,7 @@
         .filter(function (item) {
           const countryName = item.name.toLowerCase();
           return !rawQuery || countryName.startsWith(rawQuery) || countryName.includes(rawQuery) || (numericQuery && item.dial.includes(numericQuery));
-        })
-        .slice(0, 120);
+        });
 
       optionsWrap.innerHTML = '';
       matches.forEach(function (item) {
