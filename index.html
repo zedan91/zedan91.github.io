@@ -3105,6 +3105,69 @@
       }
     }
 
+    async function createOrReactivateUserProfile(options) {
+      const userRef = doc(db, 'users', options.usernameKey);
+      const email = buildUserEmail(options.usernameKey);
+      let credential;
+      let existingData = null;
+      let isReactivation = false;
+
+      try {
+        credential = await createUserWithEmailAndPassword(auth, email, options.password);
+      } catch (error) {
+        if (error.code !== 'auth/email-already-in-use') {
+          throw error;
+        }
+
+        credential = await signInWithEmailAndPassword(auth, email, options.password);
+
+        const existingSnapshot = await getDoc(userRef);
+        existingData = existingSnapshot.exists() ? existingSnapshot.data() : null;
+
+        if (existingData && !existingData.deleted) {
+          await signOut(auth);
+          const activeError = new Error('username-active');
+          activeError.code = 'username-active';
+          throw activeError;
+        }
+
+        isReactivation = true;
+      }
+
+      const user = {
+        uid: credential.user.uid,
+        name: options.name,
+        usernameKey: options.usernameKey,
+        phone: options.phone,
+        email,
+        contactEmail: options.contactEmail,
+        paAccess: options.paAccess
+      };
+
+      const profileData = {
+        uid: user.uid,
+        name: user.name,
+        usernameKey: user.usernameKey,
+        phone: user.phone,
+        email: user.email,
+        contactEmail: user.contactEmail,
+        paAccess: user.paAccess,
+        deleted: false,
+        deletedAt: null,
+        deletedBy: null,
+        updatedAt: serverTimestamp()
+      };
+
+      if (isReactivation) {
+        profileData.reactivatedAt = serverTimestamp();
+        profileData.createdAt = existingData && existingData.createdAt ? existingData.createdAt : serverTimestamp();
+      } else {
+        profileData.createdAt = serverTimestamp();
+      }
+
+      await setDoc(userRef, profileData, { merge: true });
+      return user;
+    }
     async function signUpSiteUser() {
       const name = siteSignupName.value.trim();
       const password = siteSignupPassword.value.trim();
@@ -3138,27 +3201,13 @@
       }
 
       try {
-        const email = buildUserEmail(usernameKey);
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = {
-          uid: credential.user.uid,
+        const user = await createOrReactivateUserProfile({
           name,
           usernameKey,
           phone,
-          email,
           contactEmail,
+          password,
           paAccess: false
-        };
-
-        await setDoc(doc(db, 'users', usernameKey), {
-          uid: user.uid,
-          name,
-          usernameKey,
-          phone,
-          email,
-          contactEmail,
-          paAccess: false,
-          createdAt: serverTimestamp()
         });
 
         saveCurrentUser(user);
@@ -3167,8 +3216,10 @@
         closeSiteAuth();
         setLoggedIn(user, `Signup successful. Welcome, ${user.name}.`);
       } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
+        if (error.code === 'username-active') {
           siteSignupError.textContent = 'This username is already registered. Please sign in.';
+        } else if (error.code === 'auth/email-already-in-use') {
+          siteSignupError.textContent = 'This username was deleted before, but Firebase Auth still exists. Use the previous password or choose another username.';
         } else if (error.code === 'auth/weak-password') {
           siteSignupError.textContent = 'Password is too short. Use at least 6 characters.';
         } else if (error.code === 'auth/operation-not-allowed') {
@@ -3364,30 +3415,15 @@
       }
 
       try {
-        const userRef = doc(db, 'users', usernameKey);
         await claimSignupAccess(usernameKey);
 
-        const email = buildUserEmail(usernameKey);
-        const credential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = {
-          uid: credential.user.uid,
+        const user = await createOrReactivateUserProfile({
           name,
           usernameKey,
           phone,
-          email,
           contactEmail,
+          password,
           paAccess: true
-        };
-
-        await setDoc(userRef, {
-          uid: user.uid,
-          name,
-          usernameKey,
-          phone,
-          email,
-          contactEmail,
-          paAccess: true,
-          createdAt: serverTimestamp()
         });
 
         saveCurrentUser(user);
@@ -3397,8 +3433,10 @@
       } catch (error) {
         if (error.message === 'signup-gate-closed') {
           signupError.textContent = 'Signup has already been used by another user. Admin needs to reopen it.';
+        } else if (error.code === 'username-active') {
+          signupError.textContent = 'This username is already registered. Please sign in.';
         } else if (error.code === 'auth/email-already-in-use') {
-          signupError.textContent = 'This username is already registered. Please use another name.';
+          signupError.textContent = 'This username was deleted before, but Firebase Auth still exists. Use the previous password or ask admin to open a new username.';
         } else if (error.code === 'auth/weak-password') {
           signupError.textContent = 'Password is too short. Use at least 6 characters.';
         } else if (error.code === 'auth/operation-not-allowed') {
