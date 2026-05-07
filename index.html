@@ -2033,6 +2033,12 @@
             <div class="purchase-summary-item">No users are online right now.</div>
           </div>
         </div>
+        <div class="admin-live-panel" id="loginHistoryPanel">
+          <h4>Logged-In Users History</h4>
+          <div class="live-user-list" id="loginHistoryList">
+            <div class="purchase-summary-item">No login history yet.</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2059,7 +2065,9 @@
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       signOut,
-      onAuthStateChanged
+      onAuthStateChanged,
+      setPersistence,
+      browserSessionPersistence
     } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js';
     import {
       getFirestore,
@@ -2070,7 +2078,8 @@
       onSnapshot,
       runTransaction,
       setDoc,
-      serverTimestamp
+      serverTimestamp,
+      increment
     } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -2170,6 +2179,7 @@
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
     const liveUsersList = document.getElementById('liveUsersList');
+    const loginHistoryList = document.getElementById('loginHistoryList');
     const adminOnlineSummary = document.getElementById('adminOnlineSummary');
     const onlineGuestCount = document.getElementById('onlineGuestCount');
     const onlineUserCount = document.getElementById('onlineUserCount');
@@ -2186,6 +2196,26 @@
     let liveUsersUnsubscribe = null;
     let guestOnlineUnsubscribe = null;
     let visitorPresenceTimer = null;
+    let authRestoreUnsubscribe = null;
+
+    function stopAuthRestoreListener() {
+      if (authRestoreUnsubscribe) {
+        authRestoreUnsubscribe();
+        authRestoreUnsubscribe = null;
+      }
+    }
+
+    async function ensureAuthSessionPersistence() {
+      if (!firebaseReady || !auth) {
+        return;
+      }
+
+      try {
+        await setPersistence(auth, browserSessionPersistence);
+      } catch (error) {
+        // Session persistence is a convenience layer; login can continue if the browser blocks it.
+      }
+    }
 
     function cleanPaNumber(value) {
       return value
@@ -2613,6 +2643,7 @@
 
         allRegisteredUsers = users;
         applyRegisteredUserFilters();
+        renderLoginHistory(users);
       } catch (error) {
         registeredUsersError.textContent = `Failed to read user records: ${error.code || error.message}`;
       }
@@ -2634,6 +2665,44 @@
           <div class="live-user-item">
             <span><strong>${escapeHtml(user.name || user.usernameKey || '-')}</strong> ${escapeHtml(user.phone || '')}</span>
             <span class="live-user-time">${escapeHtml(lastSeen)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLoginHistory(users) {
+      if (!loginHistoryList) {
+        return;
+      }
+
+      const historyUsers = users
+        .filter(function (user) {
+          return !user.deleted && user.lastLoginMs;
+        })
+        .sort(function (a, b) {
+          return (b.lastLoginMs || 0) - (a.lastLoginMs || 0);
+        })
+        .slice(0, 15);
+
+      if (!historyUsers.length) {
+        loginHistoryList.innerHTML = '<div class="purchase-summary-item">No login history yet.</div>';
+        return;
+      }
+
+      loginHistoryList.innerHTML = historyUsers.map(function (user) {
+        const loginTime = new Date(user.lastLoginMs).toLocaleString('en-MY', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        const loginCount = user.loginCount ? `Login: ${user.loginCount}` : '';
+
+        return `
+          <div class="live-user-item">
+            <span><strong>${escapeHtml(user.name || user.usernameKey || '-')}</strong> ${escapeHtml(user.phone || '')}</span>
+            <span class="live-user-time">${escapeHtml(loginTime)} ${escapeHtml(loginCount)}</span>
           </div>
         `;
       }).join('');
@@ -2665,6 +2734,7 @@
         });
 
         renderLiveUsers(liveUsers);
+        renderLoginHistory(registeredUsersFromSnapshot);
 
         if (registeredUserSort.value === 'onlineOnly') {
           allRegisteredUsers = registeredUsersFromSnapshot;
@@ -2672,6 +2742,7 @@
         }
       }, function () {
         renderLiveUsers([]);
+        renderLoginHistory([]);
       });
     }
 
@@ -2682,7 +2753,30 @@
       }
 
       renderLiveUsers([]);
+      renderLoginHistory([]);
       onlineUserCount.textContent = '0';
+    }
+
+    async function recordLoginHistory(user) {
+      if (!firebaseReady || !auth || !auth.currentUser || !user || !user.usernameKey) {
+        return;
+      }
+
+      try {
+        await setDoc(doc(db, 'users', user.usernameKey), {
+          uid: user.uid || auth.currentUser.uid,
+          usernameKey: user.usernameKey,
+          name: user.name || user.usernameKey,
+          phone: user.phone || '',
+          email: user.email || auth.currentUser.email || '',
+          contactEmail: user.contactEmail || '',
+          lastLoginMs: Date.now(),
+          lastLoginAt: serverTimestamp(),
+          loginCount: increment(1)
+        }, { merge: true });
+      } catch (error) {
+        // Login history should not block access if Firestore is temporarily unavailable.
+      }
     }
 
     async function updatePresence(online) {
@@ -3232,6 +3326,8 @@
       }
 
       try {
+        stopAuthRestoreListener();
+        await ensureAuthSessionPersistence();
         const credential = await signInWithEmailAndPassword(auth, buildUserEmail(usernameKey), password);
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
@@ -3263,6 +3359,7 @@
 
         saveCurrentUser(user);
         sessionStorage.setItem('azobssLoggedIn', '1');
+        await recordLoginHistory(user);
         errorElement.textContent = '';
         closeSiteAuth();
         setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
@@ -3324,6 +3421,9 @@
       let credential;
       let existingData = null;
       let isReactivation = false;
+
+      stopAuthRestoreListener();
+      await ensureAuthSessionPersistence();
 
       try {
         credential = await createUserWithEmailAndPassword(auth, email, options.password);
@@ -3425,6 +3525,7 @@
 
         saveCurrentUser(user);
         sessionStorage.setItem('azobssLoggedIn', '1');
+        await recordLoginHistory(user);
         siteSignupError.textContent = '';
         closeSiteAuth();
         setLoggedIn(user, `Signup successful. Welcome, ${user.name}.`);
@@ -3644,6 +3745,7 @@
 
         saveCurrentUser(user);
         sessionStorage.setItem('azobssLoggedIn', '1');
+        await recordLoginHistory(user);
         signupError.textContent = '';
         setLoggedIn(user, `Signup successful. Welcome, ${user.name}.`);
       } catch (error) {
@@ -3683,6 +3785,8 @@
       }
 
       try {
+        stopAuthRestoreListener();
+        await ensureAuthSessionPersistence();
         const credential = await signInWithEmailAndPassword(auth, buildUserEmail(usernameKey), password);
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
@@ -3715,6 +3819,7 @@
         saveCurrentUser(user);
         loginError.textContent = '';
         sessionStorage.setItem('azobssLoggedIn', '1');
+        await recordLoginHistory(user);
         setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
         loginError.textContent = 'Username or password is incorrect. Please try again.';
@@ -3722,6 +3827,7 @@
     });
 
     logoutButton.addEventListener('click', async function () {
+      stopAuthRestoreListener();
       await updatePresence(false);
       stopPresenceHeartbeat();
       stopLiveUsersListener();
@@ -3783,7 +3889,7 @@
       updatePresence(false);
       updateVisitorPresence(false);
     });
-    function initializeSavedSession() {
+    async function initializeSavedSession() {
       const savedUser = getSavedUser();
 
       if (!savedUser || sessionStorage.getItem('azobssLoggedIn') !== '1') {
@@ -3796,7 +3902,11 @@
         return;
       }
 
-      onAuthStateChanged(auth, function (firebaseUser) {
+      await ensureAuthSessionPersistence();
+      stopAuthRestoreListener();
+      authRestoreUnsubscribe = onAuthStateChanged(auth, function (firebaseUser) {
+        stopAuthRestoreListener();
+
         if (!firebaseUser) {
           clearCurrentUser();
           sessionStorage.removeItem('azobssLoggedIn');
@@ -3819,6 +3929,7 @@
           uid: firebaseUser.uid
         });
       }, function () {
+        stopAuthRestoreListener();
         clearCurrentUser();
         sessionStorage.removeItem('azobssLoggedIn');
         restoreSignupAccess();
