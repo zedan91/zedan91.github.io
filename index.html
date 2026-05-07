@@ -2335,29 +2335,18 @@
         const summaries = [];
 
         if (isAdminUser(currentUser)) {
-          purchasePanelTitle.textContent = 'Purchase Records Admin';
-          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all active user records.';
-
-          const userSnapshot = await getDocs(collection(db, 'users'));
-          const activeUsers = new Set();
-
-          userSnapshot.forEach(function (item) {
-            const data = item.data();
-
-            if (!data.deleted) {
-              activeUsers.add(data.usernameKey || item.id);
-            }
-          });
+          purchasePanelTitle.textContent = 'Purchase Records Users';
+          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all user purchase records.';
 
           const snapshot = await getDocs(collection(db, 'purchaseSummaries'));
 
           snapshot.forEach(function (item) {
             const data = item.data();
-            const usernameKey = data.usernameKey || item.id;
 
-            if (!data.deleted && activeUsers.has(usernameKey)) {
-              summaries.push(data);
-            }
+            summaries.push({
+              usernameKey: data.usernameKey || item.id,
+              ...data
+            });
           });
         } else {
           purchasePanelTitle.textContent = 'Purchase Records Saya';
