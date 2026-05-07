@@ -968,6 +968,56 @@
       text-align: left;
     }
 
+    .user-edit-item {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .user-edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .user-edit-grid label {
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .user-edit-grid input,
+    .user-edit-grid select {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 5px;
+      padding: 9px 10px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: white;
+    }
+
+    .user-edit-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .small-action-btn.blue {
+      background: #2563eb;
+    }
+
+    .small-action-btn.blue:hover {
+      background: #1d4ed8;
+    }
+
+    @media (max-width: 640px) {
+      .user-edit-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .payment-qr-wrap {
       display: flex;
       justify-content: center;
@@ -2150,6 +2200,15 @@
       }
     }
 
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function renderRegisteredUsers(users) {
       if (!users.length) {
         registeredUsersList.innerHTML = '<div class="purchase-summary-item">No user records yet.</div>';
@@ -2157,15 +2216,120 @@
       }
 
       registeredUsersList.innerHTML = users.map(function (user) {
+        const usernameKey = user.usernameKey || normalizeUsername(user.name || '');
+        const isAdminRecord = usernameKey === ADMIN_USERNAME;
+        const paAccess = isAdminRecord || user.paAccess !== false;
+
         return `
-          <div class="purchase-summary-item">
-            <span><strong>${user.name || user.usernameKey}</strong><br>${user.phone || '-'}<br>${user.contactEmail || '-'}</span>
-            <span>Username: <strong>${user.usernameKey || '-'}</strong></span>
-            <span>Role: <strong>${user.usernameKey === ADMIN_USERNAME ? 'Admin' : 'User'}</strong></span>
-            <span>UID: <strong>${user.uid ? user.uid.slice(0, 8) : '-'}</strong></span>
+          <div class="purchase-summary-item user-edit-item" data-user-key="${escapeHtml(usernameKey)}">
+            <div>
+              <strong>${escapeHtml(user.name || usernameKey)}</strong>
+              <div>Username: <strong>${escapeHtml(usernameKey || '-')}</strong></div>
+              <div>Role: <strong>${isAdminRecord ? 'Admin' : 'User'}</strong></div>
+              <div>UID: <strong>${escapeHtml(user.uid ? user.uid.slice(0, 8) : '-')}</strong></div>
+            </div>
+            <div class="user-edit-grid">
+              <label>
+                Name
+                <input type="text" data-user-field="name" value="${escapeHtml(user.name || '')}">
+              </label>
+              <label>
+                Phone
+                <input type="text" data-user-field="phone" value="${escapeHtml(user.phone || '')}">
+              </label>
+              <label>
+                Email
+                <input type="email" data-user-field="contactEmail" value="${escapeHtml(user.contactEmail || '')}">
+              </label>
+              <label>
+                PA Access
+                <select data-user-field="paAccess" ${isAdminRecord ? 'disabled' : ''}>
+                  <option value="true" ${paAccess ? 'selected' : ''}>Allowed</option>
+                  <option value="false" ${!paAccess ? 'selected' : ''}>Not allowed</option>
+                </select>
+              </label>
+            </div>
+            <div class="user-edit-actions">
+              <button class="small-action-btn blue" type="button" data-save-user="${escapeHtml(usernameKey)}">Save Details</button>
+              ${isAdminRecord ? '' : `<button class="small-action-btn" type="button" data-delete-user="${escapeHtml(usernameKey)}">Delete User</button>`}
+            </div>
           </div>
         `;
       }).join('');
+    }
+
+    async function saveRegisteredUserDetails(usernameKey, itemElement) {
+      if (!isAdminUser(currentUser) || !usernameKey || !itemElement) {
+        return;
+      }
+
+      const name = itemElement.querySelector('[data-user-field="name"]').value.trim();
+      const phone = itemElement.querySelector('[data-user-field="phone"]').value.trim();
+      const contactEmail = itemElement.querySelector('[data-user-field="contactEmail"]').value.trim();
+      const paAccessValue = itemElement.querySelector('[data-user-field="paAccess"]').value === 'true';
+
+      if (!name) {
+        registeredUsersError.textContent = 'Name cannot be empty.';
+        return;
+      }
+
+      if (contactEmail && !isValidEmail(contactEmail)) {
+        registeredUsersError.textContent = 'Please enter a valid email address.';
+        return;
+      }
+
+      try {
+        registeredUsersError.textContent = '';
+        await setDoc(doc(db, 'users', usernameKey), {
+          name,
+          phone,
+          contactEmail,
+          paAccess: usernameKey === ADMIN_USERNAME ? true : paAccessValue,
+          updatedAt: serverTimestamp(),
+          updatedBy: currentUser.usernameKey
+        }, { merge: true });
+
+        if (currentUser.usernameKey === usernameKey) {
+          const updatedUser = {
+            ...currentUser,
+            name,
+            phone,
+            contactEmail,
+            paAccess: true
+          };
+          saveCurrentUser(updatedUser);
+          setLoggedIn(updatedUser);
+        }
+
+        registeredUsersError.style.color = '#bbf7d0';
+        registeredUsersError.textContent = `Saved details for ${usernameKey}.`;
+        await loadRegisteredUsers();
+      } catch (error) {
+        registeredUsersError.style.color = '#fecaca';
+        registeredUsersError.textContent = `Failed to save user details: ${error.code || error.message}`;
+      }
+    }
+
+    async function deleteRegisteredUser(usernameKey) {
+      if (!isAdminUser(currentUser) || !usernameKey || usernameKey === ADMIN_USERNAME) {
+        return;
+      }
+
+      if (!confirm(`Delete user record for ${usernameKey}? This removes the Firestore profile only.`)) {
+        return;
+      }
+
+      try {
+        registeredUsersError.textContent = '';
+        await setDoc(doc(db, 'users', usernameKey), {
+          deleted: true,
+          deletedAt: serverTimestamp(),
+          deletedBy: currentUser.usernameKey
+        }, { merge: true });
+        await loadRegisteredUsers();
+      } catch (error) {
+        registeredUsersError.textContent = `Failed to delete user record: ${error.code || error.message}`;
+      }
     }
 
     async function loadRegisteredUsers() {
@@ -2179,7 +2343,10 @@
         const users = [];
 
         snapshot.forEach(function (item) {
-          users.push(item.data());
+          const data = item.data();
+          if (!data.deleted) {
+            users.push(data);
+          }
         });
 
         users.sort(function (a, b) {
@@ -2622,6 +2789,12 @@
           paAccess: true
         };
 
+        if (profile.deleted) {
+          await signOut(auth);
+          errorElement.textContent = 'This account has been removed by admin.';
+          return;
+        }
+
         const user = {
           uid: profile.uid || credential.user.uid,
           name: profile.name,
@@ -3023,6 +3196,12 @@
           paAccess: true
         };
 
+        if (profile.deleted) {
+          await signOut(auth);
+          loginError.textContent = 'This account has been removed by admin.';
+          return;
+        }
+
         const user = {
           uid: profile.uid || credential.user.uid,
           name: profile.name,
@@ -3180,6 +3359,20 @@
     });
 
     refreshUsersButton.addEventListener('click', loadRegisteredUsers);
+    registeredUsersList.addEventListener('click', function (event) {
+      const saveButton = event.target.closest('[data-save-user]');
+      const deleteButton = event.target.closest('[data-delete-user]');
+
+      if (saveButton) {
+        saveRegisteredUserDetails(saveButton.dataset.saveUser, saveButton.closest('.user-edit-item'));
+        return;
+      }
+
+      if (deleteButton) {
+        deleteRegisteredUser(deleteButton.dataset.deleteUser);
+      }
+    });
+
     copyAccountButton.addEventListener('click', async function () {
       try {
         await navigator.clipboard.writeText(BANK_ACCOUNT_NUMBER);
