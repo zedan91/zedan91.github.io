@@ -2011,7 +2011,7 @@
             Sort by
             <select id="registeredUserSort">
               <option value="username">Username A-Z</option>
-              <option value="onlineNow">Online users first</option>
+              <option value="onlineOnly">Online users only</option>
               <option value="dateNewest">Date registered: newest</option>
               <option value="dateOldest">Date registered: oldest</option>
             </select>
@@ -2407,6 +2407,9 @@
       return createdMs ? new Date(createdMs).toLocaleString('en-MY') : '-';
     }
 
+    function isRegisteredUserOnline(user) {
+      return user.online === true && user.lastSeenMs && Date.now() - user.lastSeenMs <= 90000;
+    }
     function getFilteredRegisteredUsers() {
       const queryText = (registeredUserSearch.value || '').trim().toLowerCase();
       const sortMode = registeredUserSort.value || 'username';
@@ -2427,16 +2430,12 @@
         });
       }
 
+      if (sortMode === 'onlineOnly') {
+        users = users.filter(isRegisteredUserOnline);
+      }
+
       users.sort(function (a, b) {
-        if (sortMode === 'onlineNow') {
-          const now = Date.now();
-          const aOnline = a.online === true && a.lastSeenMs && now - a.lastSeenMs <= 90000;
-          const bOnline = b.online === true && b.lastSeenMs && now - b.lastSeenMs <= 90000;
-
-          if (aOnline !== bOnline) {
-            return aOnline ? -1 : 1;
-          }
-
+        if (sortMode === 'onlineOnly') {
           return (b.lastSeenMs || 0) - (a.lastSeenMs || 0);
         }
 
@@ -2468,7 +2467,7 @@
         const usernameKey = user.usernameKey || normalizeUsername(user.name || '');
         const isAdminRecord = usernameKey === ADMIN_USERNAME;
         const paAccess = isAdminRecord || user.paAccess !== false;
-        const isOnline = user.online === true && user.lastSeenMs && Date.now() - user.lastSeenMs <= 90000;
+        const isOnline = isRegisteredUserOnline(user);
 
         return `
           <div class="purchase-summary-item user-edit-item" data-user-key="${escapeHtml(usernameKey)}">
@@ -2668,7 +2667,7 @@
 
         renderLiveUsers(liveUsers);
 
-        if (registeredUserSort.value === 'onlineNow') {
+        if (registeredUserSort.value === 'onlineOnly') {
           allRegisteredUsers = registeredUsersFromSnapshot;
           applyRegisteredUserFilters();
         }
