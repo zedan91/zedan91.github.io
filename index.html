@@ -2667,7 +2667,6 @@
         });
 
         renderLiveUsers(liveUsers);
-        onlineUserCount.textContent = liveUsers.length;
 
         if (registeredUserSort.value === 'onlineNow') {
           allRegisteredUsers = registeredUsersFromSnapshot;
@@ -2776,18 +2775,30 @@
       guestOnlineUnsubscribe = onSnapshot(collection(db, 'sitePresence'), function (snapshot) {
         const now = Date.now();
         let guests = 0;
+        const onlineUsers = new Set();
 
         snapshot.forEach(function (item) {
           const data = item.data();
+          const isActive = data.online === true && data.lastSeenMs && now - data.lastSeenMs <= 90000;
 
-          if (data.online === true && data.type === 'guest' && data.lastSeenMs && now - data.lastSeenMs <= 90000) {
+          if (!isActive) {
+            return;
+          }
+
+          if (data.type === 'guest') {
             guests += 1;
+          }
+
+          if (data.type === 'user') {
+            onlineUsers.add(data.usernameKey || data.visitorId || item.id);
           }
         });
 
         onlineGuestCount.textContent = guests;
+        onlineUserCount.textContent = onlineUsers.size;
       }, function () {
         onlineGuestCount.textContent = '0';
+        onlineUserCount.textContent = '0';
       });
     }
 
