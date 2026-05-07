@@ -1172,6 +1172,53 @@
       align-items: stretch;
     }
 
+    #registeredUsersList {
+      gap: 8px;
+    }
+
+    #registeredUsersList .user-edit-item {
+      padding: 10px 12px;
+      gap: 8px;
+    }
+
+    .user-record-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .user-record-summary-main {
+      display: grid;
+      gap: 2px;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .user-record-summary-main span,
+    .user-record-extra {
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+
+    .user-compact-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .user-edit-details {
+      display: none;
+      padding-top: 8px;
+      border-top: 1px solid rgba(148,163,184,0.14);
+    }
+
+    .user-edit-item.is-editing .user-edit-details {
+      display: grid;
+      gap: 8px;
+    }
     .user-edit-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2815,41 +2862,52 @@
         const isAdminRecord = usernameKey === ADMIN_USERNAME;
         const paAccess = isAdminRecord || user.paAccess !== false;
         const isOnline = isRegisteredUserOnline(user);
+        const deleteButton = isAdminRecord
+          ? ''
+          : `<button class="small-action-btn" type="button" data-delete-user="${escapeHtml(usernameKey)}">Delete</button>`;
 
         return `
           <div class="purchase-summary-item user-edit-item" data-user-key="${escapeHtml(usernameKey)}">
-            <div>
-              <strong>${escapeHtml(user.name || usernameKey)}</strong>
-              <div>Username: <strong>${escapeHtml(usernameKey || '-')}</strong></div>
-              <div>Role: <strong>${isAdminRecord ? 'Admin' : 'User'}</strong></div>
-              <div>Status: <strong>${isOnline ? 'Online' : 'Offline'}</strong></div>
-              <div>Date registered: <strong>${escapeHtml(formatUserCreatedDate(user))}</strong></div>
-              <div>UID: <strong>${escapeHtml(user.uid ? user.uid.slice(0, 8) : '-')}</strong></div>
+            <div class="user-record-summary">
+              <div class="user-record-summary-main">
+                <strong>${escapeHtml(user.name || usernameKey)}</strong>
+                <span>Username: <strong>${escapeHtml(usernameKey || '-')}</strong></span>
+                <span>Role: <strong>${isAdminRecord ? 'Admin' : 'User'}</strong> | Status: <strong>${isOnline ? 'Online' : 'Offline'}</strong></span>
+              </div>
+              <div class="user-compact-actions">
+                <button class="small-action-btn blue" type="button" data-toggle-user-edit="${escapeHtml(usernameKey)}">Edit</button>
+                ${deleteButton}
+              </div>
             </div>
-            <div class="user-edit-grid">
-              <label>
-                Name
-                <input type="text" data-user-field="name" value="${escapeHtml(user.name || '')}">
-              </label>
-              <label>
-                Phone
-                <input type="text" data-user-field="phone" value="${escapeHtml(user.phone || '')}">
-              </label>
-              <label>
-                Email
-                <input type="email" data-user-field="contactEmail" value="${escapeHtml(user.contactEmail || '')}">
-              </label>
-              <label>
-                PA Access
-                <select data-user-field="paAccess" ${isAdminRecord ? 'disabled' : ''}>
-                  <option value="true" ${paAccess ? 'selected' : ''}>Allowed</option>
-                  <option value="false" ${!paAccess ? 'selected' : ''}>Not allowed</option>
-                </select>
-              </label>
-            </div>
-            <div class="user-edit-actions">
-              <button class="small-action-btn blue" type="button" data-save-user="${escapeHtml(usernameKey)}">Save Details</button>
-              ${isAdminRecord ? '' : `<button class="small-action-btn" type="button" data-delete-user="${escapeHtml(usernameKey)}">Delete User</button>`}
+            <div class="user-edit-details">
+              <div class="user-record-extra">
+                Date registered: <strong>${escapeHtml(formatUserCreatedDate(user))}</strong><br>
+                UID: <strong>${escapeHtml(user.uid ? user.uid.slice(0, 8) : '-')}</strong>
+              </div>
+              <div class="user-edit-grid">
+                <label>
+                  Name
+                  <input type="text" data-user-field="name" value="${escapeHtml(user.name || '')}">
+                </label>
+                <label>
+                  Phone
+                  <input type="text" data-user-field="phone" value="${escapeHtml(user.phone || '')}">
+                </label>
+                <label>
+                  Email
+                  <input type="email" data-user-field="contactEmail" value="${escapeHtml(user.contactEmail || '')}">
+                </label>
+                <label>
+                  PA Access
+                  <select data-user-field="paAccess" ${isAdminRecord ? 'disabled' : ''}>
+                    <option value="true" ${paAccess ? 'selected' : ''}>Allowed</option>
+                    <option value="false" ${!paAccess ? 'selected' : ''}>Not allowed</option>
+                  </select>
+                </label>
+              </div>
+              <div class="user-edit-actions">
+                <button class="small-action-btn blue" type="button" data-save-user="${escapeHtml(usernameKey)}">Save Details</button>
+              </div>
             </div>
           </div>
         `;
@@ -4660,8 +4718,21 @@
     registeredUserSearch.addEventListener('input', function () { applyRegisteredUserFilters(1); });
     registeredUserSort.addEventListener('change', function () { applyRegisteredUserFilters(1); });
     registeredUsersList.addEventListener('click', function (event) {
+      const toggleButton = event.target.closest('[data-toggle-user-edit]');
       const saveButton = event.target.closest('[data-save-user]');
       const deleteButton = event.target.closest('[data-delete-user]');
+
+      if (toggleButton) {
+        const item = toggleButton.closest('.user-edit-item');
+        const isOpening = item && !item.classList.contains('is-editing');
+
+        if (item) {
+          item.classList.toggle('is-editing', isOpening);
+          toggleButton.textContent = isOpening ? 'Close' : 'Edit';
+        }
+
+        return;
+      }
 
       if (saveButton) {
         saveRegisteredUserDetails(saveButton.dataset.saveUser, saveButton.closest('.user-edit-item'));
