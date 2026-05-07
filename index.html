@@ -745,47 +745,161 @@
       font-weight: bold;
     }
 
-    .affiliate-card {
-      cursor: pointer;
-      overflow: visible;
-    }
-
-    .affiliate-toggle {
-      border: 0;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 16px;
-    }
-
-    .affiliate-info {
-      display: none;
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .affiliate-card:hover .affiliate-info,
-    .affiliate-card:focus-within .affiliate-info,
-    .affiliate-card.is-open .affiliate-info {
+    .affiliate-shop {
       display: grid;
+      gap: 18px;
     }
 
-    .affiliate-info a {
-      display: block;
-      padding: 10px 12px;
-      border: 1px solid rgba(37,99,235,0.35);
+    .affiliate-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin: 0 auto 4px;
+      max-width: 920px;
+    }
+
+    .affiliate-search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px 15px;
+      border: 1px solid rgba(148,163,184,0.28);
       border-radius: 10px;
       background: #0f172a;
+      color: white;
+      outline: none;
+    }
+
+    .affiliate-search:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.14);
+    }
+
+    .affiliate-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .affiliate-filter {
+      border: 1px solid rgba(37,99,235,0.38);
+      border-radius: 999px;
+      background: #0f172a;
       color: #bfdbfe;
-      text-decoration: none;
-      font-size: 13px;
+      padding: 10px 13px;
       font-weight: bold;
-      line-height: 1.35;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .affiliate-filter:hover,
+    .affiliate-filter.is-active {
+      border-color: rgba(34,197,94,0.65);
+      background: rgba(34,197,94,0.16);
+      color: #22c55e;
+    }
+
+    .affiliate-products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .affiliate-product-card {
+      position: relative;
+      display: grid;
+      gap: 12px;
+      min-height: 310px;
+      padding: 18px;
+      border: 1px solid rgba(34,197,94,0.18);
+      border-radius: 12px;
+      background: #1e293b;
+      box-shadow: 0 18px 34px rgba(2,6,23,0.16);
+      transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+    }
+
+    .affiliate-product-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(34,197,94,0.48);
+      box-shadow: 0 20px 42px rgba(34,197,94,0.13);
+    }
+
+    .affiliate-product-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .affiliate-product-icon {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border: 1px solid rgba(148,163,184,0.22);
+      border-radius: 13px;
+      background: #0f172a;
+      color: #22c55e;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .affiliate-badge {
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: rgba(34,197,94,0.14);
+      color: #22c55e;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .affiliate-product-card h3 {
+      margin: 2px 0 0;
+      font-size: 19px;
+      line-height: 1.25;
       text-align: left;
     }
 
-    .affiliate-info a:hover {
-      border-color: rgba(34,197,94,0.55);
-      color: #22c55e;
+    .affiliate-product-card p {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.45;
+      text-align: left;
+    }
+
+    .affiliate-product-meta {
+      color: #93c5fd;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .affiliate-product-card .btn {
+      align-self: end;
+      justify-self: start;
+      margin: 0;
+      border-radius: 9px;
+      background: #2563eb;
+    }
+
+    .affiliate-empty {
+      padding: 18px;
+      border: 1px solid rgba(249,115,22,0.35);
+      border-radius: 12px;
+      background: rgba(249,115,22,0.08);
+      color: #fed7aa;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .affiliate-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .affiliate-filters {
+        justify-content: flex-start;
+      }
     }
 
     .request-form {
@@ -1934,33 +2048,75 @@
     <h2>Affiliate Links</h2>
     <p style="text-align:center;">A curated list of useful items for work, home and PC setups.</p>
 
-    <div class="grid">
-      <div class="card affiliate-card">
-        <h3>&#128722; PC Tools</h3>
-        <p>Useful items for PC repair, setup and maintenance.</p>
-        <button class="btn blue affiliate-toggle" type="button">View Links</button>
-        <div class="affiliate-info">
-          <a href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">FULL Set Custom Budget Gaming PC Desktop RIG AMD Ryzen 7 5700G / 5600G / 5500GT / 3200G</a>
-          <a href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener">MAXBY MAX7200 PCIe Gen4x4 NVMe 2.0 SSD 1TB 7200MB/s</a>
+    <div class="affiliate-shop">
+      <div class="affiliate-controls">
+        <input class="affiliate-search" id="affiliateSearch" type="search" placeholder="Search products, gadgets, SSD, camera..." aria-label="Search affiliate products">
+        <div class="affiliate-filters" aria-label="Affiliate product filters">
+          <button class="affiliate-filter is-active" type="button" data-affiliate-filter="all">All</button>
+          <button class="affiliate-filter" type="button" data-affiliate-filter="pc">PC Tools</button>
+          <button class="affiliate-filter" type="button" data-affiliate-filter="gadget">Gadgets</button>
+          <button class="affiliate-filter" type="button" data-affiliate-filter="camera">Camera</button>
         </div>
       </div>
 
-      <div class="card">
-        <h3>&#127968; Useful Home Items</h3>
-        <p>Practical products for everyday use.</p>
-        <a class="btn blue" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">Ask Links</a>
+      <div class="affiliate-products" id="affiliateProducts">
+        <article class="affiliate-product-card" data-category="pc" data-keywords="gaming pc desktop rig amd ryzen 5700g 5600g 5500gt 3200g diy build">
+          <div class="affiliate-product-top">
+            <div class="affiliate-product-icon">PC</div>
+            <span class="affiliate-badge">PC Build</span>
+          </div>
+          <h3>Custom Budget Gaming PC Desktop RIG</h3>
+          <p>FULL set DIY build with AMD Ryzen 7 5700G, 5600G, 5500GT or 3200G options.</p>
+          <div class="affiliate-product-meta">Best for starter gaming setup</div>
+          <a class="btn blue" href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">View on Shopee</a>
+        </article>
+
+        <article class="affiliate-product-card" data-category="pc storage" data-keywords="maxby max7200 nvme ssd 1tb pcie gen4 hard drive storage 7200mb">
+          <div class="affiliate-product-top">
+            <div class="affiliate-product-icon">SSD</div>
+            <span class="affiliate-badge">Fast Storage</span>
+          </div>
+          <h3>MAXBY MAX7200 PCIe Gen4 NVMe SSD 1TB</h3>
+          <p>High-speed internal SSD rated up to 7200MB/s for PC storage upgrade.</p>
+          <div class="affiliate-product-meta">Best for Windows and game loading</div>
+          <a class="btn blue" href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener">View on Shopee</a>
+        </article>
+
+        <article class="affiliate-product-card" data-category="gadget" data-keywords="qr pay soundbox mae payment business shop alert speaker">
+          <div class="affiliate-product-top">
+            <div class="affiliate-product-icon">QR</div>
+            <span class="affiliate-badge">Business</span>
+          </div>
+          <h3>QR Pay Soundbox MAE</h3>
+          <p>Payment notification soundbox for shops, small business counters and QR payment alerts.</p>
+          <div class="affiliate-product-meta">Useful for sellers and counters</div>
+          <a class="btn blue" href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">View on Shopee</a>
+        </article>
+
+        <article class="affiliate-product-card" data-category="gadget camera" data-keywords="ddpai z50 pro 4k hdr gps front rear dash cam 4g adas car camera">
+          <div class="affiliate-product-top">
+            <div class="affiliate-product-icon">4K</div>
+            <span class="affiliate-badge">Dash Cam</span>
+          </div>
+          <h3>DDPAI Z50 Pro 4K HDR Dash Cam</h3>
+          <p>Front and rear dash cam with GPS, super capacitor, 4G connectivity and ADAS support.</p>
+          <div class="affiliate-product-meta">Best for car safety recording</div>
+          <a class="btn blue" href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener">View on Shopee</a>
+        </article>
+
+        <article class="affiliate-product-card" data-category="gadget camera" data-keywords="tp-link tapo c325wb colorpro night vision c320ws tc65 2k smart cloud camera wifi ip66">
+          <div class="affiliate-product-top">
+            <div class="affiliate-product-icon">CAM</div>
+            <span class="affiliate-badge">Smart Camera</span>
+          </div>
+          <h3>TP-LINK Tapo C325WB ColorPro Camera</h3>
+          <p>4MP ColorPro night vision smart camera for outdoor or indoor monitoring.</p>
+          <div class="affiliate-product-meta">Best for home and shop security</div>
+          <a class="btn blue" href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">View on Shopee</a>
+        </article>
       </div>
 
-      <div class="card affiliate-card">
-        <h3>&#128241; Gadgets</h3>
-        <p>Useful gadgets for work and content creation.</p>
-        <button class="btn blue affiliate-toggle" type="button">View Links</button>
-        <div class="affiliate-info">
-          <a href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">QR Pay Soundbox MAE</a>
-          <a href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener">DDPAI Z50 Pro 4K HDR GPS Front & Rear Dash Cam with 4G & ADAS</a>
-          <a href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">TP-LINK Tapo C325WB ColorPro Night Vision 4MP Smart Camera</a>
-        </div>
-      </div>
+      <div class="affiliate-empty" id="affiliateEmpty" hidden>No matching affiliate products found.</div>
     </div>
   </div>
 
@@ -4694,34 +4850,52 @@
       });
     });
 
-    const affiliateCards = document.querySelectorAll('.affiliate-card');
+    const affiliateSearch = document.getElementById('affiliateSearch');
+    const affiliateFilterButtons = document.querySelectorAll('[data-affiliate-filter]');
+    const affiliateProductCards = document.querySelectorAll('.affiliate-product-card');
+    const affiliateEmpty = document.getElementById('affiliateEmpty');
+    let activeAffiliateFilter = 'all';
 
-    function toggleAffiliateCard(selectedCard) {
-      const wasOpen = selectedCard.classList.contains('is-open');
+    function updateAffiliateProducts() {
+      const query = (affiliateSearch && affiliateSearch.value ? affiliateSearch.value : '').trim().toLowerCase();
+      let visibleCount = 0;
 
-      affiliateCards.forEach(function (card) {
-        card.classList.remove('is-open');
+      affiliateProductCards.forEach(function (card) {
+        const categories = (card.dataset.category || '').split(' ');
+        const searchableText = `${card.textContent || ''} ${card.dataset.keywords || ''}`.toLowerCase();
+        const matchesCategory = activeAffiliateFilter === 'all' || categories.includes(activeAffiliateFilter);
+        const matchesSearch = !query || searchableText.includes(query);
+        const shouldShow = matchesCategory && matchesSearch;
+
+        card.hidden = !shouldShow;
+
+        if (shouldShow) {
+          visibleCount += 1;
+        }
       });
 
-      if (!wasOpen) {
-        selectedCard.classList.add('is-open');
-      } else {
-        selectedCard.blur();
+      if (affiliateEmpty) {
+        affiliateEmpty.hidden = visibleCount > 0;
       }
     }
 
-    affiliateCards.forEach(function (card) {
-      const trigger = card.querySelector('.affiliate-toggle');
+    affiliateFilterButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        activeAffiliateFilter = button.dataset.affiliateFilter || 'all';
 
-      if (!trigger) {
-        return;
-      }
+        affiliateFilterButtons.forEach(function (item) {
+          item.classList.toggle('is-active', item === button);
+        });
 
-      trigger.addEventListener('click', function (event) {
-        event.stopPropagation();
-        toggleAffiliateCard(card);
+        updateAffiliateProducts();
       });
     });
+
+    if (affiliateSearch) {
+      affiliateSearch.addEventListener('input', updateAffiliateProducts);
+    }
+
+    updateAffiliateProducts();
 
     paNumber.addEventListener('input', updatePreview);
     negeri.addEventListener('change', updatePreview);
