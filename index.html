@@ -2049,6 +2049,7 @@
                 No purchase records yet.
               </div>
             </div>
+            <div class="guest-history-pagination" id="purchaseRecordsPagination"></div>
           </div>
 
           <div class="payment-qr-wrap">
@@ -2099,6 +2100,7 @@
             No user records yet.
           </div>
         </div>
+        <div class="guest-history-pagination" id="registeredUsersPagination"></div>
         <div class="admin-live-panel" id="liveUsersPanel">
           <h4>Online Logged-In Users</h4>
           <div class="live-user-list" id="liveUsersList">
@@ -2274,6 +2276,7 @@
     const purchaseRecordSort = document.getElementById('purchaseRecordSort');
     const purchaseAdminError = document.getElementById('purchaseAdminError');
     const purchaseSummaryList = document.getElementById('purchaseSummaryList');
+    const purchaseRecordsPagination = document.getElementById('purchaseRecordsPagination');
     const purchasePanelTitle = document.getElementById('purchasePanelTitle');
     const purchasePanelNote = document.getElementById('purchasePanelNote');
     const registeredUsersPanel = document.getElementById('registeredUsersPanel');
@@ -2282,6 +2285,7 @@
     const registeredUserSort = document.getElementById('registeredUserSort');
     const registeredUsersError = document.getElementById('registeredUsersError');
     const registeredUsersList = document.getElementById('registeredUsersList');
+    const registeredUsersPagination = document.getElementById('registeredUsersPagination');
     const liveUsersList = document.getElementById('liveUsersList');
     const liveUsersPagination = document.getElementById('liveUsersPagination');
     const loginHistoryList = document.getElementById('loginHistoryList');
@@ -2304,7 +2308,9 @@
     let signupGateTimer = null;
     let pendingDownload = null;
     let allPurchaseSummaries = [];
+    let purchaseRecordsPage = 1;
     let allRegisteredUsers = [];
+    let registeredUsersPage = 1;
     let allLiveUsers = [];
     let liveUsersPage = 1;
     let allLoginHistory = [];
@@ -2428,30 +2434,37 @@
       return user && user.usernameKey === ADMIN_USERNAME;
     }
 
-    function renderPurchaseSummaries(summaries) {
+    function renderPurchaseSummaries(summaries, requestedPage = purchaseRecordsPage) {
       if (!summaries.length) {
+        purchaseRecordsPage = 1;
         purchaseSummaryList.innerHTML = '<div class="purchase-summary-item">No purchase records yet.</div>';
+        renderHistoryPagination(purchaseRecordsPagination, 0, purchaseRecordsPage, 'purchaseRecords');
         return;
       }
 
-      purchaseSummaryList.innerHTML = summaries.map(function (summary) {
+      const pageData = getHistoryPageItems(summaries, requestedPage);
+      purchaseRecordsPage = pageData.page;
+
+      purchaseSummaryList.innerHTML = pageData.pageItems.map(function (summary) {
         const units = summary.totalUnits || 0;
         const amount = summary.totalAmount || 0;
         const lastPa = summary.lastPa ? `PA${summary.lastPa}` : '-';
         const resetButton = isAdminUser(currentUser)
-          ? `<button class="small-action-btn" type="button" data-reset-purchase="${summary.usernameKey}">Reset</button>`
+          ? `<button class="small-action-btn" type="button" data-reset-purchase="${escapeHtml(summary.usernameKey || '')}">Reset</button>`
           : '';
 
         return `
           <div class="purchase-summary-item">
-            <span><strong>${summary.name || summary.usernameKey}</strong><br>${summary.phone || '-'}</span>
+            <span><strong>${escapeHtml(summary.name || summary.usernameKey || '-')}</strong><br>${escapeHtml(summary.phone || '-')}</span>
             <span>Unit: <strong>${units}</strong></span>
             <span>Total: <strong>RM${amount}</strong></span>
-            <span>Last PA: <strong>${lastPa}</strong></span>
+            <span>Last PA: <strong>${escapeHtml(lastPa)}</strong></span>
             ${resetButton}
           </div>
         `;
       }).join('');
+
+      renderHistoryPagination(purchaseRecordsPagination, pageData.totalPages, purchaseRecordsPage, 'purchaseRecords');
     }
 
     function getFirestoreTimestampMs(value) {
@@ -2523,8 +2536,8 @@
       return summaries;
     }
 
-    function applyPurchaseRecordFilters() {
-      renderPurchaseSummaries(getFilteredPurchaseSummaries());
+    function applyPurchaseRecordFilters(requestedPage = 1) {
+      renderPurchaseSummaries(getFilteredPurchaseSummaries(), requestedPage);
     }
     async function resetPurchaseSummary(usernameKey) {
       if (!isAdminUser(currentUser) || !usernameKey) {
@@ -2722,17 +2735,22 @@
       return users;
     }
 
-    function applyRegisteredUserFilters() {
-      renderRegisteredUsers(getFilteredRegisteredUsers());
+    function applyRegisteredUserFilters(requestedPage = 1) {
+      renderRegisteredUsers(getFilteredRegisteredUsers(), requestedPage);
     }
 
-    function renderRegisteredUsers(users) {
+    function renderRegisteredUsers(users, requestedPage = registeredUsersPage) {
       if (!users.length) {
+        registeredUsersPage = 1;
         registeredUsersList.innerHTML = '<div class="purchase-summary-item">No matching user records found.</div>';
+        renderHistoryPagination(registeredUsersPagination, 0, registeredUsersPage, 'registeredUsers');
         return;
       }
 
-      registeredUsersList.innerHTML = users.map(function (user) {
+      const pageData = getHistoryPageItems(users, requestedPage);
+      registeredUsersPage = pageData.page;
+
+      registeredUsersList.innerHTML = pageData.pageItems.map(function (user) {
         const usernameKey = user.usernameKey || normalizeUsername(user.name || '');
         const isAdminRecord = usernameKey === ADMIN_USERNAME;
         const paAccess = isAdminRecord || user.paAccess !== false;
@@ -2776,6 +2794,8 @@
           </div>
         `;
       }).join('');
+
+      renderHistoryPagination(registeredUsersPagination, pageData.totalPages, registeredUsersPage, 'registeredUsers');
     }
     async function saveRegisteredUserDetails(usernameKey, itemElement) {
       if (!isAdminUser(currentUser) || !usernameKey || !itemElement) {
@@ -4131,6 +4151,18 @@
       const action = pageButton.dataset.historyAction;
       const pageValue = Number(pageButton.dataset.historyPage);
 
+      if (historyType === 'purchaseRecords') {
+        const nextPage = action === 'previous' ? purchaseRecordsPage - 1 : action === 'next' ? purchaseRecordsPage + 1 : pageValue;
+        renderPurchaseSummaries(getFilteredPurchaseSummaries(), nextPage);
+        return;
+      }
+
+      if (historyType === 'registeredUsers') {
+        const nextPage = action === 'previous' ? registeredUsersPage - 1 : action === 'next' ? registeredUsersPage + 1 : pageValue;
+        renderRegisteredUsers(getFilteredRegisteredUsers(), nextPage);
+        return;
+      }
+
       if (historyType === 'liveUsers') {
         const nextPage = action === 'previous' ? liveUsersPage - 1 : action === 'next' ? liveUsersPage + 1 : pageValue;
         renderLiveUsers(allLiveUsers, nextPage);
@@ -4149,7 +4181,7 @@
       }
     }
 
-    [liveUsersPagination, loginHistoryPagination, guestHistoryPagination].forEach(function (container) {
+    [purchaseRecordsPagination, registeredUsersPagination, liveUsersPagination, loginHistoryPagination, guestHistoryPagination].forEach(function (container) {
       if (container) {
         container.addEventListener('click', handleHistoryPaginationClick);
       }
@@ -4548,8 +4580,8 @@
     negeri.addEventListener('change', updatePreview);
 
     refreshPurchaseButton.addEventListener('click', loadPurchaseRecords);
-    purchaseRecordSearch.addEventListener('input', applyPurchaseRecordFilters);
-    purchaseRecordSort.addEventListener('change', applyPurchaseRecordFilters);
+    purchaseRecordSearch.addEventListener('input', function () { applyPurchaseRecordFilters(1); });
+    purchaseRecordSort.addEventListener('change', function () { applyPurchaseRecordFilters(1); });
     purchaseSummaryList.addEventListener('click', function (event) {
       const resetButton = event.target.closest('[data-reset-purchase]');
 
@@ -4561,8 +4593,8 @@
     });
 
     refreshUsersButton.addEventListener('click', loadRegisteredUsers);
-    registeredUserSearch.addEventListener('input', applyRegisteredUserFilters);
-    registeredUserSort.addEventListener('change', applyRegisteredUserFilters);
+    registeredUserSearch.addEventListener('input', function () { applyRegisteredUserFilters(1); });
+    registeredUserSort.addEventListener('change', function () { applyRegisteredUserFilters(1); });
     registeredUsersList.addEventListener('click', function (event) {
       const saveButton = event.target.closest('[data-save-user]');
       const deleteButton = event.target.closest('[data-delete-user]');
