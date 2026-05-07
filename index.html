@@ -2784,13 +2784,8 @@
       heroRequestButton.classList.toggle('is-visible', hasPaAccess);
       paForm.hidden = !hasPaAccess;
 
-      if (hasPaAccess) {
-        loginInfo.style.display = 'none';
-        loginInfo.textContent = '';
-      } else {
-        loginInfo.style.display = 'block';
-        loginInfo.textContent = 'Akaun biasa tidak mempunyai akses Request PA / Info Lot. Sila WhatsApp Admin untuk buka akses PA.';
-      }
+      loginInfo.style.display = 'none';
+      loginInfo.textContent = '';
 
       showSignedInUser(user);
 
