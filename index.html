@@ -1972,6 +1972,23 @@
             <button class="btn blue" id="refreshPurchaseButton" type="button">
               Refresh Records
             </button>
+            <div class="admin-user-tools" id="purchaseRecordTools" hidden>
+              <label for="purchaseRecordSearch">
+                Search purchase record
+                <input id="purchaseRecordSearch" type="search" placeholder="Search username, phone or PA">
+              </label>
+              <label for="purchaseRecordSort">
+                Sort by
+                <select id="purchaseRecordSort">
+                  <option value="amountDesc">Total amount: highest</option>
+                  <option value="amountAsc">Total amount: lowest</option>
+                  <option value="unitsDesc">Unit: highest</option>
+                  <option value="unitsAsc">Unit: lowest</option>
+                  <option value="updatedNewest">Latest updated</option>
+                  <option value="username">Username A-Z</option>
+                </select>
+              </label>
+            </div>
             <p class="request-error" id="purchaseAdminError"></p>
             <div class="purchase-summary-list" id="purchaseSummaryList">
               <div class="purchase-summary-item">
@@ -2013,6 +2030,7 @@
             <select id="registeredUserSort">
               <option value="username">Username A-Z</option>
               <option value="onlineOnly">Online users only</option>
+              <option value="paAllowed">PA Access Allowed</option>
               <option value="dateNewest">Date registered: newest</option>
               <option value="dateOldest">Date registered: oldest</option>
             </select>
@@ -2168,6 +2186,9 @@
     const failedDownloadButton = document.getElementById('failedDownloadButton');
     const adminPurchasePanel = document.getElementById('adminPurchasePanel');
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
+    const purchaseRecordTools = document.getElementById('purchaseRecordTools');
+    const purchaseRecordSearch = document.getElementById('purchaseRecordSearch');
+    const purchaseRecordSort = document.getElementById('purchaseRecordSort');
     const purchaseAdminError = document.getElementById('purchaseAdminError');
     const purchaseSummaryList = document.getElementById('purchaseSummaryList');
     const purchasePanelTitle = document.getElementById('purchasePanelTitle');
@@ -2191,6 +2212,7 @@
     let currentUser = null;
     let signupGateTimer = null;
     let pendingDownload = null;
+    let allPurchaseSummaries = [];
     let allRegisteredUsers = [];
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
@@ -2323,13 +2345,85 @@
             <span><strong>${summary.name || summary.usernameKey}</strong><br>${summary.phone || '-'}</span>
             <span>Unit: <strong>${units}</strong></span>
             <span>Total: <strong>RM${amount}</strong></span>
-            <span>PA terakhir: <strong>${lastPa}</strong></span>
+            <span>Last PA: <strong>${lastPa}</strong></span>
             ${resetButton}
           </div>
         `;
       }).join('');
     }
 
+    function getFirestoreTimestampMs(value) {
+      if (value && typeof value.toMillis === 'function') {
+        return value.toMillis();
+      }
+
+      if (value && typeof value.seconds === 'number') {
+        return value.seconds * 1000;
+      }
+
+      return 0;
+    }
+
+    function getPurchaseUpdatedMs(summary) {
+      return getFirestoreTimestampMs(summary.updatedAt)
+        || getFirestoreTimestampMs(summary.resetAt)
+        || 0;
+    }
+
+    function getFilteredPurchaseSummaries() {
+      const queryText = (purchaseRecordSearch ? purchaseRecordSearch.value : '').trim().toLowerCase();
+      const sortMode = purchaseRecordSort ? purchaseRecordSort.value : 'amountDesc';
+      let summaries = allPurchaseSummaries.slice();
+
+      if (queryText) {
+        summaries = summaries.filter(function (summary) {
+          const searchable = [
+            summary.usernameKey || '',
+            summary.name || '',
+            summary.phone || '',
+            summary.lastPa || '',
+            summary.lastNegeri || ''
+          ].join(' ').toLowerCase();
+
+          return searchable.includes(queryText);
+        });
+      }
+
+      summaries.sort(function (a, b) {
+        if (sortMode === 'amountAsc') {
+          return (a.totalAmount || 0) - (b.totalAmount || 0)
+            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        if (sortMode === 'unitsDesc') {
+          return (b.totalUnits || 0) - (a.totalUnits || 0)
+            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        if (sortMode === 'unitsAsc') {
+          return (a.totalUnits || 0) - (b.totalUnits || 0)
+            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        if (sortMode === 'updatedNewest') {
+          return getPurchaseUpdatedMs(b) - getPurchaseUpdatedMs(a)
+            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        if (sortMode === 'username') {
+          return (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        return (b.totalAmount || 0) - (a.totalAmount || 0)
+          || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+      });
+
+      return summaries;
+    }
+
+    function applyPurchaseRecordFilters() {
+      renderPurchaseSummaries(getFilteredPurchaseSummaries());
+    }
     async function resetPurchaseSummary(usernameKey) {
       if (!isAdminUser(currentUser) || !usernameKey) {
         return;
@@ -2368,6 +2462,7 @@
       try {
         purchaseAdminError.textContent = '';
         const summaries = [];
+        purchaseRecordTools.hidden = !isAdminUser(currentUser);
 
         if (isAdminUser(currentUser)) {
           purchasePanelTitle.textContent = 'Purchase Records Users';
@@ -2433,11 +2528,8 @@
           }
         }
 
-        summaries.sort(function (a, b) {
-          return (b.totalAmount || 0) - (a.totalAmount || 0);
-        });
-
-        renderPurchaseSummaries(summaries);
+        allPurchaseSummaries = summaries;
+        applyPurchaseRecordFilters();
       } catch (error) {
         purchaseAdminError.textContent = `Failed to read purchase records: ${error.code || error.message}`;
       }
@@ -2498,9 +2590,20 @@
         users = users.filter(isRegisteredUserOnline);
       }
 
+      if (sortMode === 'paAllowed') {
+        users = users.filter(function (user) {
+          const usernameKey = user.usernameKey || normalizeUsername(user.name || '');
+          return usernameKey === ADMIN_USERNAME || user.paAccess !== false;
+        });
+      }
+
       users.sort(function (a, b) {
         if (sortMode === 'onlineOnly') {
           return (b.lastSeenMs || 0) - (a.lastSeenMs || 0);
+        }
+
+        if (sortMode === 'paAllowed') {
+          return (a.usernameKey || '').localeCompare(b.usernameKey || '');
         }
 
         if (sortMode === 'dateNewest') {
@@ -3891,6 +3994,10 @@
       paForm.hidden = true;
       adminPurchasePanel.style.display = 'none';
       registeredUsersPanel.style.display = 'none';
+      purchaseRecordSearch.value = '';
+      purchaseRecordSort.value = 'amountDesc';
+      allPurchaseSummaries = [];
+      purchaseRecordTools.hidden = true;
       registeredUserSearch.value = '';
       registeredUserSort.value = 'username';
       signupFields.hidden = true;
@@ -4047,6 +4154,8 @@
     negeri.addEventListener('change', updatePreview);
 
     refreshPurchaseButton.addEventListener('click', loadPurchaseRecords);
+    purchaseRecordSearch.addEventListener('input', applyPurchaseRecordFilters);
+    purchaseRecordSort.addEventListener('change', applyPurchaseRecordFilters);
     purchaseSummaryList.addEventListener('click', function (event) {
       const resetButton = event.target.closest('[data-reset-purchase]');
 
