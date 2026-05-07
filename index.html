@@ -2312,7 +2312,7 @@
     let allGuestHistory = [];
     let guestHistoryPage = 1;
     const HISTORY_PAGE_SIZE = 3;
-    const HISTORY_PAGINATION_MAX_BUTTONS = 12;
+    const HISTORY_PAGINATION_MAX_BUTTONS = 10;
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
     let guestOnlineUnsubscribe = null;
@@ -2956,6 +2956,7 @@
 
       const windowRange = getPaginationWindow(currentPage, totalPages);
       const buttons = [];
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-page="1" ${currentPage === 1 ? 'disabled' : ''}>&lt;&lt; First</button>`);
       buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="previous" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`);
 
       for (let page = windowRange.startPage; page <= windowRange.endPage; page += 1) {
@@ -2964,6 +2965,7 @@
       }
 
       buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-action="next" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`);
+      buttons.push(`<button class="guest-history-page-btn" type="button" data-history-type="${historyType}" data-history-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last &gt;&gt;</button>`);
       container.innerHTML = buttons.join('');
     }
 
