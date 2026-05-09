@@ -6007,7 +6007,7 @@
       buttons.push({text:'>>', page: currentPage + 1, disabled: currentPage === totalPages});
       buttons.push({text:'Show All', page:'showall'});
       buttons.push({text:'Hide All', page:'hideall'});
-      buttons.push({text:'Go Back to Affiliate Categories', page:'goback'});
+      buttons.push({text:'Go Back to Categories', page:'goback'});
 
       const bottomWrap = document.createElement('div');
 bottomWrap.className = 'affiliate-bottom-actions';
@@ -6077,11 +6077,11 @@ buttons.forEach(item => {
 
   });
 
-  if(item.text === 'Go Back to Affiliate Categories'){
+  if(item.text === 'Go Back to Categories'){
     btn.classList.add('affiliate-back-btn');
   }
 
-  if(item.text === 'Show All' || item.text === 'Hide All' || item.text === 'Go Back to Affiliate Categories'){
+  if(item.text === 'Show All' || item.text === 'Hide All' || item.text === 'Go Back to Categories'){
 
     bottomWrap.appendChild(btn);
 
