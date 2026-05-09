@@ -2045,6 +2045,81 @@
   }
 }
 
+
+/* AFFILIATE 4-CARD PAGINATION */
+.affiliate-products{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(240px,1fr)) !important;
+  gap:18px !important;
+}
+
+.affiliate-pagination{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  margin:22px auto 0 !important;
+  padding:8px !important;
+  width:max-content !important;
+  max-width:100% !important;
+  border-radius:10px !important;
+  background:rgba(15,23,42,.72) !important;
+  flex-wrap:wrap !important;
+}
+
+.affiliate-page-btn{
+  min-width:36px !important;
+  height:36px !important;
+  padding:0 12px !important;
+  border-radius:8px !important;
+  border:1px solid rgba(59,130,246,.55) !important;
+  background:#07142a !important;
+  color:#ffffff !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-weight:700 !important;
+  font-size:14px !important;
+  cursor:pointer !important;
+  transition:.2s !important;
+  text-decoration:none !important;
+}
+
+.affiliate-page-btn:hover:not(:disabled){
+  background:#0f1d38 !important;
+  transform:translateY(-1px) !important;
+}
+
+.affiliate-page-btn.active{
+  background:#22c55e !important;
+  border-color:#22c55e !important;
+  color:#ffffff !important;
+}
+
+.affiliate-page-btn:disabled{
+  opacity:.38 !important;
+  cursor:not-allowed !important;
+}
+
+@media(max-width:1100px){
+  .affiliate-products{
+    grid-template-columns:repeat(2,minmax(240px,1fr)) !important;
+  }
+}
+
+@media(max-width:650px){
+  .affiliate-products{
+    grid-template-columns:1fr !important;
+  }
+}
+
+
+.affiliate-showall-btn{
+  min-width:auto !important;
+  padding:0 16px !important;
+  background:#0f172a !important;
+}
+
 </style>
 </head>
 
@@ -2704,6 +2779,9 @@
           <a class="btn blue" href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">View on Shopee</a>
         </article>
       </div>
+
+<div class="affiliate-pagination" id="affiliatePagination"></div>
+
 
       <div class="affiliate-empty" id="affiliateEmpty" hidden>No matching affiliate products found.</div>
     </div>
@@ -5788,6 +5866,166 @@
     document.addEventListener('DOMContentLoaded', initAffiliateCategories);
   }else{
     initAffiliateCategories();
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  const perPage = 4;
+  let currentPage = 1;
+
+  function normalize(text){
+    return (text || '').toString().trim().toLowerCase();
+  }
+
+  function initAffiliatePagination(){
+    const cards = Array.from(document.querySelectorAll('.affiliate-product-card'));
+    const pager = document.getElementById('affiliatePagination');
+    const search = document.getElementById('affiliateCategorySearch');
+    const categoryButtons = document.querySelectorAll('.affiliate-category-card');
+
+    if(!cards.length || !pager) return;
+
+    function activeFilter(){
+      const active = document.querySelector('.affiliate-category-card.is-active');
+      return normalize(active ? active.dataset.filter : 'all');
+    }
+
+    function getFilteredCards(){
+      const q = normalize(search ? search.value : '');
+      const f = activeFilter();
+
+      return cards.filter(card => {
+        const text = normalize(card.innerText);
+        const cat = normalize(card.dataset.category || card.getAttribute('data-category') || '');
+        const allText = text + ' ' + cat;
+
+        const matchText = !q || allText.includes(q);
+        const matchCat = f === 'all' || allText.includes(f);
+
+        return matchText && matchCat;
+      });
+    }
+
+    function render(){
+      const filtered = getFilteredCards();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+
+      if(currentPage > totalPages) currentPage = totalPages;
+      if(currentPage < 1) currentPage = 1;
+
+      cards.forEach(card => {
+        card.style.display = 'none';
+      });
+
+      filtered.slice((currentPage - 1) * perPage, currentPage * perPage).forEach(card => {
+        card.style.display = '';
+        card.hidden = false;
+      });
+
+      pager.innerHTML = '';
+
+      const buttons = [
+        {text:'<<', page: currentPage - 1, disabled: currentPage === 1},
+        {text:'Previous', page: currentPage - 1, disabled: currentPage === 1}
+      ];
+
+      for(let i=1; i<=totalPages; i++){
+        buttons.push({text:String(i), page:i, active:i===currentPage});
+      }
+
+      buttons.push({text:'Next', page: currentPage + 1, disabled: currentPage === totalPages});
+      buttons.push({text:'>>', page: currentPage + 1, disabled: currentPage === totalPages});
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'affiliate-page-btn affiliate-showall-btn';
+
+      const showingAll = pager.dataset.showall === '1';
+      toggleBtn.textContent = showingAll ? 'Hide All' : 'Show All';
+
+      toggleBtn.addEventListener('click', () => {
+        if(pager.dataset.showall === '1'){
+          pager.dataset.showall = '0';
+          render();
+        }else{
+          pager.dataset.showall = '1';
+
+          cards.forEach(card => {
+            card.style.display = 'none';
+          });
+
+          filtered.forEach(card => {
+            card.style.display = '';
+            card.hidden = false;
+          });
+
+          renderButtonsOnly(totalPages);
+        }
+      });
+
+      function renderButtonsOnly(totalPages){
+        pager.innerHTML = '';
+        pager.appendChild(toggleBtn);
+
+        buttons.forEach(item => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'affiliate-page-btn' + (item.active ? ' active' : '');
+          btn.textContent = item.text;
+          btn.disabled = !!item.disabled;
+
+          btn.addEventListener('click', () => {
+            pager.dataset.showall = '0';
+            currentPage = item.page;
+            render();
+          });
+
+          //pager.appendChild(btn);
+        });
+      }
+
+      renderButtonsOnly(totalPages);
+
+      buttons.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'affiliate-page-btn' + (item.active ? ' active' : '');
+        btn.textContent = item.text;
+        btn.disabled = !!item.disabled;
+        btn.addEventListener('click', () => {
+          currentPage = item.page;
+          render();
+          const affiliate = document.getElementById('affiliate');
+          if(affiliate) affiliate.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+        pager.appendChild(btn);
+      });
+    }
+
+    categoryButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPage = 1;
+        setTimeout(render, 0);
+      });
+    });
+
+    if(search){
+      search.addEventListener('input', () => {
+        currentPage = 1;
+        render();
+      });
+    }
+
+    render();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAffiliatePagination);
+  }else{
+    initAffiliatePagination();
   }
 })();
 </script>
