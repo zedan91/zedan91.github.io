@@ -2348,7 +2348,7 @@
 
     <div class="card" id="requestCard" style="max-width:700px;margin:auto;">
       <h3>📂 Request PA, PDUK, Lot Info & Area</h3>
-
+	  
       <form class="login-panel" id="signupForm">
         <div class="register-title-row admin-register-only">
           <h3>Open Registration</h3>
@@ -5301,6 +5301,72 @@
 
     updateTraffic();
   </script>
+
+
+<script>
+(function(){
+  function initAffiliateFilter(){
+    const searchInput = document.querySelector('.affiliate-search');
+    const filterButtons = document.querySelectorAll('.affiliate-filter');
+    const productCards = document.querySelectorAll('.affiliate-product-card');
+
+    if(!searchInput || !filterButtons.length || !productCards.length){
+      return;
+    }
+
+    function normalize(text){
+      return (text || '').toString().trim().toLowerCase();
+    }
+
+    function getActiveCategory(){
+      const active = document.querySelector('.affiliate-filter.is-active');
+      if(!active) return 'all';
+      return normalize(active.dataset.filter || active.dataset.category || active.textContent);
+    }
+
+    function getCardCategory(card){
+      return normalize(card.dataset.category || card.getAttribute('data-category') || '');
+    }
+
+    function applyFilter(){
+      const keyword = normalize(searchInput.value);
+      const activeCategory = getActiveCategory();
+
+      productCards.forEach(card => {
+        const text = normalize(card.innerText);
+        const cardCategory = getCardCategory(card);
+
+        const matchSearch = !keyword || text.includes(keyword);
+        const matchCategory =
+          activeCategory === 'all' ||
+          activeCategory === '' ||
+          cardCategory.includes(activeCategory) ||
+          text.includes(activeCategory);
+
+        card.style.display = (matchSearch && matchCategory) ? '' : 'none';
+      });
+    }
+
+    searchInput.addEventListener('input', applyFilter);
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', function(){
+        filterButtons.forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+        applyFilter();
+      });
+    });
+
+    applyFilter();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAffiliateFilter);
+  }else{
+    initAffiliateFilter();
+  }
+})();
+</script>
 
 </body>
 </html>
