@@ -1789,6 +1789,130 @@
   text-align:center !important;
 }
 
+
+/* SHOPEE-STYLE AFFILIATE CATEGORIES */
+.affiliate-shop{
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.affiliate-controls{
+  display:none !important;
+}
+
+.affiliate-category-panel{
+  margin: 18px auto 26px;
+  border: 1px solid rgba(148,163,184,0.22);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #111827;
+  overflow: hidden;
+  box-shadow: 0 18px 45px rgba(2,6,23,0.18);
+}
+
+.affiliate-category-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.affiliate-category-head h3{
+  margin:0;
+  color:#64748b;
+  font-size:16px;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+}
+
+.affiliate-category-search{
+  width:min(320px, 100%);
+  padding:10px 13px;
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  outline:none;
+  color:#111827;
+  background:#f8fafc;
+}
+
+.affiliate-category-search:focus{
+  border-color:#22c55e;
+  box-shadow:0 0 0 3px rgba(34,197,94,.15);
+}
+
+.affiliate-category-grid{
+  display:grid;
+  grid-template-columns:repeat(10, minmax(92px, 1fr));
+}
+
+.affiliate-category-card{
+  min-height:150px;
+  padding:16px 10px 12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  border-right:1px solid #eef2f7;
+  border-bottom:1px solid #eef2f7;
+  background:#fff;
+  color:#111827;
+  cursor:pointer;
+  transition:.18s ease;
+  text-align:center;
+}
+
+.affiliate-category-card:hover,
+.affiliate-category-card.is-active{
+  transform:translateY(-2px);
+  box-shadow:inset 0 0 0 2px #22c55e, 0 12px 24px rgba(34,197,94,.12);
+  color:#16a34a;
+  z-index:1;
+}
+
+.affiliate-category-icon{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#f1f5f9;
+  font-size:34px;
+  box-shadow:inset 0 0 0 1px rgba(15,23,42,.04);
+}
+
+.affiliate-category-card span{
+  font-size:14px;
+  line-height:1.25;
+}
+
+.affiliate-product-card[hidden]{
+  display:none !important;
+}
+
+@media(max-width:1050px){
+  .affiliate-category-grid{
+    grid-template-columns:repeat(5, minmax(100px, 1fr));
+  }
+}
+
+@media(max-width:560px){
+  .affiliate-category-head{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .affiliate-category-grid{
+    grid-template-columns:repeat(2, minmax(120px, 1fr));
+  }
+
+  .affiliate-category-card{
+    min-height:135px;
+  }
+}
+
 </style>
 </head>
 
@@ -2290,6 +2414,66 @@
           </div>
           <h3>Custom Budget Gaming PC Desktop RIG</h3>
           <p>FULL set DIY build with AMD Ryzen 7 5700G, 5600G, 5500GT or 3200G options.</p>
+
+<div class="affiliate-category-panel" id="affiliateCategoryPanel">
+  <div class="affiliate-category-head">
+    <h3>Categories</h3>
+    <input class="affiliate-category-search" id="affiliateCategorySearch" type="text" placeholder="Search affiliate items...">
+  </div>
+
+  <div class="affiliate-category-grid">
+    <button class="affiliate-category-card is-active" type="button" data-filter="all">
+      <div class="affiliate-category-icon">🛒</div>
+      <span>All</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="pc">
+      <div class="affiliate-category-icon">🖥️</div>
+      <span>PC Tools</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="gadget">
+      <div class="affiliate-category-icon">⌚</div>
+      <span>Gadgets</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="camera">
+      <div class="affiliate-category-icon">📷</div>
+      <span>Cameras & Drones</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="software">
+      <div class="affiliate-category-icon">💿</div>
+      <span>Software</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="storage">
+      <div class="affiliate-category-icon">⚡</div>
+      <span>SSD & Storage</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="network">
+      <div class="affiliate-category-icon">🌐</div>
+      <span>Network</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="home">
+      <div class="affiliate-category-icon">🏠</div>
+      <span>Home & Living</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="car">
+      <div class="affiliate-category-icon">🚗</div>
+      <span>Car Accessories</span>
+    </button>
+
+    <button class="affiliate-category-card" type="button" data-filter="others">
+      <div class="affiliate-category-icon">🎁</div>
+      <span>Others</span>
+    </button>
+  </div>
+</div>
+
           <div class="affiliate-product-meta">Best for starter gaming setup</div>
           <a class="btn blue" href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">View on Shopee</a>
         </article>
@@ -5364,6 +5548,68 @@
     document.addEventListener('DOMContentLoaded', initAffiliateFilter);
   }else{
     initAffiliateFilter();
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  function normalize(text){
+    return (text || '').toString().trim().toLowerCase();
+  }
+
+  function initAffiliateCategories(){
+    const panel = document.getElementById('affiliateCategoryPanel');
+    const search = document.getElementById('affiliateCategorySearch');
+    const buttons = document.querySelectorAll('.affiliate-category-card');
+    const cards = document.querySelectorAll('.affiliate-product-card');
+
+    if(!panel || !buttons.length || !cards.length) return;
+
+    function cardCategory(card){
+      return normalize(card.dataset.category || card.getAttribute('data-category') || card.innerText);
+    }
+
+    function activeFilter(){
+      const active = document.querySelector('.affiliate-category-card.is-active');
+      return normalize(active ? active.dataset.filter : 'all');
+    }
+
+    function apply(){
+      const q = normalize(search ? search.value : '');
+      const f = activeFilter();
+
+      cards.forEach(card => {
+        const text = normalize(card.innerText);
+        const cat = cardCategory(card);
+
+        const matchText = !q || text.includes(q) || cat.includes(q);
+        const matchCat = f === 'all' || text.includes(f) || cat.includes(f);
+
+        card.hidden = !(matchText && matchCat);
+      });
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', function(){
+        buttons.forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+        apply();
+      });
+    });
+
+    if(search){
+      search.addEventListener('input', apply);
+    }
+
+    apply();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAffiliateCategories);
+  }else{
+    initAffiliateCategories();
   }
 })();
 </script>
