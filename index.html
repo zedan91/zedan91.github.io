@@ -1790,7 +1790,7 @@
 }
 
 
-/* CLEAN AFFILIATE CATEGORY BAR */
+/* COMPLETE SHOPEE-STYLE AFFILIATE CATEGORIES */
 .affiliate-shop{
   max-width: 1200px !important;
   margin: 0 auto !important;
@@ -1802,9 +1802,9 @@
 
 .affiliate-category-panel{
   width: 100% !important;
-  margin: 24px auto 28px !important;
-  border: 1px solid rgba(148,163,184,0.20) !important;
-  border-radius: 16px !important;
+  margin: 24px auto 30px !important;
+  border: 1px solid rgba(148,163,184,0.22) !important;
+  border-radius: 14px !important;
   background: #ffffff !important;
   color: #111827 !important;
   overflow: hidden !important;
@@ -1848,12 +1848,12 @@
 
 .affiliate-category-grid{
   display:grid !important;
-  grid-template-columns:repeat(10, minmax(90px, 1fr)) !important;
+  grid-template-columns:repeat(10, minmax(96px, 1fr)) !important;
   background:#fff !important;
 }
 
 .affiliate-category-card{
-  min-height:142px !important;
+  min-height:150px !important;
   padding:15px 8px 12px !important;
   display:flex !important;
   flex-direction:column !important;
@@ -1878,14 +1878,15 @@
   transform:none !important;
 }
 
-.affiliate-category-icon{
-  width:62px !important;
-  height:62px !important;
+.affiliate-category-img{
+  width:64px !important;
+  height:64px !important;
   border-radius:50% !important;
   display:grid !important;
   place-items:center !important;
   background:#f1f5f9 !important;
   font-size:32px !important;
+  overflow:hidden !important;
 }
 
 .affiliate-category-card span{
@@ -1919,7 +1920,7 @@
     grid-template-columns:repeat(2, minmax(120px, 1fr)) !important;
   }
   .affiliate-category-card{
-    min-height:130px !important;
+    min-height:132px !important;
   }
 }
 
@@ -2423,16 +2424,102 @@
     <input class="affiliate-category-search" id="affiliateCategorySearch" type="text" placeholder="Search affiliate items...">
   </div>
   <div class="affiliate-category-grid">
-    <button class="affiliate-category-card is-active" type="button" data-filter="all"><div class="affiliate-category-icon">🛒</div><span>All</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="pc"><div class="affiliate-category-icon">🖥️</div><span>PC Tools</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="gadget"><div class="affiliate-category-icon">⌚</div><span>Gadgets</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="camera"><div class="affiliate-category-icon">📷</div><span>Cameras & Drones</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="software"><div class="affiliate-category-icon">💿</div><span>Software</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="storage"><div class="affiliate-category-icon">⚡</div><span>SSD & Storage</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="network"><div class="affiliate-category-icon">🌐</div><span>Network</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="home"><div class="affiliate-category-icon">🏠</div><span>Home & Living</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="car"><div class="affiliate-category-icon">🚗</div><span>Car Accessories</span></button>
-    <button class="affiliate-category-card" type="button" data-filter="others"><div class="affiliate-category-icon">🎁</div><span>Others</span></button>
+    <button class="affiliate-category-card" type="button" data-filter="mobile">
+      <div class="affiliate-category-img">📱</div>
+      <span>Mobile & Accessories</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="watches">
+      <div class="affiliate-category-img">⌚</div>
+      <span>Watches</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="health">
+      <div class="affiliate-category-img">💄</div>
+      <span>Health & Beauty</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="baby">
+      <div class="affiliate-category-img">🧸</div>
+      <span>Baby & Toys</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="groceries">
+      <div class="affiliate-category-img">🛒</div>
+      <span>Groceries & Pets</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="automotive">
+      <div class="affiliate-category-img">🚗</div>
+      <span>Automotive</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="womens-bags">
+      <div class="affiliate-category-img">👜</div>
+      <span>Women's Bags</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="mens-bags">
+      <div class="affiliate-category-img">👛</div>
+      <span>Men's Bags & Wallets</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="muslim">
+      <div class="affiliate-category-img">🧕</div>
+      <span>Muslim Fashion</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="books">
+      <div class="affiliate-category-img">🎲</div>
+      <span>Games, Books & Hobbies</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="travel">
+      <div class="affiliate-category-img">🧳</div>
+      <span>Travel & Luggage</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="others">
+      <div class="affiliate-category-img">🎁</div>
+      <span>Others</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="women-clothes">
+      <div class="affiliate-category-img">👗</div>
+      <span>Women Clothes</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="men-clothes">
+      <div class="affiliate-category-img">👕</div>
+      <span>Men Clothes</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="home-living">
+      <div class="affiliate-category-img">🛋️</div>
+      <span>Home & Living</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="home-appliances">
+      <div class="affiliate-category-img">🍳</div>
+      <span>Home Appliances</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="women-shoes">
+      <div class="affiliate-category-img">👡</div>
+      <span>Women Shoes</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="fashion">
+      <div class="affiliate-category-img">💍</div>
+      <span>Fashion Accessories</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="computer">
+      <div class="affiliate-category-img">⌨️</div>
+      <span>Computer & Accessories</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="sports">
+      <div class="affiliate-category-img">🧘</div>
+      <span>Sports & Outdoor</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="men-shoes">
+      <div class="affiliate-category-img">👟</div>
+      <span>Men Shoes</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="gaming">
+      <div class="affiliate-category-img">🎮</div>
+      <span>Gaming & Consoles</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="camera">
+      <div class="affiliate-category-img">📷</div>
+      <span>Cameras & Drones</span>
+    </button>
+    <button class="affiliate-category-card" type="button" data-filter="tickets">
+      <div class="affiliate-category-img">🎟️</div>
+      <span>Tickets & Vouchers</span>
+    </button>
   </div>
 </div>
 
@@ -5558,8 +5645,12 @@
 
     buttons.forEach(btn => {
       btn.addEventListener('click', function(){
-        buttons.forEach(b => b.classList.remove('is-active'));
-        this.classList.add('is-active');
+        if(this.classList.contains('is-active')){
+          this.classList.remove('is-active');
+        }else{
+          buttons.forEach(b => b.classList.remove('is-active'));
+          this.classList.add('is-active');
+        }
         apply();
       });
     });
