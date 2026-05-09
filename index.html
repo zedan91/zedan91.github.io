@@ -2113,6 +2113,31 @@
   }
 }
 
+
+/* PAGINATION FINAL FIX */
+.affiliate-pagination{
+  justify-content:center !important;
+  gap:8px !important;
+}
+
+.affiliate-page-btn,
+.affiliate-extra-btn{
+  width:auto !important;
+  min-width:38px !important;
+  height:36px !important;
+  padding:0 13px !important;
+  white-space:nowrap !important;
+}
+
+.affiliate-extra-btn{
+  min-width:82px !important;
+}
+
+.affiliate-page-btn:nth-child(2),
+.affiliate-page-btn:nth-last-child(4){
+  min-width:86px !important;
+}
+
 </style>
 </head>
 
@@ -5922,15 +5947,17 @@
 
       const buttons = [
         {text:'<<', page: currentPage - 1, disabled: currentPage === 1},
-        {text:'P', page: currentPage - 1, disabled: currentPage === 1}
+        {text:'Previous', page: currentPage - 1, disabled: currentPage === 1}
       ];
 
       for(let i=1; i<=totalPages; i++){
         buttons.push({text:String(i), page:i, active:i===currentPage});
       }
 
-      buttons.push({text:'N', page: currentPage + 1, disabled: currentPage === totalPages});
+      buttons.push({text:'Next', page: currentPage + 1, disabled: currentPage === totalPages});
       buttons.push({text:'>>', page: currentPage + 1, disabled: currentPage === totalPages});
+      buttons.push({text:'Show All', page:'showall'});
+      buttons.push({text:'Hide All', page:'hideall'});
 
       buttons.forEach(item => {
         const btn = document.createElement('button');
@@ -5939,6 +5966,22 @@
         btn.textContent = item.text;
         btn.disabled = !!item.disabled;
         btn.addEventListener('click', () => {
+          if(item.page === 'showall'){
+            getFilteredCards().forEach(card => {
+              card.style.display = '';
+              card.hidden = false;
+            });
+            return;
+          }
+
+          if(item.page === 'hideall'){
+            cards.forEach(card => {
+              card.style.display = 'none';
+              card.hidden = true;
+            });
+            return;
+          }
+
           currentPage = item.page;
           render();
           const affiliate = document.getElementById('affiliate');
@@ -5969,6 +6012,66 @@
     document.addEventListener('DOMContentLoaded', initAffiliatePagination);
   }else{
     initAffiliatePagination();
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  function patchAffiliatePager(){
+    const pager = document.getElementById('affiliatePagination') || document.querySelector('.affiliate-pagination');
+    if(!pager) return;
+
+    [...pager.querySelectorAll('button,a')].forEach(btn => {
+      const t = (btn.textContent || '').trim();
+      if(t === 'P') btn.textContent = 'Previous';
+      if(t === 'N') btn.textContent = 'Next';
+    });
+
+    if(!pager.querySelector('[data-affiliate-extra="show"]')){
+      const show = document.createElement('button');
+      show.type = 'button';
+      show.className = 'affiliate-page-btn affiliate-extra-btn';
+      show.dataset.affiliateExtra = 'show';
+      show.textContent = 'Show All';
+      show.addEventListener('click', function(){
+        document.querySelectorAll('.affiliate-product-card').forEach(card => {
+          card.style.display = '';
+          card.hidden = false;
+        });
+      });
+      pager.appendChild(show);
+    }
+
+    if(!pager.querySelector('[data-affiliate-extra="hide"]')){
+      const hide = document.createElement('button');
+      hide.type = 'button';
+      hide.className = 'affiliate-page-btn affiliate-extra-btn';
+      hide.dataset.affiliateExtra = 'hide';
+      hide.textContent = 'Hide All';
+      hide.addEventListener('click', function(){
+        document.querySelectorAll('.affiliate-product-card').forEach(card => {
+          card.style.display = 'none';
+          card.hidden = true;
+        });
+      });
+      pager.appendChild(hide);
+    }
+  }
+
+  function start(){
+    patchAffiliatePager();
+    const pager = document.getElementById('affiliatePagination') || document.querySelector('.affiliate-pagination');
+    if(pager){
+      new MutationObserver(patchAffiliatePager).observe(pager, {childList:true, subtree:true, characterData:true});
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  }else{
+    start();
   }
 })();
 </script>
