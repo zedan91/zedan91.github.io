@@ -2164,7 +2164,27 @@
   border-color:#22c55e !important;
 }
 
+
+.affiliate-bottom-actions{
+  width:100% !important;
+  display:flex !important;
+  justify-content:center !important;
+  gap:8px !important;
+  margin-top:8px !important;
+}
+
+.affiliate-back-btn{
+  min-width:170px !important;
+  background:#2563eb !important;
+  border-color:#2563eb !important;
+}
+
+.affiliate-back-btn:hover{
+  background:#1d4ed8 !important;
+}
 </style>
+
+
 </head>
 
 <body>
@@ -5984,37 +6004,93 @@
       buttons.push({text:'>>', page: currentPage + 1, disabled: currentPage === totalPages});
       buttons.push({text:'Show All', page:'showall'});
       buttons.push({text:'Hide All', page:'hideall'});
+      buttons.push({text:'Go Back to Affiliate Categories', page:'goback'});
 
-      buttons.forEach(item => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'affiliate-page-btn' + (item.active ? ' active' : '');
-        btn.textContent = item.text;
-        btn.disabled = !!item.disabled;
-        btn.addEventListener('click', () => {
-          if(item.page === 'showall'){
-            getFilteredCards().forEach(card => {
-              card.style.display = '';
-              card.hidden = false;
-            });
-            return;
-          }
+      const bottomWrap = document.createElement('div');
+bottomWrap.className = 'affiliate-bottom-actions';
 
-          if(item.page === 'hideall'){
-            cards.forEach(card => {
-              card.style.display = 'none';
-              card.hidden = true;
-            });
-            return;
-          }
+buttons.forEach(item => {
 
-          currentPage = item.page;
-          render();
-          const affiliate = document.getElementById('affiliate');
-          if(affiliate) affiliate.scrollIntoView({behavior:'smooth', block:'start'});
-        });
-        pager.appendChild(btn);
+  const btn = document.createElement('button');
+
+  btn.className = 'affiliate-page-btn';
+
+  if(item.active){
+    btn.classList.add('active');
+  }
+
+  btn.textContent = item.text;
+
+  btn.disabled = item.disabled || false;
+
+  btn.addEventListener('click', () => {
+
+    if(item.page === 'showall'){
+
+      getFilteredCards().forEach(card => {
+        card.style.display = '';
+        card.hidden = false;
       });
+
+      return;
+    }
+
+    if(item.page === 'hideall'){
+
+      cards.forEach(card => {
+        card.style.display = 'none';
+        card.hidden = true;
+      });
+
+      return;
+    }
+
+    if(item.page === 'goback'){
+
+      const categoryPanel = document.querySelector('.affiliate-category-panel');
+
+      if(categoryPanel){
+        categoryPanel.scrollIntoView({
+          behavior:'smooth',
+          block:'start'
+        });
+      }
+
+      return;
+    }
+
+    currentPage = item.page;
+
+    render();
+
+    const affiliate = document.getElementById('affiliate');
+
+    if(affiliate){
+      affiliate.scrollIntoView({
+        behavior:'smooth',
+        block:'start'
+      });
+    }
+
+  });
+
+  if(item.text === 'Go Back to Affiliate Categories'){
+    btn.classList.add('affiliate-back-btn');
+  }
+
+  if(item.text === 'Show All' || item.text === 'Hide All' || item.text === 'Go Back to Affiliate Categories'){
+
+    bottomWrap.appendChild(btn);
+
+  }else{
+
+    pager.appendChild(btn);
+
+  }
+
+});
+
+pager.appendChild(bottomWrap);
     }
 
     categoryButtons.forEach(btn => {
