@@ -5939,30 +5939,52 @@
       buttons.push({text:'Next', page: currentPage + 1, disabled: currentPage === totalPages});
       buttons.push({text:'>>', page: currentPage + 1, disabled: currentPage === totalPages});
 
+      
       const toggleBtn = document.createElement('button');
       toggleBtn.type = 'button';
       toggleBtn.className = 'affiliate-page-btn affiliate-showall-btn';
 
-      const showingAll = pager.dataset.showall === '1';
-      toggleBtn.textContent = showingAll ? 'Hide All' : 'Show All';
+      function renderButtonsOnly(totalPages){
+        pager.innerHTML = '';
 
-      toggleBtn.addEventListener('click', () => {
-        if(pager.dataset.showall === '1'){
-          pager.dataset.showall = '0';
+        const showingAll = pager.dataset.showall === '1';
+        toggleBtn.textContent = showingAll ? 'Hide All' : 'Show All';
+
+        toggleBtn.onclick = () => {
+          pager.dataset.showall = showingAll ? '0' : '1';
           render();
-        }else{
-          pager.dataset.showall = '1';
+        };
 
-          cards.forEach(card => {
-            card.style.display = 'none';
+        pager.appendChild(toggleBtn);
+
+        buttons.forEach(item => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'affiliate-page-btn' + (item.active ? ' active' : '');
+          btn.textContent = item.text;
+          btn.disabled = !!item.disabled;
+
+          btn.addEventListener('click', () => {
+            pager.dataset.showall = '0';
+            currentPage = item.page;
+            render();
           });
 
-          filtered.forEach(card => {
-            card.style.display = '';
-            card.hidden = false;
-          });
+          pager.appendChild(btn);
+        });
+      }
 
-          renderButtonsOnly(totalPages);
+      if(pager.dataset.showall === '1'){
+        cards.forEach(card => card.style.display = 'none');
+
+        filtered.forEach(card => {
+          card.style.display = '';
+          card.hidden = false;
+        });
+      }
+
+      renderButtonsOnly(totalPages);
+
         }
       });
 
