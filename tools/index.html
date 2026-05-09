@@ -1,21 +1,279 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AZOBSS Tools Hub - AZOBSS Tools</title><style>
-:root{--bg:#07111f;--card:#101c2d;--card2:#13243a;--text:#eef5ff;--muted:#9fb2c8;--accent:#25d366;--blue:#3b82f6;--warn:#facc15;--danger:#ef4444}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top,#102544,#07111f 55%);color:var(--text);line-height:1.5}
-.header{padding:26px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.18)}
-.header a{color:#9bd1ff;text-decoration:none}.wrap{max-width:1050px;margin:auto;padding:24px 16px}
-.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-label{display:block;margin:10px 0 6px;color:var(--muted);font-weight:bold}
-input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.13);background:#07111f;color:var(--text);outline:none}
-button,.btn{display:inline-block;padding:12px 16px;border:0;border-radius:12px;background:var(--blue);color:white;font-weight:bold;cursor:pointer;text-decoration:none;margin-top:12px}
-button:hover,.btn:hover{filter:brightness(1.1)}.result{margin-top:14px;padding:15px;border-radius:14px;background:#07111f;border:1px solid rgba(255,255,255,.1);white-space:pre-wrap}
-.badge{display:inline-block;padding:5px 10px;border-radius:999px;background:rgba(37,211,102,.15);color:#68ff9e;font-size:13px;margin:4px 4px 4px 0}
-.muted{color:var(--muted)}.footer{text-align:center;color:var(--muted);padding:30px 10px}
-.table{width:100%;border-collapse:collapse;margin-top:12px}.table th,.table td{border:1px solid rgba(255,255,255,.1);padding:10px;text-align:left}.table th{background:#0b1728}
-.copy{background:#22c55e}.small{font-size:13px}
-</style></head>
-<body><div class="header"><h1>AZOBSS Tools Hub</h1><p class="muted">AZOBSS Mini Web Tools</p><a href="../index.html">← Back to Home</a></div>
-<div class="wrap"><div class="card"><h2>Mini Web Tools</h2><p>Useful tools for PC users, Windows fixes and quick calculators.</p><div class="grid"><a class="btn" href="Internet-Speed-Converter.html">Internet Speed Converter</a><a class="btn" href="SSD-Speed-Checker-guide.html">SSD Speed Checker guide</a><a class="btn" href="BMI-Calculator.html">BMI Calculator</a><a class="btn" href="PC-Bottleneck-Checker.html">PC Bottleneck Checker</a><a class="btn" href="PSU-Calculator.html">PSU Calculator</a><a class="btn" href="RAM-Usage-Checker.html">RAM Usage Checker</a><a class="btn" href="Windows-Command-Generator.html">Windows Command Generator</a></div></div></div><div class="footer">© 2026 AZOBSS.COM - PC Tools & Utilities</div>
-<script></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AZOBSS Mini Web Tools</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:Arial, sans-serif;
+      background:#020617;
+      color:white;
+      padding:40px 20px;
+    }
+
+    .container{
+      max-width:1200px;
+      margin:auto;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:15px;
+      margin-bottom:35px;
+    }
+
+    .title{
+      font-size:42px;
+      color:#22c55e;
+      font-weight:bold;
+    }
+
+    .subtitle{
+      color:#94a3b8;
+      margin-top:8px;
+      font-size:15px;
+    }
+
+    .search-box{
+      width:320px;
+      max-width:100%;
+    }
+
+    .search-box input{
+      width:100%;
+      padding:14px 18px;
+      border:none;
+      outline:none;
+      border-radius:14px;
+      background:#0f172a;
+      color:white;
+      font-size:15px;
+      border:1px solid #1e293b;
+    }
+
+    .search-box input:focus{
+      border:1px solid #22c55e;
+      box-shadow:0 0 15px rgba(34,197,94,0.25);
+    }
+
+    .tools-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:22px;
+    }
+
+    .tool-card{
+      background:#0f172a;
+      border:1px solid #1e293b;
+      border-radius:22px;
+      padding:25px;
+      transition:0.3s;
+      text-decoration:none;
+      color:white;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .tool-card:hover{
+      transform:translateY(-8px);
+      border-color:#22c55e;
+      box-shadow:0 0 25px rgba(34,197,94,0.18);
+    }
+
+    .tool-icon{
+      font-size:45px;
+      margin-bottom:18px;
+    }
+
+    .tool-title{
+      font-size:20px;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    .tool-desc{
+      color:#94a3b8;
+      line-height:1.5;
+      font-size:14px;
+    }
+
+    .badge{
+      position:absolute;
+      top:15px;
+      right:15px;
+      background:#22c55e;
+      color:black;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:bold;
+    }
+
+    .back-home{
+      display:inline-block;
+      margin-top:40px;
+      text-decoration:none;
+      background:#22c55e;
+      color:black;
+      padding:14px 22px;
+      border-radius:12px;
+      font-weight:bold;
+      transition:0.3s;
+    }
+
+    .back-home:hover{
+      transform:translateY(-3px);
+    }
+
+    .footer{
+      text-align:center;
+      color:#64748b;
+      margin-top:60px;
+      font-size:14px;
+    }
+
+    @media(max-width:700px){
+
+      .title{
+        font-size:32px;
+      }
+
+      .topbar{
+        align-items:flex-start;
+      }
+
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+
+    <div>
+      <div class="title">🛠 Mini Web Tools</div>
+      <div class="subtitle">
+        Useful PC, Internet & Utility Tools by AZOBSS
+      </div>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search tools...">
+    </div>
+
+  </div>
+
+  <div class="tools-grid" id="toolsGrid">
+
+    <a class="tool-card" href="Internet-Speed-Converter.html">
+      <div class="badge">Popular</div>
+      <div class="tool-icon">🌐</div>
+      <div class="tool-title">Internet Speed Converter</div>
+      <div class="tool-desc">
+        Convert Mbps, MB/s and other internet speed units easily.
+      </div>
+    </a>
+
+    <a class="tool-card" href="SSD-Speed-Checker-guide.html">
+      <div class="tool-icon">⚡</div>
+      <div class="tool-title">SSD Speed Checker Guide</div>
+      <div class="tool-desc">
+        Check if your SSD or HDD speed is normal or too slow.
+      </div>
+    </a>
+
+    <a class="tool-card" href="BMI-Calculator.html">
+      <div class="badge">Health</div>
+      <div class="tool-icon">🏃</div>
+      <div class="tool-title">BMI Calculator</div>
+      <div class="tool-desc">
+        Calculate your body mass index quickly and easily.
+      </div>
+    </a>
+
+    <a class="tool-card" href="PC-Bottleneck-Checker.html">
+      <div class="tool-icon">🖥</div>
+      <div class="tool-title">PC Bottleneck Checker</div>
+      <div class="tool-desc">
+        Check if your CPU or GPU is causing performance bottleneck.
+      </div>
+    </a>
+
+    <a class="tool-card" href="PSU-Calculator.html">
+      <div class="badge">Gaming</div>
+      <div class="tool-icon">🔋</div>
+      <div class="tool-title">PSU Calculator</div>
+      <div class="tool-desc">
+        Estimate required power supply wattage for your PC build.
+      </div>
+    </a>
+
+    <a class="tool-card" href="RAM-Usage-Checker.html">
+      <div class="tool-icon">🧠</div>
+      <div class="tool-title">RAM Usage Checker</div>
+      <div class="tool-desc">
+        Monitor RAM usage and identify memory heavy applications.
+      </div>
+    </a>
+
+    <a class="tool-card" href="Windows-Command-Generator.html">
+      <div class="badge">Windows</div>
+      <div class="tool-icon">⌨️</div>
+      <div class="tool-title">Windows Command Generator</div>
+      <div class="tool-desc">
+        Generate useful Windows commands instantly.
+      </div>
+    </a>
+
+  </div>
+
+  <a class="back-home" href="../index.html">
+    ⬅ Back To Homepage
+  </a>
+
+  <div class="footer">
+    © 2026 AZOBSS — Mini Utility Tools
+  </div>
+
+</div>
+
+<script>
+
+const searchInput = document.getElementById('searchInput');
+const toolCards = document.querySelectorAll('.tool-card');
+
+searchInput.addEventListener('keyup', function(){
+
+  const value = this.value.toLowerCase();
+
+  toolCards.forEach(card => {
+
+    const text = card.innerText.toLowerCase();
+
+    if(text.includes(value)){
+      card.style.display = "block";
+    }else{
+      card.style.display = "none";
+    }
+
+  });
+
+});
+
+</script>
+
+</body>
+</html>
