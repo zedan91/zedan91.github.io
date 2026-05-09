@@ -1,179 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AZOBSS Mini Web Tools</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZOBSS Mini Web Tools</title>
 
-  <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
-
-    body{
-      font-family:Arial, sans-serif;
-      background:#020617;
-      color:white;
-      padding:40px 20px;
-    }
-
-    .container{
-      max-width:1200px;
-      margin:auto;
-    }
-
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:15px;
-      margin-bottom:35px;
-    }
-
-    .title{
-      font-size:42px;
-      color:#22c55e;
-      font-weight:bold;
-    }
-
-    .subtitle{
-      color:#94a3b8;
-      margin-top:8px;
-      font-size:15px;
-    }
-
-    .search-box{
-      width:320px;
-      max-width:100%;
-    }
-
-    .search-box input{
-      width:100%;
-      padding:14px 18px;
-      border:none;
-      outline:none;
-      border-radius:14px;
-      background:#0f172a;
-      color:white;
-      font-size:15px;
-      border:1px solid #1e293b;
-    }
-
-    .search-box input:focus{
-      border:1px solid #22c55e;
-      box-shadow:0 0 15px rgba(34,197,94,0.25);
-    }
-
-    .tools-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-      gap:22px;
-    }
-
-    .tool-card{
-      background:#0f172a;
-      border:1px solid #1e293b;
-      border-radius:22px;
-      padding:25px;
-      transition:0.3s;
-      text-decoration:none;
-      color:white;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .tool-card:hover{
-      transform:translateY(-8px);
-      border-color:#22c55e;
-      box-shadow:0 0 25px rgba(34,197,94,0.18);
-    }
-
-    .tool-icon{
-      font-size:45px;
-      margin-bottom:18px;
-    }
-
-    .tool-title{
-      font-size:20px;
-      font-weight:bold;
-      margin-bottom:10px;
-    }
-
-    .tool-desc{
-      color:#94a3b8;
-      line-height:1.5;
-      font-size:14px;
-    }
-
-    .badge{
-      position:absolute;
-      top:15px;
-      right:15px;
-      background:#22c55e;
-      color:black;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      font-weight:bold;
-    }
-
-    .back-home{
-      display:inline-block;
-      margin-top:40px;
-      text-decoration:none;
-      background:#22c55e;
-      color:black;
-      padding:14px 22px;
-      border-radius:12px;
-      font-weight:bold;
-      transition:0.3s;
-    }
-
-    .back-home:hover{
-      transform:translateY(-3px);
-    }
-
-    .footer{
-      text-align:center;
-      color:#64748b;
-      margin-top:60px;
-      font-size:14px;
-    }
-
-    @media(max-width:700px){
-
-      .title{
-        font-size:32px;
-      }
-
-      .topbar{
-        align-items:flex-start;
-      }
-
-    }
-
-  </style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:Arial,sans-serif;
+  background:radial-gradient(circle at top,#102544,#020617 55%);
+  color:white;
+  padding:34px 18px;
+}
+.container{max-width:1200px;margin:auto}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
+  margin-bottom:32px;
+}
+.title{font-size:42px;color:#22c55e;font-weight:bold}
+.subtitle{color:#94a3b8;margin-top:8px}
+.search-box input{
+  width:330px;
+  max-width:100%;
+  padding:14px 18px;
+  border-radius:14px;
+  border:1px solid #1e293b;
+  background:#0f172a;
+  color:white;
+  outline:none;
+}
+.search-box input:focus{
+  border-color:#22c55e;
+  box-shadow:0 0 18px rgba(34,197,94,.25);
+}
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:22px;
+}
+.tool-card{
+  background:linear-gradient(180deg,#13243a,#0f172a);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:24px;
+  color:white;
+  text-decoration:none;
+  transition:.25s;
+  position:relative;
+  overflow:hidden;
+}
+.tool-card:hover{
+  transform:translateY(-7px);
+  border-color:#22c55e;
+  box-shadow:0 0 26px rgba(34,197,94,.18);
+}
+.tool-icon{font-size:44px;margin-bottom:15px}
+.tool-title{font-size:20px;font-weight:bold;margin-bottom:10px}
+.tool-desc{color:#cbd5e1;font-size:14px;line-height:1.55;margin-bottom:14px}
+.tool-list{
+  color:#94a3b8;
+  font-size:13px;
+  line-height:1.55;
+  padding-left:18px;
+}
+.badge{
+  position:absolute;
+  top:15px;
+  right:15px;
+  background:#22c55e;
+  color:#03130a;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+.back-home{
+  display:inline-block;
+  margin-top:36px;
+  padding:14px 22px;
+  background:#22c55e;
+  color:#03130a;
+  border-radius:12px;
+  text-decoration:none;
+  font-weight:bold;
+}
+.footer{
+  text-align:center;
+  color:#64748b;
+  margin-top:55px;
+}
+@media(max-width:700px){
+  .title{font-size:32px}
+  .search-box input{width:100%}
+}
+</style>
 </head>
-<body>
 
+<body>
 <div class="container">
 
   <div class="topbar">
-
     <div>
       <div class="title">🛠 Mini Web Tools</div>
-      <div class="subtitle">
-        Useful PC, Internet & Utility Tools by AZOBSS
-      </div>
+      <div class="subtitle">Useful PC, Windows, Internet & Utility Tools by AZOBSS</div>
     </div>
 
     <div class="search-box">
-      <input type="text" id="searchInput" placeholder="Search tools...">
+      <input type="text" id="searchInput" placeholder="Search tools... example: SSD, RAM, Mbps">
     </div>
-
   </div>
 
   <div class="tools-grid" id="toolsGrid">
@@ -183,16 +122,28 @@
       <div class="tool-icon">🌐</div>
       <div class="tool-title">Internet Speed Converter</div>
       <div class="tool-desc">
-        Convert Mbps, MB/s and other internet speed units easily.
+        Convert internet speed units for download speed, upload speed and file transfer estimate.
       </div>
+      <ul class="tool-list">
+        <li>Mbps ↔ MB/s</li>
+        <li>Kbps, KB/s, Gbps, GB/s</li>
+        <li>Estimate download time</li>
+        <li>Good for Speedtest & Task Manager reading</li>
+      </ul>
     </a>
 
     <a class="tool-card" href="SSD-Speed-Checker-guide.html">
       <div class="tool-icon">⚡</div>
-      <div class="tool-title">SSD Speed Checker Guide</div>
+      <div class="tool-title">SSD / HDD Speed Guide</div>
       <div class="tool-desc">
-        Check if your SSD or HDD speed is normal or too slow.
+        Compare your disk speed and know whether your storage is normal, slow or time to upgrade.
       </div>
+      <ul class="tool-list">
+        <li>HDD: 80 – 160 MB/s</li>
+        <li>SATA SSD: 400 – 550 MB/s</li>
+        <li>NVMe Gen3 / Gen4 / Gen5 range</li>
+        <li>Useful with CrystalDiskMark</li>
+      </ul>
     </a>
 
     <a class="tool-card" href="BMI-Calculator.html">
@@ -200,16 +151,28 @@
       <div class="tool-icon">🏃</div>
       <div class="tool-title">BMI Calculator</div>
       <div class="tool-desc">
-        Calculate your body mass index quickly and easily.
+        Calculate BMI using height and weight with basic category result.
       </div>
+      <ul class="tool-list">
+        <li>Underweight / Normal / Overweight</li>
+        <li>Metric unit: kg & cm</li>
+        <li>Useful for quick body check</li>
+        <li>Includes BMI note</li>
+      </ul>
     </a>
 
     <a class="tool-card" href="PC-Bottleneck-Checker.html">
-      <div class="tool-icon">🖥</div>
+      <div class="tool-icon">🖥️</div>
       <div class="tool-title">PC Bottleneck Checker</div>
       <div class="tool-desc">
-        Check if your CPU or GPU is causing performance bottleneck.
+        Simple guide to estimate whether your CPU, GPU or RAM may limit performance.
       </div>
+      <ul class="tool-list">
+        <li>CPU vs GPU balance</li>
+        <li>Gaming performance guide</li>
+        <li>RAM capacity suggestion</li>
+        <li>Upgrade recommendation idea</li>
+      </ul>
     </a>
 
     <a class="tool-card" href="PSU-Calculator.html">
@@ -217,16 +180,28 @@
       <div class="tool-icon">🔋</div>
       <div class="tool-title">PSU Calculator</div>
       <div class="tool-desc">
-        Estimate required power supply wattage for your PC build.
+        Estimate suitable power supply wattage for PC build and upgrade planning.
       </div>
+      <ul class="tool-list">
+        <li>CPU + GPU wattage estimate</li>
+        <li>Recommended PSU headroom</li>
+        <li>Good for gaming PC build</li>
+        <li>Helps avoid underpowered PSU</li>
+      </ul>
     </a>
 
     <a class="tool-card" href="RAM-Usage-Checker.html">
       <div class="tool-icon">🧠</div>
       <div class="tool-title">RAM Usage Checker</div>
       <div class="tool-desc">
-        Monitor RAM usage and identify memory heavy applications.
+        Understand RAM usage level and know when your PC needs more memory.
       </div>
+      <ul class="tool-list">
+        <li>4GB / 8GB / 16GB / 32GB guide</li>
+        <li>Office, browsing, gaming usage</li>
+        <li>Slow PC warning signs</li>
+        <li>Upgrade suggestion</li>
+      </ul>
     </a>
 
     <a class="tool-card" href="Windows-Command-Generator.html">
@@ -234,45 +209,38 @@
       <div class="tool-icon">⌨️</div>
       <div class="tool-title">Windows Command Generator</div>
       <div class="tool-desc">
-        Generate useful Windows commands instantly.
+        Generate useful Windows commands for repair, troubleshoot and maintenance.
       </div>
+      <ul class="tool-list">
+        <li>SFC / DISM repair command</li>
+        <li>Network reset command</li>
+        <li>Disk check command</li>
+        <li>Useful for technician workflow</li>
+      </ul>
     </a>
 
   </div>
 
-  <a class="back-home" href="../index.html">
-    ⬅ Back To Homepage
-  </a>
+  <a class="back-home" href="../index.html">⬅ Back To Homepage</a>
 
   <div class="footer">
-    © 2026 AZOBSS — Mini Utility Tools
+    © 2026 AZOBSS.COM — Mini Utility Tools
   </div>
 
 </div>
 
 <script>
-
 const searchInput = document.getElementById('searchInput');
 const toolCards = document.querySelectorAll('.tool-card');
 
 searchInput.addEventListener('keyup', function(){
-
   const value = this.value.toLowerCase();
 
   toolCards.forEach(card => {
-
     const text = card.innerText.toLowerCase();
-
-    if(text.includes(value)){
-      card.style.display = "block";
-    }else{
-      card.style.display = "none";
-    }
-
+    card.style.display = text.includes(value) ? "block" : "none";
   });
-
 });
-
 </script>
 
 </body>
