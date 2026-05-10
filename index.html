@@ -2231,12 +2231,47 @@ body.is-admin .affiliate-card-admin-actions{display:flex !important;}
 .affiliate-admin-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:650px){.affiliate-admin-row{grid-template-columns:1fr;}}
 
+
+/* ADMIN ONLY STRICT FIX */
+.affiliate-admin-panel,
+.affiliate-card-admin-actions{
+  display:none !important;
+}
+
+body.is-admin .affiliate-admin-panel{
+  display:flex !important;
+}
+
+body.is-admin .affiliate-card-admin-actions{
+  display:flex !important;
+}
+
+/* ADMIN ONLY STRICT FINAL FIX */
+body:not(.is-admin) .affiliate-admin-panel,
+body:not(.is-admin) .affiliate-card-admin-actions{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+body.is-admin .affiliate-admin-panel{
+  display:flex !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+
+body.is-admin .affiliate-card-admin-actions{
+  display:flex !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+
 </style>
 
 
 </head>
 
-<body class="is-admin">
+<body>
 
   <div class="top-login-toast" id="loginToast"></div>
   <datalist id="countryDialCodeOptions">
@@ -6236,12 +6271,92 @@ pager.appendChild(bottomWrap);
   function qs(s){return document.querySelector(s);}
   function qsa(s){return Array.from(document.querySelectorAll(s));}
   function adminDetected(){
-    const bodyAdmin = document.body && document.body.classList.contains('is-admin');
-    const visibleName = (qs('.user-name')?.textContent || '').toLowerCase();
-    const storageText = (JSON.stringify(localStorage) + JSON.stringify(sessionStorage)).toLowerCase();
-    return bodyAdmin || visibleName.includes('zedan91') || storageText.includes('zedan91');
+    const adminUsername = 'zedan91';
+
+    function clean(text){
+      return String(text || '').trim().toLowerCase();
+    }
+
+    const visibleSelectors = [
+      '.user-name',
+      '#userName',
+      '#loggedInUserName',
+      '#currentUserName',
+      '[data-current-user]',
+      '[data-username]'
+    ];
+
+    for(const selector of visibleSelectors){
+      const el = document.querySelector(selector);
+      if(!el) continue;
+
+      const visibleText = clean(el.textContent || el.value || el.getAttribute('data-current-user') || el.getAttribute('data-username'));
+
+      if(visibleText === adminUsername){
+        return true;
+      }
+    }
+
+    return false;
   }
-  function enableAdmin(){ if(adminDetected()) document.body.classList.add('is-admin'); }
+
+    // Main visible login name on the website
+    const visibleName = clean(qs('.user-name')?.textContent);
+
+    if(visibleName === adminUsername){
+      return true;
+    }
+
+    // Check common current-login storage keys only, not whole localStorage
+    const keys = [
+      'azobss_current_user',
+      'currentUser',
+      'loggedInUser',
+      'azobss_user',
+      'userName',
+      'username',
+      'activeUser'
+    ];
+
+    for(const key of keys){
+      try{
+        const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+        if(!raw) continue;
+
+        const value = clean(raw);
+
+        if(value === adminUsername){
+          return true;
+        }
+
+        const parsed = JSON.parse(raw);
+        const possibleNames = [
+          parsed.username,
+          parsed.userName,
+          parsed.name,
+          parsed.id,
+          parsed.login,
+          parsed.email
+        ].map(clean);
+
+        if(possibleNames.includes(adminUsername)){
+          return true;
+        }
+      }catch(e){}
+    }
+
+    return false;
+  }
+  function enableAdmin(){
+    if(adminDetected()){
+      document.body.classList.add('is-admin');
+    }else{
+      document.body.classList.remove('is-admin');
+    }
+  }else{
+      document.body.classList.remove('is-admin');
+    }
+  }
   function esc(text){return String(text || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
   function getWrap(){return qs('.affiliate-products');}
   function cardToProduct(card, index){
