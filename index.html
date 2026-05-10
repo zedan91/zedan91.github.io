@@ -6756,10 +6756,26 @@ pager.appendChild(bottomWrap);
 
         if(page === 'hideall'){
           showAllMode = false;
+
+          // Hide all cards
           getCards().forEach(card => {
             card.style.display = 'none';
             card.hidden = true;
           });
+
+          // Stay inside affiliate section (do not jump away)
+          const affiliateSection =
+            document.querySelector('.affiliate-section') ||
+            document.querySelector('#affiliateSection') ||
+            document.querySelector('.affiliate-products');
+
+          if(affiliateSection){
+            affiliateSection.scrollIntoView({
+              behavior:'smooth',
+              block:'start'
+            });
+          }
+
           return;
         }
 
