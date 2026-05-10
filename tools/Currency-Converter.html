@@ -159,6 +159,86 @@ button.orange{
     font-weight:bold;
 }
 
+
+.calculator-mini{
+    margin-top:-45px;
+    display:grid;
+    grid-template-columns:minmax(260px,380px);
+    justify-content:end;
+}
+
+.calc-box{
+    background:#020617;
+    border:1px solid rgba(34,197,94,.18);
+    border-radius:18px;
+    padding:16px;
+}
+
+.calc-title{
+    color:#22c55e;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.calc-display{
+    width:100%;
+    margin-bottom:10px;
+    padding:14px;
+    border-radius:12px;
+    border:1px solid #334155;
+    background:#0f172a;
+    color:#fff;
+    font-size:20px;
+    text-align:right;
+}
+
+.calc-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+}
+
+.calc-grid button{
+    padding:13px 0;
+    border-radius:10px;
+    background:#0f172a;
+    border:1px solid #334155;
+    color:#fff;
+    font-weight:bold;
+}
+
+.calc-grid button:hover{
+    background:#1e293b;
+}
+
+.calc-grid .op{
+    background:#2563eb;
+    border-color:#2563eb;
+}
+
+.calc-grid .clear{
+    background:#ef4444;
+    border-color:#ef4444;
+}
+
+.calc-grid .equal{
+    background:#22c55e;
+    border-color:#22c55e;
+    color:#03130a;
+}
+
+.calc-use{
+    width:100%;
+    margin-top:10px;
+    background:#f97316;
+}
+
+@media(max-width:700px){
+    .calculator-mini{
+        grid-template-columns:1fr;
+    }
+}
+
 @media(max-width:700px){
     .grid{
         grid-template-columns:1fr;
@@ -172,6 +252,59 @@ button.orange{
         font-size:22px;
     }
 }
+
+.currency-row{
+    display:grid;
+    grid-template-columns:1fr 44px 1fr;
+    gap:10px;
+    align-items:end;
+    margin-top:14px;
+}
+
+.swap-middle{
+    display:flex;
+    justify-content:center;
+    align-items:end;
+    padding-bottom:9px;
+}
+
+.swap-middle-btn{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:#22c55e;
+    color:#03130a;
+    border:2px solid #0f172a;
+    cursor:pointer;
+    font-size:20px;
+    font-weight:900;
+    line-height:1;
+    box-shadow:0 0 14px rgba(34,197,94,.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+}
+
+.swap-middle-btn:hover{
+    transform:scale(1.08);
+}
+
+@media(max-width:700px){
+    .currency-row{
+        grid-template-columns:1fr;
+    }
+
+    .swap-middle{
+        padding-bottom:0;
+    }
+
+    .swap-middle-btn{
+        width:100%;
+        border-radius:14px;
+    }
+}
+
 </style>
 </head>
 
@@ -198,7 +331,7 @@ button.orange{
 
             <div>
                 <label>Amount</label>
-                <input type="number" id="amount" value="100" min="0">
+                <input type="number" id="amount" value="1" min="0">
             </div>
 
             <div>
@@ -236,13 +369,40 @@ button.orange{
             </button>
         </div>
 
-        <div class="quick">
-            <button onclick="quickConvert(100,'MYR','USD')">RM100 → USD</button>
-            <button onclick="quickConvert(100,'USD','MYR')">USD100 → MYR</button>
-            <button onclick="quickConvert(100,'MYR','SGD')">RM100 → SGD</button>
-            <button onclick="quickConvert(100,'MYR','IDR')">RM100 → IDR</button>
-            <button onclick="quickConvert(100,'MYR','THB')">RM100 → THB</button>
-            <button onclick="quickConvert(100,'CNY','MYR')">CNY100 → MYR</button>
+        <div class="calculator-mini">
+            <div class="calc-box">
+                <div class="calc-title">🧮 Mini Calculator</div>
+                <input class="calc-display" id="calcDisplay" type="text" value="0" readonly>
+
+                <div class="calc-grid">
+                    <button class="clear" onclick="calcClear()">C</button>
+                    <button onclick="calcBack()">⌫</button>
+                    <button onclick="calcPress('%')">%</button>
+                    <button class="op" onclick="calcPress('/')">÷</button>
+
+                    <button onclick="calcPress('7')">7</button>
+                    <button onclick="calcPress('8')">8</button>
+                    <button onclick="calcPress('9')">9</button>
+                    <button class="op" onclick="calcPress('*')">×</button>
+
+                    <button onclick="calcPress('4')">4</button>
+                    <button onclick="calcPress('5')">5</button>
+                    <button onclick="calcPress('6')">6</button>
+                    <button class="op" onclick="calcPress('-')">−</button>
+
+                    <button onclick="calcPress('1')">1</button>
+                    <button onclick="calcPress('2')">2</button>
+                    <button onclick="calcPress('3')">3</button>
+                    <button class="op" onclick="calcPress('+')">+</button>
+
+                    <button onclick="calcPress('0')">0</button>
+                    <button onclick="calcPress('.')">.</button>
+                    <button class="equal" onclick="calcEqual()">=</button>
+                    <button class="op" onclick="calcUseAmount()">Use</button>
+                </div>
+
+                <button class="calc-use" onclick="calcUseAmount()">Use Result As Amount</button>
+            </div>
         </div>
 
         <div class="status" id="status">
@@ -358,7 +518,7 @@ function copyResult(){
 
 function resetConverter(){
 
-    amount.value = 100;
+    amount.value = 1;
     fee.value = 0;
     from.value = "MYR";
     to.value = "USD";
@@ -421,6 +581,61 @@ async function fetchLiveRates(){
     el.addEventListener("input", calculate);
     el.addEventListener("change", calculate);
 });
+
+
+function calcPress(value){
+    const display = document.getElementById("calcDisplay");
+
+    if(display.value === "0" || display.value === "Error"){
+        display.value = value;
+    }else{
+        display.value += value;
+    }
+}
+
+function calcClear(){
+    document.getElementById("calcDisplay").value = "0";
+}
+
+function calcBack(){
+    const display = document.getElementById("calcDisplay");
+
+    if(display.value.length <= 1 || display.value === "Error"){
+        display.value = "0";
+    }else{
+        display.value = display.value.slice(0,-1);
+    }
+}
+
+function calcEqual(){
+    const display = document.getElementById("calcDisplay");
+
+    try{
+        const safe = display.value.replace(/[^0-9+\-*/%.]/g,"");
+        const answer = Function('"use strict";return (' + safe + ')')();
+
+        display.value = Number.isFinite(answer) ? parseFloat(answer.toFixed(8)) : "Error";
+    }catch(e){
+        display.value = "Error";
+    }
+}
+
+function calcUseAmount(){
+    const display = document.getElementById("calcDisplay");
+
+    if(display.value === "Error"){
+        return;
+    }
+
+    calcEqual();
+
+    const value = parseFloat(display.value);
+
+    if(!isNaN(value)){
+        amount.value = value;
+        calculate();
+    }
+}
 
 loadCurrencies();
 fetchLiveRates();
