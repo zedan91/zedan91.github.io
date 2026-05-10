@@ -2967,7 +2967,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   <button class="affiliate-admin-btn orange" id="affiliateExportButton" type="button">Export Backup</button>
   <button class="affiliate-admin-btn" id="affiliateImportButton" type="button">Import Backup</button>
   <button class="affiliate-admin-btn red" id="affiliateResetButton" type="button">Reset Local Changes</button>
-  <div class="affiliate-admin-hint">Admin only: Add / Edit / Delete affiliate product cards.</div>
+  <div class="affiliate-admin-hint">Admin only: Add / Edit / Delete affiliate product cards. Use Export Backup, then replace affiliate-products.json and push to GitHub for all devices.</div>
   <input id="affiliateImportFile" type="file" accept="application/json" hidden>
 </div>
 
@@ -6880,6 +6880,66 @@ pager.appendChild(bottomWrap);
   });
 
   setTimeout(init, 400);
+})();
+</script>
+
+
+<script>
+/* SHARED AFFILIATE JSON LOADER
+   Put affiliate-products.json in the same folder as index.html.
+   Edit JSON + git push = update for all visitors/devices.
+*/
+(function(){
+  function esc(text){
+    return String(text || '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+    }[c]));
+  }
+
+  function productHTML(p){
+    return `
+      <article class="affiliate-product-card" data-affiliate-id="${esc(p.id)}" data-category="${esc(p.category || '')}">
+        <div class="affiliate-card-admin-actions">
+          <button class="edit" type="button" data-affiliate-edit="${esc(p.id)}">Edit</button>
+          <button class="delete" type="button" data-affiliate-delete="${esc(p.id)}">Delete</button>
+        </div>
+        <div class="affiliate-product-top">
+          <div class="affiliate-product-icon">${esc(p.icon || 'AZ')}</div>
+          <span class="affiliate-badge">${esc(p.badge || 'Affiliate')}</span>
+        </div>
+        <h3>${esc(p.title)}</h3>
+        <p>${esc(p.desc)}</p>
+        <div class="affiliate-product-meta">${esc(p.meta || '')}</div>
+        <a class="btn blue" href="${esc(p.link || '#')}" target="_blank" rel="noopener">View on Shopee</a>
+      </article>`;
+  }
+
+  async function loadAffiliateJSON(){
+    const wrap = document.querySelector('.affiliate-products');
+    if(!wrap) return;
+
+    try{
+      const res = await fetch('affiliate-products.json?ts=' + Date.now(), {cache:'no-store'});
+      if(!res.ok) return;
+
+      const products = await res.json();
+      if(!Array.isArray(products)) return;
+
+      wrap.innerHTML = products.map(productHTML).join('');
+
+      try{
+        localStorage.setItem('azobss_affiliate_products_v4', JSON.stringify(products));
+      }catch(e){}
+
+      document.dispatchEvent(new CustomEvent('azobssAffiliateUpdated'));
+    }catch(e){}
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', loadAffiliateJSON);
+  }else{
+    loadAffiliateJSON();
+  }
 })();
 </script>
 

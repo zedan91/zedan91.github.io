@@ -1,0 +1,62 @@
+[
+  {
+    "id": "aff-1",
+    "category": "pc",
+    "icon": "AZ",
+    "badge": "Affiliate",
+    "title": "Product 1",
+    "desc": "",
+    "meta": "",
+    "link": "#"
+  },
+  {
+    "id": "aff-2",
+    "category": "pc storage",
+    "icon": "AZ",
+    "badge": "Affiliate",
+    "title": "Product 2",
+    "desc": "",
+    "meta": "",
+    "link": "#"
+  },
+  {
+    "id": "aff-3",
+    "category": "gadget",
+    "icon": "AZ",
+    "badge": "Affiliate",
+    "title": "Product 3",
+    "desc": "",
+    "meta": "",
+    "link": "#"
+  },
+  {
+    "id": "aff-4",
+    "category": "gadget camera",
+    "icon": "AZ",
+    "badge": "Affiliate",
+    "title": "Product 4",
+    "desc": "",
+    "meta": "",
+    "link": "#"
+  },
+  {
+    "id": "aff-5",
+    "category": "gadget camera",
+    "icon": "AZ",
+    "badge": "Affiliate",
+    "title": "Product 5",
+    "desc": "",
+    "meta": "",
+    "link": "#"
+  },
+  {
+    "id": "aff-6",
+    "category": "${esc(p.category || '')}",
+    "icon": "AZ",
+    "badge": "Affiliate",
+    "title": "Product 6",
+    "desc": "",
+    "meta": "",
+    "link": "#"
+  }
+]
