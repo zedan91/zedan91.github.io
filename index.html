@@ -2246,6 +2246,7 @@ body.is-admin .affiliate-card-admin-actions{
   display:flex !important;
 }
 
+
 /* ADMIN ONLY STRICT FINAL FIX */
 body:not(.is-admin) .affiliate-admin-panel,
 body:not(.is-admin) .affiliate-card-admin-actions{
@@ -6277,6 +6278,94 @@ pager.appendChild(bottomWrap);
       return String(text || '').trim().toLowerCase();
     }
 
+    // 1) Check visible logged-in username if the page shows it
+    const visibleSelectors = [
+      '.user-name',
+      '#userName',
+      '#loggedInUserName',
+      '#currentUserName',
+      '[data-current-user]',
+      '[data-username]'
+    ];
+
+    for(const selector of visibleSelectors){
+      const el = document.querySelector(selector);
+      if(!el) continue;
+
+      const value = clean(
+        el.textContent ||
+        el.value ||
+        el.getAttribute('data-current-user') ||
+        el.getAttribute('data-username')
+      );
+
+      if(value === adminUsername){
+        return true;
+      }
+    }
+
+    // 2) Check ONLY current/session/login keys, not whole localStorage
+    // This prevents admin tools showing just because user list contains "zedan91".
+    const currentKeys = [
+      'azobssCurrentUser',
+      'azobss_current_user',
+      'currentUser',
+      'loggedInUser',
+      'loggedInUserName',
+      'currentUsername',
+      'username',
+      'activeUser',
+      'authUser',
+      'azobssUser',
+      'azobss_user'
+    ];
+
+    for(const key of currentKeys){
+      const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if(!raw) continue;
+
+      if(clean(raw) === adminUsername){
+        return true;
+      }
+
+      try{
+        const parsed = JSON.parse(raw);
+        const possible = [
+          parsed.username,
+          parsed.userName,
+          parsed.name,
+          parsed.login,
+          parsed.id,
+          parsed.email,
+          parsed.phone
+        ].map(clean);
+
+        if(possible.includes(adminUsername)){
+          return true;
+        }
+      }catch(e){}
+    }
+
+    // 3) Fallback: if your own login system stores current user in a JS global
+    const globalUser = window.currentUser || window.loggedInUser || window.azobssCurrentUser;
+    if(globalUser){
+      if(clean(globalUser) === adminUsername) return true;
+      if(typeof globalUser === 'object'){
+        const possible = [
+          globalUser.username,
+          globalUser.userName,
+          globalUser.name,
+          globalUser.login,
+          globalUser.id,
+          globalUser.email
+        ].map(clean);
+        if(possible.includes(adminUsername)) return true;
+      }
+    }
+
+    return false;
+  }
+
     const visibleSelectors = [
       '.user-name',
       '#userName',
@@ -6351,6 +6440,9 @@ pager.appendChild(bottomWrap);
     if(adminDetected()){
       document.body.classList.add('is-admin');
     }else{
+      document.body.classList.remove('is-admin');
+    }
+  }else{
       document.body.classList.remove('is-admin');
     }
   }else{
@@ -6489,7 +6581,7 @@ pager.appendChild(bottomWrap);
     renderProducts();
     bindAdmin();
     enableAdmin();
-    setInterval(enableAdmin, 1000);
+    setInterval(enableAdmin, 300);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
