@@ -6078,312 +6078,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   </script>
 
 
-<script>
-(function(){
-  function initAffiliateFilter(){
-    const searchInput = document.querySelector('.affiliate-search');
-    const filterButtons = document.querySelectorAll('.affiliate-filter');
-    const productCards = document.querySelectorAll('.affiliate-product-card');
-
-    if(!searchInput || !filterButtons.length || !productCards.length){
-      return;
-    }
-
-    function normalize(text){
-      return (text || '').toString().trim().toLowerCase();
-    }
-
-    function getActiveCategory(){
-      const active = document.querySelector('.affiliate-filter.is-active');
-      if(!active) return 'all';
-      return normalize(active.dataset.filter || active.dataset.category || active.textContent);
-    }
-
-    function getCardCategory(card){
-      return normalize(card.dataset.category || card.getAttribute('data-category') || '');
-    }
-
-    function applyFilter(){
-      const keyword = normalize(searchInput.value);
-      const activeCategory = getActiveCategory();
-
-      productCards.forEach(card => {
-        const text = normalize(card.innerText);
-        const cardCategory = getCardCategory(card);
-
-        const matchSearch = !keyword || text.includes(keyword);
-        const matchCategory =
-          activeCategory === 'all' ||
-          activeCategory === '' ||
-          cardCategory.includes(activeCategory) ||
-          text.includes(activeCategory);
-
-        card.style.display = (matchSearch && matchCategory) ? '' : 'none';
-      });
-    }
-
-    searchInput.addEventListener('input', applyFilter);
-
-    filterButtons.forEach(btn => {
-      btn.addEventListener('click', function(){
-        filterButtons.forEach(b => b.classList.remove('is-active'));
-        this.classList.add('is-active');
-        applyFilter();
-      });
-    });
-
-    applyFilter();
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', initAffiliateFilter);
-  }else{
-    initAffiliateFilter();
-  }
-})();
-</script>
-
-
-<script>
-(function(){
-  function normalize(text){
-    return (text || '').toString().trim().toLowerCase();
-  }
-
-  function initAffiliateCategories(){
-    const search = document.getElementById('affiliateCategorySearch');
-    const buttons = document.querySelectorAll('.affiliate-category-card');
-    const cards = document.querySelectorAll('.affiliate-product-card');
-    if(!buttons.length || !cards.length) return;
-
-    function activeFilter(){
-      const active = document.querySelector('.affiliate-category-card.is-active');
-      return normalize(active ? active.dataset.filter : 'all');
-    }
-
-    function apply(){
-      const q = normalize(search ? search.value : '');
-      const f = activeFilter();
-
-      cards.forEach(card => {
-        const text = normalize(card.innerText);
-        const cat = normalize(card.dataset.category || card.getAttribute('data-category') || '');
-        const allText = text + ' ' + cat;
-
-        const matchText = !q || allText.includes(q);
-        const matchCat = f === 'all' || allText.includes(f);
-
-        card.hidden = !(matchText && matchCat);
-      });
-    }
-
-    buttons.forEach(btn => {
-      btn.addEventListener('click', function(){
-        if(this.classList.contains('is-active')){
-          this.classList.remove('is-active');
-        }else{
-          buttons.forEach(b => b.classList.remove('is-active'));
-          this.classList.add('is-active');
-        }
-        apply();
-      });
-    });
-
-    if(search) search.addEventListener('input', apply);
-    apply();
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', initAffiliateCategories);
-  }else{
-    initAffiliateCategories();
-  }
-})();
-</script>
-
-
-<script>
-(function(){
-  const perPage = 4;
-  let currentPage = 1;
-
-  function normalize(text){
-    return (text || '').toString().trim().toLowerCase();
-  }
-
-  function initAffiliatePagination(){
-    const cards = Array.from(document.querySelectorAll('.affiliate-product-card'));
-    const pager = document.getElementById('affiliatePagination');
-    const search = document.getElementById('affiliateCategorySearch');
-    const categoryButtons = document.querySelectorAll('.affiliate-category-card');
-
-    if(!cards.length || !pager) return;
-
-    function activeFilter(){
-      const active = document.querySelector('.affiliate-category-card.is-active');
-      return normalize(active ? active.dataset.filter : 'all');
-    }
-
-    function getFilteredCards(){
-      const q = normalize(search ? search.value : '');
-      const f = activeFilter();
-
-      return cards.filter(card => {
-        const text = normalize(card.innerText);
-        const cat = normalize(card.dataset.category || card.getAttribute('data-category') || '');
-        const allText = text + ' ' + cat;
-
-        const matchText = !q || allText.includes(q);
-        const matchCat = f === 'all' || allText.includes(f);
-
-        return matchText && matchCat;
-      });
-    }
-
-    function render(){
-      const filtered = getFilteredCards();
-      const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-
-      if(currentPage > totalPages) currentPage = totalPages;
-      if(currentPage < 1) currentPage = 1;
-
-      cards.forEach(card => {
-        card.style.display = 'none';
-      });
-
-      filtered.slice((currentPage - 1) * perPage, currentPage * perPage).forEach(card => {
-        card.style.display = '';
-        card.hidden = false;
-      });
-
-      pager.innerHTML = '';
-
-      const buttons = [
-        {text:'<<', page: currentPage - 1, disabled: currentPage === 1},
-        {text:'Previous', page: currentPage - 1, disabled: currentPage === 1}
-      ];
-
-      for(let i=1; i<=totalPages; i++){
-        buttons.push({text:String(i), page:i, active:i===currentPage});
-      }
-
-      buttons.push({text:'Next', page: currentPage + 1, disabled: currentPage === totalPages});
-      buttons.push({text:'>>', page: currentPage + 1, disabled: currentPage === totalPages});
-      buttons.push({text:'Show All', page:'showall'});
-      buttons.push({text:'Hide All', page:'hideall'});
-      buttons.push({text:'Go Back to Categories', page:'goback'});
-
-      const bottomWrap = document.createElement('div');
-bottomWrap.className = 'affiliate-bottom-actions';
-
-buttons.forEach(item => {
-
-  const btn = document.createElement('button');
-
-  btn.className = 'affiliate-page-btn';
-
-  if(item.active){
-    btn.classList.add('active');
-  }
-
-  btn.textContent = item.text;
-
-  btn.disabled = item.disabled || false;
-
-  btn.addEventListener('click', () => {
-
-    if(item.page === 'showall'){
-
-      getFilteredCards().forEach(card => {
-        card.style.display = '';
-        card.hidden = false;
-      });
-
-      return;
-    }
-
-    if(item.page === 'hideall'){
-
-      cards.forEach(card => {
-        card.style.display = 'none';
-        card.hidden = true;
-      });
-
-      return;
-    }
-
-    if(item.page === 'goback'){
-
-      const categoryPanel = document.querySelector('.affiliate-category-panel');
-
-      if(categoryPanel){
-        categoryPanel.scrollIntoView({
-          behavior:'smooth',
-          block:'start'
-        });
-      }
-
-      return;
-    }
-
-    currentPage = item.page;
-
-    render();
-
-    const affiliate = document.getElementById('affiliate');
-
-    if(affiliate){
-      affiliate.scrollIntoView({
-        behavior:'smooth',
-        block:'start'
-      });
-    }
-
-  });
-
-  if(item.text === 'Go Back to Categories'){
-    btn.classList.add('affiliate-back-btn');
-  }
-
-  if(item.text === 'Show All' || item.text === 'Hide All' || item.text === 'Go Back to Categories'){
-
-    bottomWrap.appendChild(btn);
-
-  }else{
-
-    pager.appendChild(btn);
-
-  }
-
-});
-
-pager.appendChild(bottomWrap);
-    }
-
-    categoryButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentPage = 1;
-        setTimeout(render, 0);
-      });
-    });
-
-    if(search){
-      search.addEventListener('input', () => {
-        currentPage = 1;
-        render();
-      });
-    }
-
-    render();
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', initAffiliatePagination);
-  }else{
-    initAffiliatePagination();
-  }
-})();
-</script>
 
 
 
@@ -6758,193 +6452,6 @@ pager.appendChild(bottomWrap);
 </script>
 
 
-<script>
-(function(){
-  const PER_PAGE = 4;
-  let currentPage = 1;
-  let showAllMode = false;
-
-  function clean(text){
-    return String(text || '').trim().toLowerCase();
-  }
-
-  function getCards(){
-    return Array.from(document.querySelectorAll('.affiliate-product-card'));
-  }
-
-  function getActiveFilter(){
-    const active = document.querySelector('.affiliate-category-card.is-active');
-    return clean(active ? active.dataset.filter : 'all');
-  }
-
-  function getSearchValue(){
-    const search = document.getElementById('affiliateCategorySearch') || document.querySelector('.affiliate-category-search');
-    return clean(search ? search.value : '');
-  }
-
-  function getFilteredCards(){
-    const filter = getActiveFilter();
-    const query = getSearchValue();
-
-    return getCards().filter(card => {
-      const category = clean(card.dataset.category || card.getAttribute('data-category') || '');
-      const text = clean(card.innerText);
-
-      const matchCategory = filter === 'all' || category === filter;
-      const matchSearch = !query || text.includes(query) || category.includes(query);
-
-      return matchCategory && matchSearch;
-    });
-  }
-
-  function renderPager(totalPages){
-    const pager = document.getElementById('affiliatePagination') || document.querySelector('.affiliate-pagination');
-    if(!pager) return;
-
-    pager.innerHTML = '';
-
-    const makeBtn = (text, page, disabled, active, extraClass) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'affiliate-page-btn' + (active ? ' active' : '') + (extraClass ? ' ' + extraClass : '');
-      btn.textContent = text;
-      btn.disabled = !!disabled;
-      btn.addEventListener('click', () => {
-        if(page === 'showall'){
-          showAllMode = true;
-          applyAffiliateFilter();
-          return;
-        }
-
-        if(page === 'hideall'){
-          showAllMode = false;
-
-          // Hide all cards
-          getCards().forEach(card => {
-            card.style.display = 'none';
-            card.hidden = true;
-          });
-
-          // Stay inside affiliate section (do not jump away)
-          const affiliateSection =
-            document.querySelector('.affiliate-section') ||
-            document.querySelector('#affiliateSection') ||
-            document.querySelector('.affiliate-products');
-
-          if(affiliateSection){
-            affiliateSection.scrollIntoView({
-              behavior:'smooth',
-              block:'start'
-            });
-          }
-
-          return;
-        }
-
-        if(page === 'goback'){
-          const panel = document.querySelector('.affiliate-category-panel');
-          if(panel){
-            panel.scrollIntoView({behavior:'smooth', block:'start'});
-          }
-          return;
-        }
-
-        showAllMode = false;
-        currentPage = page;
-        applyAffiliateFilter();
-      });
-      return btn;
-    };
-
-    pager.appendChild(makeBtn('<<', Math.max(1, currentPage - 1), currentPage === 1));
-    pager.appendChild(makeBtn('Previous', Math.max(1, currentPage - 1), currentPage === 1));
-
-    for(let i = 1; i <= totalPages; i++){
-      pager.appendChild(makeBtn(String(i), i, false, i === currentPage));
-    }
-
-    pager.appendChild(makeBtn('Next', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
-    pager.appendChild(makeBtn('>>', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
-
-    const bottom = document.createElement('div');
-    bottom.className = 'affiliate-bottom-actions';
-    bottom.appendChild(makeBtn('Show All', 'showall'));
-    bottom.appendChild(makeBtn('Hide All', 'hideall'));
-    bottom.appendChild(makeBtn('Go Back to Categories', 'goback', false, false, 'affiliate-back-btn'));
-    pager.appendChild(bottom);
-  }
-
-  function applyAffiliateFilter(){
-    const cards = getCards();
-    const filtered = getFilteredCards();
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-
-    if(currentPage > totalPages) currentPage = totalPages;
-    if(currentPage < 1) currentPage = 1;
-
-    cards.forEach(card => {
-      card.style.display = 'none';
-      card.hidden = true;
-    });
-
-    const visibleCards = showAllMode
-      ? filtered
-      : filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
-
-    visibleCards.forEach(card => {
-      card.style.display = '';
-      card.hidden = false;
-    });
-
-    renderPager(totalPages);
-  }
-
-  function bindAffiliateFilters(){
-    const categoryButtons = document.querySelectorAll('.affiliate-category-card');
-    const search = document.getElementById('affiliateCategorySearch') || document.querySelector('.affiliate-category-search');
-
-    categoryButtons.forEach(btn => {
-      if(btn.dataset.azobssFilterBound === '1') return;
-      btn.dataset.azobssFilterBound = '1';
-
-      btn.addEventListener('click', () => {
-        categoryButtons.forEach(b => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
-        currentPage = 1;
-        showAllMode = false;
-        applyAffiliateFilter();
-      });
-    });
-
-    if(search && search.dataset.azobssSearchBound !== '1'){
-      search.dataset.azobssSearchBound = '1';
-      search.addEventListener('input', () => {
-        currentPage = 1;
-        showAllMode = false;
-        applyAffiliateFilter();
-      });
-    }
-  }
-
-  function init(){
-    bindAffiliateFilters();
-    applyAffiliateFilter();
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init);
-  }else{
-    init();
-  }
-
-  document.addEventListener('azobssAffiliateUpdated', () => {
-    setTimeout(init, 50);
-  });
-
-  setTimeout(init, 400);
-})();
-</script>
-
 
 <script>
 /* SHARED AFFILIATE JSON LOADER
@@ -7002,6 +6509,208 @@ pager.appendChild(bottomWrap);
   }else{
     loadAffiliateJSON();
   }
+})();
+</script>
+
+
+<script>
+/* AFFILIATE CATEGORY + PAGINATION FINAL FIX */
+(function(){
+  const PER_PAGE = 4;
+  let currentPage = 1;
+  let showAllMode = false;
+  let hideAllMode = false;
+
+  function clean(text){
+    return String(text || '').trim().toLowerCase();
+  }
+
+  function getCards(){
+    return Array.from(document.querySelectorAll('.affiliate-product-card'));
+  }
+
+  function getPager(){
+    return document.getElementById('affiliatePagination') || document.querySelector('.affiliate-pagination');
+  }
+
+  function getSearch(){
+    return document.getElementById('affiliateCategorySearch') || document.querySelector('.affiliate-category-search');
+  }
+
+  function getActiveFilter(){
+    const active = document.querySelector('.affiliate-category-card.is-active');
+    return clean(active ? active.dataset.filter : 'all') || 'all';
+  }
+
+  function getFilteredCards(){
+    const filter = getActiveFilter();
+    const search = getSearch();
+    const query = clean(search ? search.value : '');
+
+    return getCards().filter(card => {
+      const category = clean(card.dataset.category || card.getAttribute('data-category') || '');
+      const text = clean(card.innerText);
+
+      const matchCategory = filter === 'all' || category === filter;
+      const matchSearch = !query || text.includes(query) || category.includes(query);
+
+      return matchCategory && matchSearch;
+    });
+  }
+
+  function showCard(card){
+    card.hidden = false;
+    card.style.display = '';
+  }
+
+  function hideCard(card){
+    card.hidden = true;
+    card.style.display = 'none';
+  }
+
+  function makeButton(text, action, disabled, active, extraClass){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'affiliate-page-btn' + (active ? ' active' : '') + (extraClass ? ' ' + extraClass : '');
+    btn.textContent = text;
+    btn.disabled = !!disabled;
+
+    btn.addEventListener('click', function(){
+      if(action === 'showall'){
+        hideAllMode = false;
+        showAllMode = true;
+        currentPage = 1;
+        renderAffiliateProducts();
+        return;
+      }
+
+      if(action === 'hideall'){
+        showAllMode = false;
+        hideAllMode = true;
+
+        getCards().forEach(hideCard);
+        renderPagination(Math.max(1, Math.ceil(getFilteredCards().length / PER_PAGE)));
+
+        const affiliateSection = document.querySelector('.affiliate-section') || document.getElementById('affiliate') || document.querySelector('.affiliate-category-panel');
+        if(affiliateSection){
+          affiliateSection.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+        return;
+      }
+
+      if(action === 'goback'){
+        const panel = document.querySelector('.affiliate-category-panel');
+        if(panel){
+          panel.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+        return;
+      }
+
+      hideAllMode = false;
+      showAllMode = false;
+      currentPage = action;
+      renderAffiliateProducts();
+    });
+
+    return btn;
+  }
+
+  function renderPagination(totalPages){
+    const pager = getPager();
+    if(!pager) return;
+
+    totalPages = Math.max(1, totalPages || 1);
+    if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage < 1) currentPage = 1;
+
+    pager.innerHTML = '';
+
+    pager.appendChild(makeButton('<<', Math.max(1, currentPage - 1), currentPage === 1));
+    pager.appendChild(makeButton('Previous', Math.max(1, currentPage - 1), currentPage === 1));
+
+    for(let i = 1; i <= totalPages; i++){
+      pager.appendChild(makeButton(String(i), i, false, i === currentPage));
+    }
+
+    pager.appendChild(makeButton('Next', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
+    pager.appendChild(makeButton('>>', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
+
+    const bottom = document.createElement('div');
+    bottom.className = 'affiliate-bottom-actions';
+    bottom.appendChild(makeButton('Show All', 'showall'));
+    bottom.appendChild(makeButton('Hide All', 'hideall'));
+    bottom.appendChild(makeButton('Go Back to Categories', 'goback', false, false, 'affiliate-back-btn'));
+    pager.appendChild(bottom);
+  }
+
+  function renderAffiliateProducts(){
+    const cards = getCards();
+    const filtered = getFilteredCards();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+
+    cards.forEach(hideCard);
+
+    if(!hideAllMode){
+      const visible = showAllMode
+        ? filtered
+        : filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+      visible.forEach(showCard);
+    }
+
+    renderPagination(totalPages);
+  }
+
+  function bindAffiliateCategories(){
+    const buttons = Array.from(document.querySelectorAll('.affiliate-category-card'));
+    const search = getSearch();
+
+    buttons.forEach(btn => {
+      if(btn.dataset.azobssFinalBound === '1') return;
+      btn.dataset.azobssFinalBound = '1';
+
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+
+        buttons.forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+
+        currentPage = 1;
+        showAllMode = false;
+        hideAllMode = false;
+
+        renderAffiliateProducts();
+      }, true);
+    });
+
+    if(search && search.dataset.azobssFinalSearchBound !== '1'){
+      search.dataset.azobssFinalSearchBound = '1';
+
+      search.addEventListener('input', function(){
+        currentPage = 1;
+        showAllMode = false;
+        hideAllMode = false;
+        renderAffiliateProducts();
+      });
+    }
+  }
+
+  function initAffiliateFinal(){
+    bindAffiliateCategories();
+    renderAffiliateProducts();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAffiliateFinal);
+  }else{
+    initAffiliateFinal();
+  }
+
+  document.addEventListener('azobssAffiliateUpdated', function(){
+    setTimeout(initAffiliateFinal, 80);
+  });
+
+  window.azobssRefreshAffiliateProducts = initAffiliateFinal;
 })();
 </script>
 
