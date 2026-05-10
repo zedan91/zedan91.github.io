@@ -3626,7 +3626,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return '';
       }
 
-      return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+      return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
     function updatePreview() {
@@ -5964,7 +5964,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      const url = buildTifUrl();
+      const apiUrl = buildTifUrl();
       const paValue = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
 
@@ -5973,24 +5973,51 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      if (!url) {
+      if (!apiUrl) {
         paError.textContent = 'Please enter the PA number and select a state first.';
         return;
       }
 
-      window.open(url, '_blank');
-      pendingDownload = {
-        paValue,
-        selectedNegeri,
-        url
-      };
-
+      paError.textContent = '';
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Download opened. Choose Successful Download if the TIF file downloaded, or Failed Download if the JUPEM page shows an error.';
-      downloadTifButton.hidden = true;
-      downloadTifButton.style.display = 'none';
-      downloadResultActions.hidden = false;
-      downloadResultActions.style.display = 'grid';
+      paStatus.textContent = 'Searching PA from JUPEM... please wait.';
+      downloadTifButton.disabled = true;
+      downloadTifButton.textContent = 'Searching...';
+
+      try {
+        const res = await fetch(apiUrl, { cache: 'no-store' });
+        const data = await res.json();
+
+        if (!data.ok) {
+          throw new Error(data.error || 'PA not found.');
+        }
+
+        const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
+
+        // Backend already holds the file. Now user downloads from AZOBSS backend.
+        window.open(downloadUrl, '_blank');
+
+        pendingDownload = {
+          paValue,
+          selectedNegeri,
+          url: downloadUrl
+        };
+
+        paStatus.textContent =
+          'PA found and held by AZOBSS backend. Download opened from backend. Choose Successful Download if file downloaded.';
+
+        downloadTifButton.hidden = true;
+        downloadTifButton.style.display = 'none';
+        downloadResultActions.hidden = false;
+        downloadResultActions.style.display = 'grid';
+
+      } catch (error) {
+        paError.textContent = 'PA not found / failed to fetch from backend: ' + error.message;
+        paStatus.style.display = 'none';
+      } finally {
+        downloadTifButton.disabled = false;
+        downloadTifButton.textContent = 'Download TIF';
+      }
     });
 
     confirmDownloadButton.addEventListener('click', async function () {
@@ -6084,7 +6111,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 <script>
 (function(){
   const STORAGE_KEY = 'azobss_affiliate_products_v4';
-  const API_BASE = 'https://azobss-backend.onrender.com';
   const ADMIN_USERNAME = 'zedan91';
 
   function qs(s){return document.querySelector(s);}
@@ -6182,58 +6208,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     return qsa('.affiliate-product-card').map(cardToProduct);
   }
 
-  async function saveProducts(products){
-    // Local backup fallback
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    }catch(e){}
-
-    // Online sync to Render backend
-    try{
-      const res = await fetch(API_BASE + '/api/save-affiliates', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(products)
-      });
-
-      if(!res.ok){
-        throw new Error('Backend save failed: ' + res.status);
-      }
-    }catch(err){
-      console.warn('Affiliate online save failed. Local backup used only.', err);
-    }
+  function saveProducts(products){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
   }
 
-  async function loadSavedProducts(){
-    // First priority: online backend data
-    try{
-      const res = await fetch(API_BASE + '/api/affiliates?ts=' + Date.now(), {
-        cache: 'no-store'
-      });
-
-      if(res.ok){
-        const online = await res.json();
-
-        if(Array.isArray(online) && online.length){
-          try{
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(online));
-          }catch(e){}
-
-          return online;
-        }
-      }
-    }catch(err){
-      console.warn('Affiliate online load failed. Trying local backup.', err);
-    }
-
-    // Fallback: localStorage
+  function loadSavedProducts(){
     try{
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
       if(Array.isArray(saved) && saved.length){
         return saved;
       }
     }catch(e){}
-
     return null;
   }
 
@@ -6412,7 +6397,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       // 1. Check server aktif
       let serverOk = false;
       try{
-        const health = await fetch('https://azobss-backend.onrender.com/health', {signal: AbortSignal.timeout(2500)});
+        const health = await fetch('https://127.0.0.1:7821/health', {signal: AbortSignal.timeout(2500)});
         serverOk = health.ok;
       }catch(e){}
 
@@ -6436,7 +6421,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       btn.disabled = true;
 
       try{
-        const res = await fetch('https://azobss-backend.onrender.com/api/save-affiliates', {
+        const res = await fetch('https://127.0.0.1:7821/deploy', {
           method : 'POST',
           headers: {'Content-Type':'application/json'},
           body   : JSON.stringify(products),
@@ -6462,10 +6447,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     // ────────────────────────────────────────────────────────────────────
   }
 
-  async function init(){
+  function init(){
     if(!getWrap()) return;
 
-    const saved = await loadSavedProducts();
+    const saved = loadSavedProducts();
 
     if(saved){
       products = saved;
@@ -6530,7 +6515,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     if(!wrap) return;
 
     try{
-      const res = await fetch('https://azobss-backend.onrender.com/api/affiliates?ts=' + Date.now(), {cache:'no-store'});
+      const res = await fetch('affiliate-products.json?ts=' + Date.now(), {cache:'no-store'});
       if(!res.ok) return;
 
       const products = await res.json();
