@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Currency Converter | AZOBSS Mini Web Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#020617;
+      color:#fff;
+    }
+
+    .wrap{
+      width:min(1100px,92%);
+      margin:0 auto;
+      padding:34px 0 60px;
+    }
+
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:26px;
+    }
+
+    h1{
+      margin:0;
+      color:#22c55e;
+      font-size:clamp(34px,5vw,52px);
+      line-height:1.05;
+    }
+
+    .sub{
+      margin:8px 0 0;
+      color:#94a3b8;
+      font-size:16px;
+    }
+
+    .back{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:11px;
+      background:#22c55e;
+      color:#052e16;
+      text-decoration:none;
+      font-weight:800;
+    }
+
+    .card{
+      border:1px solid rgba(34,197,94,.22);
+      border-radius:22px;
+      background:#111827;
+      box-shadow:0 20px 50px rgba(0,0,0,.28);
+      padding:24px;
+      margin-bottom:22px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    label{
+      display:block;
+      color:#cbd5e1;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    input,select{
+      width:100%;
+      padding:15px 14px;
+      border:1px solid #334155;
+      border-radius:12px;
+      background:#020617;
+      color:#fff;
+      font-size:16px;
+      outline:none;
+    }
+
+    input:focus,select:focus{
+      border-color:#22c55e;
+      box-shadow:0 0 0 3px rgba(34,197,94,.14);
+    }
+
+    .result{
+      margin-top:18px;
+      padding:18px;
+      border-radius:16px;
+      background:#020617;
+      border:1px solid rgba(148,163,184,.18);
+      font-size:22px;
+      font-weight:900;
+      color:#fff;
+      line-height:1.45;
+    }
+
+    .result span{
+      color:#22c55e;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    button{
+      border:0;
+      border-radius:12px;
+      padding:13px 17px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+      background:#2563eb;
+    }
+
+    button.green{background:#22c55e;color:#052e16}
+    button.orange{background:#f97316}
+    button.dark{background:#0f172a;border:1px solid #334155}
+
+    .quick{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .quick button{
+      text-align:left;
+      background:#0f172a;
+      border:1px solid rgba(34,197,94,.2);
+      color:#dbeafe;
+    }
+
+    .note{
+      color:#94a3b8;
+      font-size:13px;
+      line-height:1.5;
+      margin-top:14px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:14px;
+      overflow:hidden;
+      border-radius:14px;
+    }
+
+    th,td{
+      padding:12px;
+      border-bottom:1px solid rgba(148,163,184,.16);
+      text-align:left;
+    }
+
+    th{
+      color:#93c5fd;
+      background:#0f172a;
+    }
+
+    td{
+      color:#e2e8f0;
+    }
+
+    @media(max-width:720px){
+      .grid{grid-template-columns:1fr}
+      .card{padding:18px}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <h1>💱 Currency Converter</h1>
+        <p class="sub">Convert popular currencies quickly. Useful for Shopee, online shopping and travel budget.</p>
+      </div>
+      <a class="back" href="index.html">← Back To Tools</a>
+    </div>
+
+    <section class="card">
+      <div class="grid">
+        <div>
+          <label>Amount</label>
+          <input id="amount" type="number" value="100" min="0" step="0.01">
+        </div>
+
+        <div>
+          <label>Markup / Fee (%)</label>
+          <input id="fee" type="number" value="0" min="0" step="0.1">
+        </div>
+
+        <div>
+          <label>From</label>
+          <select id="from"></select>
+        </div>
+
+        <div>
+          <label>To</label>
+          <select id="to"></select>
+        </div>
+      </div>
+
+      <div class="result" id="result">Loading...</div>
+
+      <div class="actions">
+        <button class="green" onclick="swapCurrency()">Swap Currency</button>
+        <button onclick="copyResult()">Copy Result</button>
+        <button class="orange" onclick="resetForm()">Reset</button>
+      </div>
+
+      <p class="note">
+        Note: This tool uses editable reference rates inside this HTML file. For exact live rates, compare with your bank/payment provider before purchase.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Quick Convert</h2>
+      <div class="quick">
+        <button onclick="quickSet(100,'MYR','USD')">RM100 → USD</button>
+        <button onclick="quickSet(100,'USD','MYR')">USD100 → MYR</button>
+        <button onclick="quickSet(100,'MYR','SGD')">RM100 → SGD</button>
+        <button onclick="quickSet(100,'MYR','IDR')">RM100 → IDR</button>
+        <button onclick="quickSet(100,'MYR','THB')">RM100 → THB</button>
+        <button onclick="quickSet(100,'CNY','MYR')">CNY100 → MYR</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Popular Reference Rates</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Currency</th>
+            <th>Code</th>
+            <th>Rate Based On USD</th>
+          </tr>
+        </thead>
+        <tbody id="rateTable"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    // Reference rates based on 1 USD.
+    // You can update these numbers manually anytime.
+    const rates = {
+      USD: {name:"US Dollar", rate:1},
+      MYR: {name:"Malaysian Ringgit", rate:4.70},
+      SGD: {name:"Singapore Dollar", rate:1.35},
+      IDR: {name:"Indonesian Rupiah", rate:16200},
+      THB: {name:"Thai Baht", rate:36.5},
+      CNY: {name:"Chinese Yuan", rate:7.25},
+      JPY: {name:"Japanese Yen", rate:155},
+      KRW: {name:"Korean Won", rate:1380},
+      EUR: {name:"Euro", rate:0.92},
+      GBP: {name:"British Pound", rate:0.79},
+      AUD: {name:"Australian Dollar", rate:1.52},
+      NZD: {name:"New Zealand Dollar", rate:1.65},
+      PHP: {name:"Philippine Peso", rate:58},
+      INR: {name:"Indian Rupee", rate:83.5},
+      AED: {name:"UAE Dirham", rate:3.67},
+      SAR: {name:"Saudi Riyal", rate:3.75}
+    };
+
+    const amount = document.getElementById("amount");
+    const fee = document.getElementById("fee");
+    const from = document.getElementById("from");
+    const to = document.getElementById("to");
+    const result = document.getElementById("result");
+    const rateTable = document.getElementById("rateTable");
+
+    function moneyFormat(value, code){
+      try{
+        return new Intl.NumberFormat("en-US", {
+          style:"currency",
+          currency:code,
+          maximumFractionDigits: code === "IDR" || code === "JPY" || code === "KRW" ? 0 : 2
+        }).format(value);
+      }catch(e){
+        return value.toFixed(2) + " " + code;
+      }
+    }
+
+    function loadCurrency(){
+      Object.keys(rates).forEach(code => {
+        const option1 = document.createElement("option");
+        option1.value = code;
+        option1.textContent = `${code} - ${rates[code].name}`;
+
+        const option2 = option1.cloneNode(true);
+
+        from.appendChild(option1);
+        to.appendChild(option2);
+      });
+
+      from.value = "MYR";
+      to.value = "USD";
+
+      rateTable.innerHTML = Object.keys(rates).map(code => `
+        <tr>
+          <td>${rates[code].name}</td>
+          <td>${code}</td>
+          <td>${rates[code].rate}</td>
+        </tr>
+      `).join("");
+    }
+
+    function calculate(){
+      const value = parseFloat(amount.value) || 0;
+      const feePercent = parseFloat(fee.value) || 0;
+
+      const usdValue = value / rates[from.value].rate;
+      let converted = usdValue * rates[to.value].rate;
+
+      if(feePercent > 0){
+        converted = converted + (converted * feePercent / 100);
+      }
+
+      result.innerHTML = `
+        ${moneyFormat(value, from.value)}
+        =
+        <span>${moneyFormat(converted, to.value)}</span>
+        <br>
+        <small style="color:#94a3b8;font-size:14px;">
+          Fee included: ${feePercent}%
+        </small>
+      `;
+    }
+
+    function swapCurrency(){
+      const oldFrom = from.value;
+      from.value = to.value;
+      to.value = oldFrom;
+      calculate();
+    }
+
+    function copyResult(){
+      const text = result.innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Result copied!");
+      });
+    }
+
+    function resetForm(){
+      amount.value = 100;
+      fee.value = 0;
+      from.value = "MYR";
+      to.value = "USD";
+      calculate();
+    }
+
+    function quickSet(value, fromCode, toCode){
+      amount.value = value;
+      fee.value = 0;
+      from.value = fromCode;
+      to.value = toCode;
+      calculate();
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    [amount, fee, from, to].forEach(el => {
+      el.addEventListener("input", calculate);
+      el.addEventListener("change", calculate);
+    });
+
+    loadCurrency();
+    calculate();
+  </script>
+</body>
+</html>
