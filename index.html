@@ -6695,5 +6695,177 @@ pager.appendChild(bottomWrap);
 })();
 </script>
 
+
+<script>
+(function(){
+  const PER_PAGE = 4;
+  let currentPage = 1;
+  let showAllMode = false;
+
+  function clean(text){
+    return String(text || '').trim().toLowerCase();
+  }
+
+  function getCards(){
+    return Array.from(document.querySelectorAll('.affiliate-product-card'));
+  }
+
+  function getActiveFilter(){
+    const active = document.querySelector('.affiliate-category-card.is-active');
+    return clean(active ? active.dataset.filter : 'all');
+  }
+
+  function getSearchValue(){
+    const search = document.getElementById('affiliateCategorySearch') || document.querySelector('.affiliate-category-search');
+    return clean(search ? search.value : '');
+  }
+
+  function getFilteredCards(){
+    const filter = getActiveFilter();
+    const query = getSearchValue();
+
+    return getCards().filter(card => {
+      const category = clean(card.dataset.category || card.getAttribute('data-category') || '');
+      const text = clean(card.innerText);
+
+      const matchCategory = filter === 'all' || category === filter;
+      const matchSearch = !query || text.includes(query) || category.includes(query);
+
+      return matchCategory && matchSearch;
+    });
+  }
+
+  function renderPager(totalPages){
+    const pager = document.getElementById('affiliatePagination') || document.querySelector('.affiliate-pagination');
+    if(!pager) return;
+
+    pager.innerHTML = '';
+
+    const makeBtn = (text, page, disabled, active, extraClass) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'affiliate-page-btn' + (active ? ' active' : '') + (extraClass ? ' ' + extraClass : '');
+      btn.textContent = text;
+      btn.disabled = !!disabled;
+      btn.addEventListener('click', () => {
+        if(page === 'showall'){
+          showAllMode = true;
+          applyAffiliateFilter();
+          return;
+        }
+
+        if(page === 'hideall'){
+          showAllMode = false;
+          getCards().forEach(card => {
+            card.style.display = 'none';
+            card.hidden = true;
+          });
+          return;
+        }
+
+        if(page === 'goback'){
+          const panel = document.querySelector('.affiliate-category-panel');
+          if(panel){
+            panel.scrollIntoView({behavior:'smooth', block:'start'});
+          }
+          return;
+        }
+
+        showAllMode = false;
+        currentPage = page;
+        applyAffiliateFilter();
+      });
+      return btn;
+    };
+
+    pager.appendChild(makeBtn('<<', Math.max(1, currentPage - 1), currentPage === 1));
+    pager.appendChild(makeBtn('Previous', Math.max(1, currentPage - 1), currentPage === 1));
+
+    for(let i = 1; i <= totalPages; i++){
+      pager.appendChild(makeBtn(String(i), i, false, i === currentPage));
+    }
+
+    pager.appendChild(makeBtn('Next', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
+    pager.appendChild(makeBtn('>>', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
+
+    const bottom = document.createElement('div');
+    bottom.className = 'affiliate-bottom-actions';
+    bottom.appendChild(makeBtn('Show All', 'showall'));
+    bottom.appendChild(makeBtn('Hide All', 'hideall'));
+    bottom.appendChild(makeBtn('Go Back to Categories', 'goback', false, false, 'affiliate-back-btn'));
+    pager.appendChild(bottom);
+  }
+
+  function applyAffiliateFilter(){
+    const cards = getCards();
+    const filtered = getFilteredCards();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+
+    if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage < 1) currentPage = 1;
+
+    cards.forEach(card => {
+      card.style.display = 'none';
+      card.hidden = true;
+    });
+
+    const visibleCards = showAllMode
+      ? filtered
+      : filtered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+
+    visibleCards.forEach(card => {
+      card.style.display = '';
+      card.hidden = false;
+    });
+
+    renderPager(totalPages);
+  }
+
+  function bindAffiliateFilters(){
+    const categoryButtons = document.querySelectorAll('.affiliate-category-card');
+    const search = document.getElementById('affiliateCategorySearch') || document.querySelector('.affiliate-category-search');
+
+    categoryButtons.forEach(btn => {
+      if(btn.dataset.azobssFilterBound === '1') return;
+      btn.dataset.azobssFilterBound = '1';
+
+      btn.addEventListener('click', () => {
+        categoryButtons.forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        currentPage = 1;
+        showAllMode = false;
+        applyAffiliateFilter();
+      });
+    });
+
+    if(search && search.dataset.azobssSearchBound !== '1'){
+      search.dataset.azobssSearchBound = '1';
+      search.addEventListener('input', () => {
+        currentPage = 1;
+        showAllMode = false;
+        applyAffiliateFilter();
+      });
+    }
+  }
+
+  function init(){
+    bindAffiliateFilters();
+    applyAffiliateFilter();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  }else{
+    init();
+  }
+
+  document.addEventListener('azobssAffiliateUpdated', () => {
+    setTimeout(init, 50);
+  });
+
+  setTimeout(init, 400);
+})();
+</script>
+
 </body>
 </html>
