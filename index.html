@@ -2186,68 +2186,165 @@
   background:#1d4ed8 !important;
 }
 
-/* AFFILIATE ADMIN MANAGER - FINAL */
+/* AFFILIATE ADMIN MANAGER - ADMIN ONLY */
 .affiliate-admin-panel{
-  display:none;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
-  margin:18px auto 22px;padding:16px;border:1px solid rgba(34,197,94,.28);
-  border-radius:16px;background:rgba(15,23,42,.82);box-shadow:0 18px 42px rgba(0,0,0,.22);max-width:1000px;
-}
-body.is-admin .affiliate-admin-panel{display:flex !important;}
-.affiliate-admin-btn{
-  border:1px solid rgba(59,130,246,.55);border-radius:10px;background:#07142a;color:#fff;
-  padding:11px 15px;font-weight:700;cursor:pointer;
-}
-.affiliate-admin-btn.green{background:#22c55e;border-color:#22c55e;}
-.affiliate-admin-btn.orange{background:#f97316;border-color:#f97316;}
-.affiliate-admin-btn.red{background:#ef4444;border-color:#ef4444;}
-.affiliate-admin-hint{width:100%;color:#94a3b8;text-align:center;font-size:13px;}
-.affiliate-product-card{position:relative !important;}
-.affiliate-card-admin-actions{display:none;position:absolute;top:10px;right:10px;gap:6px;z-index:50;}
-body.is-admin .affiliate-card-admin-actions{display:flex !important;}
-.affiliate-card-admin-actions button{
-  border:0;border-radius:8px;padding:7px 9px;color:white;font-size:12px;font-weight:700;
-  cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,.22);
-}
-.affiliate-card-admin-actions .edit{background:#2563eb;}
-.affiliate-card-admin-actions .delete{background:#ef4444;}
-.affiliate-admin-modal{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;
-  background:rgba(2,6,23,.78);backdrop-filter:blur(8px);z-index:5000;
-}
-.affiliate-admin-modal.is-open{display:flex !important;}
-.affiliate-admin-card{
-  width:min(560px,100%);max-height:calc(100vh - 34px);overflow:auto;padding:22px;
-  border:1px solid rgba(34,197,94,.25);border-radius:18px;background:#111827;box-shadow:0 24px 70px rgba(0,0,0,.45);
-}
-.affiliate-admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
-.affiliate-admin-top h3{margin:0;color:#22c55e;}
-.affiliate-admin-close{width:36px;height:36px;border:0;border-radius:9px;background:#334155;color:white;font-size:22px;cursor:pointer;}
-.affiliate-admin-form{display:grid;gap:12px;}
-.affiliate-admin-form label{color:#cbd5e1;font-weight:700;text-align:left;}
-.affiliate-admin-form input,.affiliate-admin-form select,.affiliate-admin-form textarea{
-  width:100%;box-sizing:border-box;margin-top:7px;padding:12px 13px;border:1px solid #334155;border-radius:10px;background:#020617;color:white;outline:none;
-}
-.affiliate-admin-form textarea{min-height:90px;resize:vertical;}
-.affiliate-admin-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:650px){.affiliate-admin-row{grid-template-columns:1fr;}}
-
-
-/* ADMIN ONLY STRICT FIX */
-.affiliate-admin-panel,
-.affiliate-card-admin-actions{
   display:none !important;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:18px auto 22px;
+  padding:16px;
+  border:1px solid rgba(34,197,94,.28);
+  border-radius:16px;
+  background:rgba(15,23,42,.82);
+  box-shadow:0 18px 42px rgba(0,0,0,.22);
+  max-width:1000px;
 }
 
 body.is-admin .affiliate-admin-panel{
   display:flex !important;
 }
 
+.affiliate-admin-btn{
+  border:1px solid rgba(59,130,246,.55);
+  border-radius:10px;
+  background:#07142a;
+  color:#fff;
+  padding:11px 15px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.affiliate-admin-btn.green{background:#22c55e;border-color:#22c55e;}
+.affiliate-admin-btn.orange{background:#f97316;border-color:#f97316;}
+.affiliate-admin-btn.red{background:#ef4444;border-color:#ef4444;}
+
+.affiliate-admin-hint{
+  width:100%;
+  color:#94a3b8;
+  text-align:center;
+  font-size:13px;
+}
+
+.affiliate-product-card{
+  position:relative !important;
+}
+
+.affiliate-card-admin-actions{
+  display:none !important;
+  position:absolute;
+  top:10px;
+  right:10px;
+  gap:6px;
+  z-index:50;
+}
+
 body.is-admin .affiliate-card-admin-actions{
   display:flex !important;
 }
 
+.affiliate-card-admin-actions button{
+  border:0;
+  border-radius:8px;
+  padding:7px 9px;
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(0,0,0,.22);
+}
 
-/* ADMIN ONLY STRICT FINAL FIX */
+.affiliate-card-admin-actions .edit{background:#2563eb;}
+.affiliate-card-admin-actions .delete{background:#ef4444;}
+
+.affiliate-admin-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(2,6,23,.78);
+  backdrop-filter:blur(8px);
+  z-index:5000;
+}
+
+.affiliate-admin-modal.is-open{
+  display:flex !important;
+}
+
+.affiliate-admin-card{
+  width:min(560px,100%);
+  max-height:calc(100vh - 34px);
+  overflow:auto;
+  padding:22px;
+  border:1px solid rgba(34,197,94,.25);
+  border-radius:18px;
+  background:#111827;
+  box-shadow:0 24px 70px rgba(0,0,0,.45);
+}
+
+.affiliate-admin-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.affiliate-admin-top h3{
+  margin:0;
+  color:#22c55e;
+}
+
+.affiliate-admin-close{
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:9px;
+  background:#334155;
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.affiliate-admin-form{
+  display:grid;
+  gap:12px;
+}
+
+.affiliate-admin-form label{
+  color:#cbd5e1;
+  font-weight:700;
+  text-align:left;
+}
+
+.affiliate-admin-form input,
+.affiliate-admin-form select,
+.affiliate-admin-form textarea{
+  width:100%;
+  box-sizing:border-box;
+  margin-top:7px;
+  padding:12px 13px;
+  border:1px solid #334155;
+  border-radius:10px;
+  background:#020617;
+  color:white;
+  outline:none;
+}
+
+.affiliate-admin-form textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+.affiliate-admin-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
 body:not(.is-admin) .affiliate-admin-panel,
 body:not(.is-admin) .affiliate-card-admin-actions{
   display:none !important;
@@ -2255,16 +2352,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   pointer-events:none !important;
 }
 
-body.is-admin .affiliate-admin-panel{
-  display:flex !important;
-  visibility:visible !important;
-  pointer-events:auto !important;
-}
-
-body.is-admin .affiliate-card-admin-actions{
-  display:flex !important;
-  visibility:visible !important;
-  pointer-events:auto !important;
+@media(max-width:650px){
+  .affiliate-admin-row{grid-template-columns:1fr;}
 }
 
 </style>
@@ -2888,16 +2977,35 @@ body.is-admin .affiliate-card-admin-actions{
       <h3 id="affiliateAdminTitle">Add Affiliate</h3>
       <button class="affiliate-admin-close" id="affiliateAdminClose" type="button">&times;</button>
     </div>
+
     <form class="affiliate-admin-form" id="affiliateAdminForm">
       <input type="hidden" id="affiliateEditId">
+
       <div class="affiliate-admin-row">
-        <label>Icon / Short Text<input id="affiliateIcon" type="text" placeholder="PC / SSD / QR / 4K / CAM" maxlength="12"></label>
-        <label>Badge<input id="affiliateBadge" type="text" placeholder="PC Build / Fast Storage"></label>
+        <label>
+          Icon / Short Text
+          <input id="affiliateIcon" type="text" placeholder="PC / SSD / QR / 4K / CAM" maxlength="12">
+        </label>
+
+        <label>
+          Badge
+          <input id="affiliateBadge" type="text" placeholder="PC Build / Fast Storage">
+        </label>
       </div>
-      <label>Product Title<input id="affiliateTitleInput" type="text" placeholder="Product title" required></label>
-      <label>Description<textarea id="affiliateDescInput" placeholder="Short product description" required></textarea></label>
+
+      <label>
+        Product Title
+        <input id="affiliateTitleInput" type="text" placeholder="Product title" required>
+      </label>
+
+      <label>
+        Description
+        <textarea id="affiliateDescInput" placeholder="Short product description" required></textarea>
+      </label>
+
       <div class="affiliate-admin-row">
-        <label>Category
+        <label>
+          Category
           <select id="affiliateCategoryInput">
             <option value="computer">Computer & Accessories</option>
             <option value="camera">Cameras & Drones</option>
@@ -2925,9 +3033,18 @@ body.is-admin .affiliate-card-admin-actions{
             <option value="others">Others</option>
           </select>
         </label>
-        <label>Meta / Note<input id="affiliateMetaInput" type="text" placeholder="Best for..."></label>
+
+        <label>
+          Meta / Note
+          <input id="affiliateMetaInput" type="text" placeholder="Best for...">
+        </label>
       </div>
-      <label>Affiliate Link<input id="affiliateLinkInput" type="url" placeholder="https://s.shopee.com.my/..." required></label>
+
+      <label>
+        Affiliate Link
+        <input id="affiliateLinkInput" type="url" placeholder="https://s.shopee.com.my/..." required>
+      </label>
+
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
     </form>
   </div>
@@ -6268,189 +6385,85 @@ pager.appendChild(bottomWrap);
 
 <script>
 (function(){
-  const STORAGE_KEY = 'azobss_affiliate_products_v3';
+  const STORAGE_KEY = 'azobss_affiliate_products_v4';
+  const ADMIN_USERNAME = 'zedan91';
+
   function qs(s){return document.querySelector(s);}
   function qsa(s){return Array.from(document.querySelectorAll(s));}
+  function clean(v){return String(v || '').trim().toLowerCase();}
+
+  function getCurrentUserObject(){
+    const raw = sessionStorage.getItem('azobssCurrentUser');
+    if(!raw) return null;
+    try{
+      return JSON.parse(raw);
+    }catch(e){
+      return null;
+    }
+  }
+
   function adminDetected(){
-    const adminUsername = 'zedan91';
-
-    function clean(text){
-      return String(text || '').trim().toLowerCase();
+    // Must be signed in first
+    if(sessionStorage.getItem('azobssLoggedIn') !== '1'){
+      return false;
     }
 
-    // 1) Check visible logged-in username if the page shows it
-    const visibleSelectors = [
-      '.user-name',
-      '#userName',
-      '#loggedInUserName',
-      '#currentUserName',
-      '[data-current-user]',
-      '[data-username]'
-    ];
+    const currentUser = getCurrentUserObject();
 
-    for(const selector of visibleSelectors){
-      const el = document.querySelector(selector);
-      if(!el) continue;
-
-      const value = clean(
-        el.textContent ||
-        el.value ||
-        el.getAttribute('data-current-user') ||
-        el.getAttribute('data-username')
-      );
-
-      if(value === adminUsername){
-        return true;
-      }
-    }
-
-    // 2) Check ONLY current/session/login keys, not whole localStorage
-    // This prevents admin tools showing just because user list contains "zedan91".
-    const currentKeys = [
-      'azobssCurrentUser',
-      'azobss_current_user',
-      'currentUser',
-      'loggedInUser',
-      'loggedInUserName',
-      'currentUsername',
-      'username',
-      'activeUser',
-      'authUser',
-      'azobssUser',
-      'azobss_user'
-    ];
-
-    for(const key of currentKeys){
-      const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
-      if(!raw) continue;
-
-      if(clean(raw) === adminUsername){
-        return true;
-      }
-
-      try{
-        const parsed = JSON.parse(raw);
-        const possible = [
-          parsed.username,
-          parsed.userName,
-          parsed.name,
-          parsed.login,
-          parsed.id,
-          parsed.email,
-          parsed.phone
-        ].map(clean);
-
-        if(possible.includes(adminUsername)){
-          return true;
-        }
-      }catch(e){}
-    }
-
-    // 3) Fallback: if your own login system stores current user in a JS global
-    const globalUser = window.currentUser || window.loggedInUser || window.azobssCurrentUser;
-    if(globalUser){
-      if(clean(globalUser) === adminUsername) return true;
-      if(typeof globalUser === 'object'){
-        const possible = [
-          globalUser.username,
-          globalUser.userName,
-          globalUser.name,
-          globalUser.login,
-          globalUser.id,
-          globalUser.email
-        ].map(clean);
-        if(possible.includes(adminUsername)) return true;
-      }
-    }
-
-    return false;
-  }
-
-    const visibleSelectors = [
-      '.user-name',
-      '#userName',
-      '#loggedInUserName',
-      '#currentUserName',
-      '[data-current-user]',
-      '[data-username]'
-    ];
-
-    for(const selector of visibleSelectors){
-      const el = document.querySelector(selector);
-      if(!el) continue;
-
-      const visibleText = clean(el.textContent || el.value || el.getAttribute('data-current-user') || el.getAttribute('data-username'));
-
-      if(visibleText === adminUsername){
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-    // Main visible login name on the website
-    const visibleName = clean(qs('.user-name')?.textContent);
-
-    if(visibleName === adminUsername){
+    // Your existing login system uses usernameKey
+    if(currentUser && clean(currentUser.usernameKey) === ADMIN_USERNAME){
       return true;
     }
 
-    // Check common current-login storage keys only, not whole localStorage
-    const keys = [
-      'azobss_current_user',
-      'currentUser',
-      'loggedInUser',
-      'azobss_user',
-      'userName',
-      'username',
-      'activeUser'
-    ];
-
-    for(const key of keys){
-      try{
-        const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
-        if(!raw) continue;
-
-        const value = clean(raw);
-
-        if(value === adminUsername){
-          return true;
-        }
-
-        const parsed = JSON.parse(raw);
-        const possibleNames = [
-          parsed.username,
-          parsed.userName,
-          parsed.name,
-          parsed.id,
-          parsed.login,
-          parsed.email
-        ].map(clean);
-
-        if(possibleNames.includes(adminUsername)){
-          return true;
-        }
-      }catch(e){}
+    // Fallback if visible username is exactly zedan91
+    const signedInName = clean(qs('#signedInName')?.textContent || qs('.user-name')?.textContent);
+    if(signedInName === ADMIN_USERNAME){
+      return true;
     }
 
     return false;
   }
-  function enableAdmin(){
+
+  function refreshAdminState(){
     if(adminDetected()){
       document.body.classList.add('is-admin');
     }else{
       document.body.classList.remove('is-admin');
     }
-  }else{
-      document.body.classList.remove('is-admin');
-    }
-  }else{
-      document.body.classList.remove('is-admin');
-    }
   }
-  function esc(text){return String(text || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+
+  function esc(text){
+    return String(text || '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[c]));
+  }
+
   function getWrap(){return qs('.affiliate-products');}
+
+  function ensureCardAdminButtons(){
+    qsa('.affiliate-product-card').forEach((card, index) => {
+      if(!card.dataset.affiliateId){
+        card.dataset.affiliateId = 'aff-' + index + '-' + Date.now();
+      }
+
+      if(!card.querySelector('.affiliate-card-admin-actions')){
+        const actions = document.createElement('div');
+        actions.className = 'affiliate-card-admin-actions';
+        actions.innerHTML = `
+          <button class="edit" type="button" data-affiliate-edit="${esc(card.dataset.affiliateId)}">Edit</button>
+          <button class="delete" type="button" data-affiliate-delete="${esc(card.dataset.affiliateId)}">Delete</button>
+        `;
+        card.prepend(actions);
+      }
+    });
+
+    refreshAdminState();
+  }
+
   function cardToProduct(card, index){
     const link = card.querySelector('a.btn, a[href]');
     return {
@@ -6464,18 +6477,26 @@ pager.appendChild(bottomWrap);
       link: link ? link.href : '#'
     };
   }
-  function getProductsFromDOM(){return qsa('.affiliate-product-card').map(cardToProduct);}
-  function saveProducts(products){localStorage.setItem(STORAGE_KEY, JSON.stringify(products));}
-  function loadProducts(){
+
+  function getProductsFromDOM(){
+    ensureCardAdminButtons();
+    return qsa('.affiliate-product-card').map(cardToProduct);
+  }
+
+  function saveProducts(products){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  }
+
+  function loadSavedProducts(){
     try{
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      if(Array.isArray(saved) && saved.length) return saved;
+      if(Array.isArray(saved) && saved.length){
+        return saved;
+      }
     }catch(e){}
-    const fromDom = getProductsFromDOM();
-    saveProducts(fromDom);
-    return fromDom;
+    return null;
   }
-  let products = [];
+
   function productHTML(p){
     return `
       <article class="affiliate-product-card" data-affiliate-id="${esc(p.id)}" data-category="${esc(p.category || '')}">
@@ -6483,23 +6504,31 @@ pager.appendChild(bottomWrap);
           <button class="edit" type="button" data-affiliate-edit="${esc(p.id)}">Edit</button>
           <button class="delete" type="button" data-affiliate-delete="${esc(p.id)}">Delete</button>
         </div>
+
         <div class="affiliate-product-top">
           <div class="affiliate-product-icon">${esc(p.icon || 'AZ')}</div>
           <span class="affiliate-badge">${esc(p.badge || 'Affiliate')}</span>
         </div>
+
         <h3>${esc(p.title)}</h3>
         <p>${esc(p.desc)}</p>
         <div class="affiliate-product-meta">${esc(p.meta || '')}</div>
         <a class="btn blue" href="${esc(p.link || '#')}" target="_blank" rel="noopener">View on Shopee</a>
-      </article>`;
+      </article>
+    `;
   }
+
+  let products = [];
+
   function renderProducts(){
     const wrap = getWrap();
     if(!wrap) return;
+
     wrap.innerHTML = products.map(productHTML).join('');
-    enableAdmin();
+    refreshAdminState();
     document.dispatchEvent(new CustomEvent('azobssAffiliateUpdated'));
   }
+
   function openModal(product){
     qs('#affiliateAdminTitle').textContent = product ? 'Edit Affiliate' : 'Add Affiliate';
     qs('#affiliateEditId').value = product ? product.id : '';
@@ -6512,14 +6541,29 @@ pager.appendChild(bottomWrap);
     qs('#affiliateLinkInput').value = product ? product.link : '';
     qs('#affiliateAdminModal').classList.add('is-open');
   }
-  function closeModal(){qs('#affiliateAdminModal')?.classList.remove('is-open');}
+
+  function closeModal(){
+    qs('#affiliateAdminModal')?.classList.remove('is-open');
+  }
+
   function bindAdmin(){
-    qs('#affiliateAddButton')?.addEventListener('click', () => openModal(null));
+    qs('#affiliateAddButton')?.addEventListener('click', () => {
+      if(!adminDetected()) return;
+      openModal(null);
+    });
+
     qs('#affiliateAdminClose')?.addEventListener('click', closeModal);
-    qs('#affiliateAdminModal')?.addEventListener('click', e => { if(e.target.id === 'affiliateAdminModal') closeModal(); });
+
+    qs('#affiliateAdminModal')?.addEventListener('click', e => {
+      if(e.target.id === 'affiliateAdminModal') closeModal();
+    });
+
     qs('#affiliateAdminForm')?.addEventListener('submit', e => {
       e.preventDefault();
+      if(!adminDetected()) return;
+
       const id = qs('#affiliateEditId').value || ('aff-' + Date.now());
+
       const item = {
         id,
         icon: qs('#affiliateIcon').value.trim() || 'AZ',
@@ -6530,43 +6574,87 @@ pager.appendChild(bottomWrap);
         meta: qs('#affiliateMetaInput').value.trim(),
         link: qs('#affiliateLinkInput').value.trim()
       };
+
       const idx = products.findIndex(p => p.id === id);
-      if(idx >= 0) products[idx] = item; else products.unshift(item);
-      saveProducts(products); renderProducts(); closeModal();
+      if(idx >= 0){
+        products[idx] = item;
+      }else{
+        products.unshift(item);
+      }
+
+      saveProducts(products);
+      renderProducts();
+      closeModal();
     });
+
     document.addEventListener('click', e => {
+      if(!adminDetected()) return;
+
       const editId = e.target.getAttribute('data-affiliate-edit');
       const deleteId = e.target.getAttribute('data-affiliate-delete');
-      if(editId){ const item = products.find(p => p.id === editId); if(item) openModal(item); }
+
+      if(editId){
+        const item = products.find(p => p.id === editId);
+        if(item) openModal(item);
+      }
+
       if(deleteId){
         const item = products.find(p => p.id === deleteId);
-        if(confirm('Delete affiliate item: ' + (item ? item.title : deleteId) + '?')){
+        const title = item ? item.title : deleteId;
+
+        if(confirm('Delete affiliate item: ' + title + '?')){
           products = products.filter(p => p.id !== deleteId);
-          saveProducts(products); renderProducts();
+          saveProducts(products);
+          renderProducts();
         }
       }
     });
+
     qs('#affiliateExportButton')?.addEventListener('click', () => {
+      if(!adminDetected()) return;
+
       const blob = new Blob([JSON.stringify(products, null, 2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'azobss-affiliate-backup.json'; a.click();
+      a.href = url;
+      a.download = 'azobss-affiliate-backup.json';
+      a.click();
       URL.revokeObjectURL(url);
     });
-    qs('#affiliateImportButton')?.addEventListener('click', () => qs('#affiliateImportFile')?.click());
+
+    qs('#affiliateImportButton')?.addEventListener('click', () => {
+      if(!adminDetected()) return;
+      qs('#affiliateImportFile')?.click();
+    });
+
     qs('#affiliateImportFile')?.addEventListener('change', function(){
-      const file = this.files[0]; if(!file) return;
+      if(!adminDetected()) return;
+
+      const file = this.files[0];
+      if(!file) return;
+
       const reader = new FileReader();
+
       reader.onload = () => {
         try{
           const imported = JSON.parse(reader.result);
           if(!Array.isArray(imported)) throw new Error('Invalid file');
-          products = imported; saveProducts(products); renderProducts(); alert('Affiliate backup imported.');
-        }catch(err){ alert('Invalid affiliate backup file.'); }
+
+          products = imported;
+          saveProducts(products);
+          renderProducts();
+          alert('Affiliate backup imported.');
+        }catch(err){
+          alert('Invalid affiliate backup file.');
+        }
       };
+
       reader.readAsText(file);
     });
+
     qs('#affiliateResetButton')?.addEventListener('click', () => {
+      if(!adminDetected()) return;
+
       if(confirm('Reset affiliate local changes?')){
         localStorage.removeItem(STORAGE_KEY);
         products = getProductsFromDOM();
@@ -6575,16 +6663,35 @@ pager.appendChild(bottomWrap);
       }
     });
   }
+
   function init(){
     if(!getWrap()) return;
-    products = loadProducts();
-    renderProducts();
+
+    const saved = loadSavedProducts();
+
+    if(saved){
+      products = saved;
+      renderProducts();
+    }else{
+      ensureCardAdminButtons();
+      products = getProductsFromDOM();
+      saveProducts(products);
+    }
+
     bindAdmin();
-    enableAdmin();
-    setInterval(enableAdmin, 300);
+    refreshAdminState();
+
+    setInterval(() => {
+      refreshAdminState();
+      ensureCardAdminButtons();
+    }, 500);
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  }else{
+    init();
+  }
 })();
 </script>
 
