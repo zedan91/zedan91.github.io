@@ -59,7 +59,8 @@ body{
     box-shadow:0 0 30px rgba(0,0,0,.25);
 }
 
-.grid{
+/* Top row: Amount + Fee */
+.grid-top{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:18px;
@@ -88,8 +89,53 @@ input:focus,select:focus{
     box-shadow:0 0 15px rgba(34,197,94,.2);
 }
 
-.result{
+/* Currency row: From [swap] To */
+.currency-row{
+    display:grid;
+    grid-template-columns:1fr 70px 1fr;
+    align-items:end;
+    gap:18px;
+    margin-top:18px;
+}
+
+.swap-center-box{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding-bottom:2px;
+}
+
+.swap-middle-btn{
+    width:56px;
+    height:56px;
+    border-radius:14px;
+    background:#07111f;
+    border:1px solid rgba(255,255,255,.15);
+    color:#22c55e;
+    font-size:22px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 0 18px rgba(0,0,0,.45);
+    transition:transform .15s, border-color .15s;
+}
+
+.swap-middle-btn:hover{
+    transform:scale(1.07);
+    border-color:#22c55e;
+}
+
+/* Bottom area: result left, calculator right */
+.bottom-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
     margin-top:24px;
+    align-items:start;
+}
+
+.result{
     background:#020617;
     border:1px solid rgba(34,197,94,.18);
     border-radius:18px;
@@ -107,7 +153,7 @@ input:focus,select:focus{
     display:flex;
     gap:12px;
     flex-wrap:wrap;
-    margin-top:20px;
+    margin-top:16px;
 }
 
 button{
@@ -129,44 +175,7 @@ button.orange{
     background:#f97316;
 }
 
-.quick{
-    margin-top:28px;
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-    gap:12px;
-}
-
-.quick button{
-    background:#0f172a;
-    border:1px solid rgba(34,197,94,.2);
-    text-align:left;
-}
-
-.status{
-    margin-top:18px;
-    color:#94a3b8;
-    font-size:14px;
-    line-height:1.6;
-}
-
-.live{
-    color:#22c55e;
-    font-weight:bold;
-}
-
-.offline{
-    color:#f97316;
-    font-weight:bold;
-}
-
-
-.calculator-mini{
-    margin-top:-45px;
-    display:grid;
-    grid-template-columns:minmax(260px,380px);
-    justify-content:end;
-}
-
+/* Calculator */
 .calc-box{
     background:#020617;
     border:1px solid rgba(34,197,94,.18);
@@ -227,84 +236,35 @@ button.orange{
     color:#03130a;
 }
 
-.calc-use{
+.calc-use-btn{
     width:100%;
     margin-top:10px;
     background:#f97316;
-}
-
-@media(max-width:700px){
-    .calculator-mini{
-        grid-template-columns:1fr;
-    }
-}
-
-@media(max-width:700px){
-    .grid{
-        grid-template-columns:1fr;
-    }
-
-    .title{
-        font-size:34px;
-    }
-
-    .result{
-        font-size:22px;
-    }
-}
-
-.currency-row{
-    display:grid;
-    grid-template-columns:1fr 44px 1fr;
-    gap:10px;
-    align-items:end;
-    margin-top:14px;
-}
-
-.swap-middle{
-    display:flex;
-    justify-content:center;
-    align-items:end;
-    padding-bottom:9px;
-}
-
-.swap-middle-btn{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    background:#22c55e;
-    color:#03130a;
-    border:2px solid #0f172a;
+    padding:14px 18px;
+    border:0;
+    border-radius:14px;
+    font-weight:bold;
     cursor:pointer;
-    font-size:20px;
-    font-weight:900;
-    line-height:1;
-    box-shadow:0 0 14px rgba(34,197,94,.35);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0;
+    color:white;
 }
 
-.swap-middle-btn:hover{
-    transform:scale(1.08);
+.status{
+    margin-top:18px;
+    color:#94a3b8;
+    font-size:14px;
+    line-height:1.6;
 }
+
+.live{color:#22c55e;font-weight:bold;}
+.offline{color:#f97316;font-weight:bold;}
 
 @media(max-width:700px){
-    .currency-row{
-        grid-template-columns:1fr;
-    }
-
-    .swap-middle{
-        padding-bottom:0;
-    }
-
-    .swap-middle-btn{
-        width:100%;
-        border-radius:14px;
-    }
+    .grid-top{grid-template-columns:1fr;}
+    .currency-row{grid-template-columns:1fr 56px 1fr;}
+    .bottom-row{grid-template-columns:1fr;}
+    .title{font-size:34px;}
+    .result{font-size:22px;}
 }
-
 </style>
 </head>
 
@@ -316,7 +276,7 @@ button.orange{
         <div>
             <div class="title">💱 Currency Converter</div>
             <div class="subtitle">
-                Live exchange rates for shopping, travel & online payments.
+                Live exchange rates for shopping, travel &amp; online payments.
             </div>
         </div>
 
@@ -327,49 +287,52 @@ button.orange{
 
     <div class="card">
 
-        <div class="grid">
-
+        <!-- Amount + Fee row -->
+        <div class="grid-top">
             <div>
                 <label>Amount</label>
                 <input type="number" id="amount" value="1" min="0">
             </div>
-
             <div>
                 <label>Fee / Markup (%)</label>
                 <input type="number" id="fee" value="0" min="0" step="0.1">
             </div>
+        </div>
 
+        <!-- From [⇄] To row -->
+        <div class="currency-row">
             <div>
                 <label>From</label>
                 <select id="from"></select>
+            </div>
+
+            <div class="swap-center-box">
+                <button class="swap-middle-btn" onclick="swapCurrencies()" title="Swap currencies">⇄</button>
             </div>
 
             <div>
                 <label>To</label>
                 <select id="to"></select>
             </div>
-
         </div>
 
-        <div class="result" id="result">
-            Loading live exchange rate...
-        </div>
+        <!-- Result (left) + Mini Calculator (right) -->
+        <div class="bottom-row">
 
-        <div class="actions">
-            <button class="green" onclick="swapCurrencies()">
-                Swap Currency
-            </button>
+            <!-- Left: result + action buttons -->
+            <div>
+                <div class="result" id="result">
+                    Loading live exchange rate...
+                </div>
 
-            <button onclick="copyResult()">
-                Copy Result
-            </button>
+                <div class="actions">
+                    <button class="green" onclick="swapCurrencies()">Swap Currency</button>
+                    <button onclick="copyResult()">Copy Result</button>
+                    <button class="orange" onclick="resetConverter()">Reset</button>
+                </div>
+            </div>
 
-            <button class="orange" onclick="resetConverter()">
-                Reset
-            </button>
-        </div>
-
-        <div class="calculator-mini">
+            <!-- Right: mini calculator -->
             <div class="calc-box">
                 <div class="calc-title">🧮 Mini Calculator</div>
                 <input class="calc-display" id="calcDisplay" type="text" value="0" readonly>
@@ -401,8 +364,9 @@ button.orange{
                     <button class="op" onclick="calcUseAmount()">Use</button>
                 </div>
 
-                <button class="calc-use" onclick="calcUseAmount()">Use Result As Amount</button>
+                <button class="calc-use-btn" onclick="calcUseAmount()">Use Result As Amount</button>
             </div>
+
         </div>
 
         <div class="status" id="status">
@@ -416,231 +380,127 @@ button.orange{
 <script>
 
 const fallbackRates = {
-    USD:1,
-    MYR:4.70,
-    SGD:1.35,
-    IDR:16200,
-    THB:36.5,
-    CNY:7.25,
-    JPY:155,
-    KRW:1380,
-    EUR:0.92,
-    GBP:0.79,
-    AUD:1.52,
-    NZD:1.65,
-    PHP:58,
-    INR:83.5,
-    AED:3.67,
-    SAR:3.75
+    USD:1,MYR:4.70,SGD:1.35,IDR:16200,THB:36.5,
+    CNY:7.25,JPY:155,KRW:1380,EUR:0.92,GBP:0.79,
+    AUD:1.52,NZD:1.65,PHP:58,INR:83.5,AED:3.67,SAR:3.75
 };
 
 let rates = {...fallbackRates};
 
-const amount = document.getElementById("amount");
-const fee = document.getElementById("fee");
-const from = document.getElementById("from");
-const to = document.getElementById("to");
-const result = document.getElementById("result");
+const amount  = document.getElementById("amount");
+const fee     = document.getElementById("fee");
+const from    = document.getElementById("from");
+const to      = document.getElementById("to");
+const result  = document.getElementById("result");
 const statusBox = document.getElementById("status");
 
 function loadCurrencies(){
-
     Object.keys(rates).forEach(code => {
-
-        const option1 = document.createElement("option");
-        option1.value = code;
-        option1.textContent = code;
-
-        const option2 = document.createElement("option");
-        option2.value = code;
-        option2.textContent = code;
-
-        from.appendChild(option1);
-        to.appendChild(option2);
+        const o1 = document.createElement("option"); o1.value=code; o1.textContent=code;
+        const o2 = document.createElement("option"); o2.value=code; o2.textContent=code;
+        from.appendChild(o1);
+        to.appendChild(o2);
     });
-
     from.value = "MYR";
-    to.value = "USD";
+    to.value   = "USD";
 }
 
 function formatMoney(value, code){
-
     try{
-        return new Intl.NumberFormat("en-US",{
-            style:"currency",
-            currency:code,
-            maximumFractionDigits:2
-        }).format(value);
+        return new Intl.NumberFormat("en-US",{style:"currency",currency:code,maximumFractionDigits:2}).format(value);
     }catch(e){
         return value.toFixed(2) + " " + code;
     }
 }
 
 function calculate(){
-
-    const value = parseFloat(amount.value) || 0;
-    const feeValue = parseFloat(fee.value) || 0;
-
-    const usd = value / rates[from.value];
-    let converted = usd * rates[to.value];
-
-    if(feeValue > 0){
-        converted += converted * (feeValue / 100);
-    }
+    const value    = parseFloat(amount.value) || 0;
+    const feeValue = parseFloat(fee.value)    || 0;
+    const usd      = value / rates[from.value];
+    let   converted = usd * rates[to.value];
+    if(feeValue > 0) converted += converted * (feeValue / 100);
 
     result.innerHTML = `
         ${formatMoney(value, from.value)}
         =
         <span>${formatMoney(converted, to.value)}</span>
         <br>
-        <small style="font-size:14px;color:#94a3b8;">
-            Included fee: ${feeValue}%
-        </small>
+        <small style="font-size:14px;color:#94a3b8;">Included fee: ${feeValue}%</small>
     `;
 }
 
 function swapCurrencies(){
-
-    const oldFrom = from.value;
-
+    const old = from.value;
     from.value = to.value;
-    to.value = oldFrom;
-
+    to.value   = old;
     calculate();
 }
 
 function copyResult(){
-
     navigator.clipboard.writeText(result.innerText);
-
     alert("Copied!");
 }
 
 function resetConverter(){
-
     amount.value = 1;
-    fee.value = 0;
-    from.value = "MYR";
-    to.value = "USD";
-
+    fee.value    = 0;
+    from.value   = "MYR";
+    to.value     = "USD";
     calculate();
-}
-
-function quickConvert(v,f,t){
-
-    amount.value = v;
-    from.value = f;
-    to.value = t;
-
-    calculate();
-
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
 }
 
 async function fetchLiveRates(){
-
     try{
-
         const response = await fetch("https://open.er-api.com/v6/latest/USD");
-
-        const data = await response.json();
-
+        const data     = await response.json();
         if(data && data.rates){
-
             rates = data.rates;
-
-            statusBox.innerHTML = `
-                <span class="live">● LIVE Exchange Rates Connected</span><br>
-                Source: open.er-api.com
-            `;
-
+            statusBox.innerHTML = `<span class="live">● LIVE Exchange Rates Connected</span><br>Source: open.er-api.com`;
             calculate();
-
-        }else{
-            throw new Error("API error");
-        }
-
+        }else{ throw new Error("API error"); }
     }catch(error){
-
         rates = {...fallbackRates};
-
-        statusBox.innerHTML = `
-            <span class="offline">● Offline fallback rates loaded</span><br>
-            Internet/API unavailable.
-        `;
-
+        statusBox.innerHTML = `<span class="offline">● Offline fallback rates loaded</span><br>Internet/API unavailable.`;
         calculate();
     }
 }
 
 [amount, fee, from, to].forEach(el => {
-
-    el.addEventListener("input", calculate);
+    el.addEventListener("input",  calculate);
     el.addEventListener("change", calculate);
 });
 
-
+/* Calculator */
 function calcPress(value){
-    const display = document.getElementById("calcDisplay");
-
-    if(display.value === "0" || display.value === "Error"){
-        display.value = value;
-    }else{
-        display.value += value;
-    }
+    const d = document.getElementById("calcDisplay");
+    if(d.value === "0" || d.value === "Error") d.value = value;
+    else d.value += value;
 }
-
-function calcClear(){
-    document.getElementById("calcDisplay").value = "0";
-}
-
+function calcClear(){ document.getElementById("calcDisplay").value = "0"; }
 function calcBack(){
-    const display = document.getElementById("calcDisplay");
-
-    if(display.value.length <= 1 || display.value === "Error"){
-        display.value = "0";
-    }else{
-        display.value = display.value.slice(0,-1);
-    }
+    const d = document.getElementById("calcDisplay");
+    if(d.value.length <= 1 || d.value === "Error") d.value = "0";
+    else d.value = d.value.slice(0,-1);
 }
-
 function calcEqual(){
-    const display = document.getElementById("calcDisplay");
-
+    const d = document.getElementById("calcDisplay");
     try{
-        const safe = display.value.replace(/[^0-9+\-*/%.]/g,"");
+        const safe   = d.value.replace(/[^0-9+\-*/%.]/g,"");
         const answer = Function('"use strict";return (' + safe + ')')();
-
-        display.value = Number.isFinite(answer) ? parseFloat(answer.toFixed(8)) : "Error";
-    }catch(e){
-        display.value = "Error";
-    }
+        d.value = Number.isFinite(answer) ? parseFloat(answer.toFixed(8)) : "Error";
+    }catch(e){ d.value = "Error"; }
 }
-
 function calcUseAmount(){
-    const display = document.getElementById("calcDisplay");
-
-    if(display.value === "Error"){
-        return;
-    }
-
+    const d = document.getElementById("calcDisplay");
+    if(d.value === "Error") return;
     calcEqual();
-
-    const value = parseFloat(display.value);
-
-    if(!isNaN(value)){
-        amount.value = value;
-        calculate();
-    }
+    const value = parseFloat(d.value);
+    if(!isNaN(value)){ amount.value = value; calculate(); }
 }
 
 loadCurrencies();
 fetchLiveRates();
 
 </script>
-
 </body>
 </html>
