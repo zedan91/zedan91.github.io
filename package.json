@@ -15,5 +15,8 @@
   "scripts": {
     "start": "npx serve .",
     "check": "echo \"Static AZOBSS docs ready\""
+  },
+  "dependencies": {
+    "selfsigned": "^5.5.0"
   }
 }
