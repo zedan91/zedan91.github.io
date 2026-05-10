@@ -2967,7 +2967,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   <button class="affiliate-admin-btn orange" id="affiliateExportButton" type="button">Export Backup</button>
   <button class="affiliate-admin-btn" id="affiliateImportButton" type="button">Import Backup</button>
   <button class="affiliate-admin-btn red" id="affiliateResetButton" type="button">Reset Local Changes</button>
-  <div class="affiliate-admin-hint">Admin only: Add / Edit / Delete affiliate product cards. Use Export Backup, then replace affiliate-products.json and push to GitHub for all devices.</div>
+  <button class="affiliate-admin-btn" id="affiliateDeployButton" type="button" style="background:#7c3aed;border-color:#7c3aed;color:#fff;position:relative;">
+    🚀 Deploy to GitHub
+    <span id="affiliateDeployStatus" style="display:none;position:absolute;top:-9px;right:-9px;background:#22c55e;color:#052e16;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:999px;white-space:nowrap;">✓ Done</span>
+  </button>
+  <div class="affiliate-admin-hint">Admin only: Add / Edit / Delete affiliate product cards. Export Backup atau terus Deploy to GitHub (perlukan deploy-server.js running).</div>
   <input id="affiliateImportFile" type="file" accept="application/json" hidden>
 </div>
 
@@ -6662,6 +6666,64 @@ pager.appendChild(bottomWrap);
         renderProducts();
       }
     });
+
+    // ── Deploy to GitHub button ──────────────────────────────────────────
+    qs('#affiliateDeployButton')?.addEventListener('click', async () => {
+      if(!adminDetected()) return;
+
+      const btn = qs('#affiliateDeployButton');
+
+      // 1. Check server aktif
+      let serverOk = false;
+      try{
+        const health = await fetch('http://127.0.0.1:7821/health', {signal: AbortSignal.timeout(2500)});
+        serverOk = health.ok;
+      }catch(e){}
+
+      if(!serverOk){
+        alert(
+          '\u274C Deploy Server tidak aktif!\n\n' +
+          'Sila jalankan deploy-server.js dahulu:\n\n' +
+          '  1. Buka Command Prompt\n' +
+          '  2. cd ke folder website anda\n' +
+          '  3. Taip: node deploy-server.js\n' +
+          '  4. Cuba semula button ini'
+        );
+        return;
+      }
+
+      if(!confirm('Deploy ' + products.length + ' produk ke GitHub sekarang?\n\nIni akan:\n\u2022 Tulis affiliate-products.json\n\u2022 Tulis affiliate-backup.json\n\u2022 Git commit + push')) return;
+
+      // 2. Deploy
+      const origHTML = btn.innerHTML;
+      btn.textContent = '\u23F3 Deploying...';
+      btn.disabled = true;
+
+      try{
+        const res = await fetch('http://127.0.0.1:7821/deploy', {
+          method : 'POST',
+          headers: {'Content-Type':'application/json'},
+          body   : JSON.stringify(products),
+        });
+
+        const data = await res.json();
+
+        if(data.ok){
+          btn.innerHTML = '\uD83D\uDE80 Deploy to GitHub <span style="position:absolute;top:-9px;right:-9px;background:#22c55e;color:#052e16;font-size:10px;font-weight:bold;padding:2px 7px;border-radius:999px;white-space:nowrap;">\u2713 Done</span>';
+          alert('\u2705 ' + data.message);
+        }else{
+          alert('\u274C Deploy gagal:\n' + data.message);
+          btn.innerHTML = origHTML;
+        }
+
+      }catch(err){
+        alert('\u274C Ralat semasa deploy:\n' + err.message);
+        btn.innerHTML = origHTML;
+      }
+
+      btn.disabled = false;
+    });
+    // ────────────────────────────────────────────────────────────────────
   }
 
   function init(){
