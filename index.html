@@ -6004,12 +6004,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         };
 
         paStatus.textContent =
-          'PA found and held by AZOBSS backend. Download opened from backend. Choose Successful Download if file downloaded.';
+          'Click button Successful Download';
 
         downloadTifButton.hidden = true;
         downloadTifButton.style.display = 'none';
         downloadResultActions.hidden = false;
         downloadResultActions.style.display = 'grid';
+
+        if (failedDownloadButton) {
+          failedDownloadButton.style.display = 'none';
+        }
 
       } catch (error) {
         paError.textContent = 'PA not found / failed to fetch from backend: ' + error.message;
