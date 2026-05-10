@@ -1,37 +1,34 @@
 /**
- * AZOBSS Auto Deploy Server
- * ─────────────────────────
+ * AZOBSS Auto Deploy Server (HTTPS)
+ * ───────────────────────────────────
  * Run: node deploy-server.js
- * Port: 7821
+ * Port: 7821 (HTTPS)
  *
- * Fungsi:
- *  1. Terima JSON dari browser (Export & Deploy button)
- *  2. Tulis ke affiliate-products.json dalam folder GitHub
- *  3. Git add, commit, push
- *  4. Hantar balik status ke browser
+ * HTTPS digunakan supaya www.azobss.com (https) boleh
+ * buat request ke 127.0.0.1 tanpa Mixed Content block.
+ *
+ * ⚠️  LANGKAH PERTAMA KALI selepas run server:
+ *     Buka https://127.0.0.1:7821/health dalam browser
+ *     Klik Advanced > Proceed to 127.0.0.1
+ *     Lepas tu Deploy button akan berfungsi!
  */
 
-const http        = require('http');
-const fs          = require('fs');
-const path        = require('path');
+const https        = require('https');
+const fs           = require('fs');
+const path         = require('path');
 const { execSync } = require('child_process');
 
-// ─── KONFIGURASI ────────────────────────────────────────────────────────────
+// ─── KONFIGURASI ─────────────────────────────────────────────────────────────
 const CONFIG = {
   port       : 7821,
   repoPath   : 'C:\\Users\\USER\\Documents\\GitHub\\www.zedan91.github.io',
   fileName   : 'affiliate-products.json',
   backupName : 'affiliate-backup.json',
   commitMsg  : 'update affiliate products [auto-deploy]',
+  certFile   : 'deploy-cert.pem',
+  keyFile    : 'deploy-key.pem',
 };
-// ────────────────────────────────────────────────────────────────────────────
-
-const ALLOWED_ORIGINS = [
-  'https://zedan91.github.io',
-  'http://localhost',
-  'http://127.0.0.1',
-  'null', // file:// protocol
-];
+// ─────────────────────────────────────────────────────────────────────────────
 
 function log(msg) {
   const time = new Date().toLocaleTimeString('ms-MY');
@@ -39,10 +36,9 @@ function log(msg) {
 }
 
 function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.some(o => (origin || '').startsWith(o));
   return {
-    'Access-Control-Allow-Origin' : allowed ? (origin || '*') : '',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Origin' : origin || '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type'                : 'application/json',
   };
@@ -53,61 +49,92 @@ function sendJSON(res, origin, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-const server = http.createServer((req, res) => {
+// ─── Jana / load self-signed cert ────────────────────────────────────────────
+function ensureCert() {
+  const certPath = path.join(__dirname, CONFIG.certFile);
+  const keyPath  = path.join(__dirname, CONFIG.keyFile);
+
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    log('Cert sedia ada — guna semula.');
+    return { cert: fs.readFileSync(certPath), key: fs.readFileSync(keyPath) };
+  }
+
+  log('Jana self-signed certificate...');
+
+  try {
+    execSync(
+      `openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 3650 -nodes -subj "/CN=127.0.0.1"`,
+      { stdio: 'pipe' }
+    );
+    log('Certificate berjaya dijana via openssl.');
+  } catch (e) {
+    // Cuba selfsigned npm package
+    try {
+      const selfsigned = require('selfsigned');
+      const pems = selfsigned.generate([{ name: 'commonName', value: '127.0.0.1' }], { days: 3650, keySize: 2048 });
+      fs.writeFileSync(certPath, pems.cert, 'utf8');
+      fs.writeFileSync(keyPath,  pems.private, 'utf8');
+      log('Certificate berjaya dijana via selfsigned.');
+    } catch (e2) {
+      console.error('\n Tidak dapat jana certificate.');
+      console.error('Jalankan: npm install selfsigned');
+      console.error('Kemudian cuba semula.\n');
+      process.exit(1);
+    }
+  }
+
+  return { cert: fs.readFileSync(certPath), key: fs.readFileSync(keyPath) };
+}
+
+// ─── Server ──────────────────────────────────────────────────────────────────
+const { cert, key } = ensureCert();
+
+const server = https.createServer({ cert, key }, (req, res) => {
   const origin = req.headers.origin || '';
 
-  // ── Preflight CORS ──
   if (req.method === 'OPTIONS') {
     res.writeHead(204, corsHeaders(origin));
     res.end();
     return;
   }
 
-  // ── Health check ──
   if (req.method === 'GET' && req.url === '/health') {
-    sendJSON(res, origin, 200, { ok: true, server: 'AZOBSS Deploy Server', port: CONFIG.port });
+    sendJSON(res, origin, 200, { ok: true, server: 'AZOBSS Deploy Server (HTTPS)', port: CONFIG.port });
     return;
   }
 
-  // ── Deploy endpoint ──
   if (req.method === 'POST' && req.url === '/deploy') {
     let body = '';
-
     req.on('data', chunk => { body += chunk; });
-
     req.on('end', () => {
       try {
-        // 1. Parse JSON
         const products = JSON.parse(body);
         if (!Array.isArray(products)) throw new Error('Data mesti array JSON.');
 
-        // 2. Tulis affiliate-products.json
-        const targetFile   = path.join(CONFIG.repoPath, CONFIG.fileName);
-        const backupFile   = path.join(CONFIG.repoPath, CONFIG.backupName);
-        const jsonStr      = JSON.stringify(products, null, 2);
+        const targetFile = path.join(CONFIG.repoPath, CONFIG.fileName);
+        const backupFile = path.join(CONFIG.repoPath, CONFIG.backupName);
+        const jsonStr    = JSON.stringify(products, null, 2);
 
         fs.writeFileSync(targetFile, jsonStr, 'utf8');
         fs.writeFileSync(backupFile, jsonStr, 'utf8');
-        log(`✅ Tulis ${products.length} produk → ${targetFile}`);
+        log(`Tulis ${products.length} produk ke ${targetFile}`);
 
-        // 3. Git commit & push
         const git = (cmd) => execSync(cmd, { cwd: CONFIG.repoPath, stdio: 'pipe' }).toString().trim();
 
         git(`git add "${CONFIG.fileName}" "${CONFIG.backupName}"`);
 
-        // Check ada perubahan tak
         let diff = '';
         try { diff = git('git diff --cached --stat'); } catch(e) {}
 
         if (!diff) {
-          log('ℹ️  Tiada perubahan — skip commit.');
-          sendJSON(res, origin, 200, { ok: true, message: 'Tiada perubahan. Fail sama, skip commit & push.' });
+          log('Tiada perubahan — skip commit.');
+          sendJSON(res, origin, 200, { ok: true, message: 'Tiada perubahan. Skip commit & push.' });
           return;
         }
 
         git(`git commit -m "${CONFIG.commitMsg}"`);
         git('git push');
-        log('🚀 Git push berjaya!');
+        log('Git push berjaya!');
 
         sendJSON(res, origin, 200, {
           ok     : true,
@@ -116,37 +143,43 @@ const server = http.createServer((req, res) => {
         });
 
       } catch (err) {
-        log(`❌ Error: ${err.message}`);
+        log(`Error: ${err.message}`);
         sendJSON(res, origin, 500, { ok: false, message: err.message });
       }
     });
-
     return;
   }
 
-  // ── 404 ──
   sendJSON(res, origin, 404, { ok: false, message: 'Endpoint tidak dijumpai.' });
 });
 
 server.listen(CONFIG.port, '127.0.0.1', () => {
   console.log('');
-  console.log('╔══════════════════════════════════════════╗');
-  console.log('║     AZOBSS Auto Deploy Server            ║');
-  console.log(`║     http://127.0.0.1:${CONFIG.port}             ║`);
-  console.log('╠══════════════════════════════════════════╣');
-  console.log(`║  Repo  : ${CONFIG.repoPath.slice(0,40)}`);
-  console.log(`║  File  : ${CONFIG.fileName}`);
-  console.log('╠══════════════════════════════════════════╣');
-  console.log('║  POST /deploy  → tulis JSON + git push   ║');
-  console.log('║  GET  /health  → check server status     ║');
-  console.log('╚══════════════════════════════════════════╝');
+  console.log('=============================================');
+  console.log('     AZOBSS Auto Deploy Server (HTTPS)');
+  console.log('     https://127.0.0.1:' + CONFIG.port);
+  console.log('=============================================');
+  console.log('  Repo : ' + CONFIG.repoPath);
+  console.log('  File : ' + CONFIG.fileName);
+  console.log('=============================================');
+  console.log('  POST /deploy -> tulis JSON + git push');
+  console.log('  GET  /health -> check server status');
+  console.log('=============================================');
+  console.log('');
+  console.log('  !! LANGKAH PERTAMA KALI !!');
+  console.log('  Buka URL ni dalam browser anda:');
+  console.log('  https://127.0.0.1:7821/health');
+  console.log('  Klik Advanced > Proceed to 127.0.0.1');
+  console.log('  Lepas tu Deploy button akan berfungsi!');
+  console.log('');
+  console.log('=============================================');
   console.log('');
   log('Server sedia. Tunggu request dari browser...');
 });
 
 server.on('error', err => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\n❌ Port ${CONFIG.port} sudah digunakan. Tutup proses lain atau tukar port dalam CONFIG.\n`);
+    console.error('\nPort ' + CONFIG.port + ' sudah digunakan. Tutup proses lain atau tukar port.\n');
   } else {
     console.error('Server error:', err);
   }

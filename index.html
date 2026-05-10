@@ -6676,7 +6676,7 @@ pager.appendChild(bottomWrap);
       // 1. Check server aktif
       let serverOk = false;
       try{
-        const health = await fetch('http://127.0.0.1:7821/health', {signal: AbortSignal.timeout(2500)});
+        const health = await fetch('https://127.0.0.1:7821/health', {signal: AbortSignal.timeout(2500)});
         serverOk = health.ok;
       }catch(e){}
 
@@ -6700,7 +6700,7 @@ pager.appendChild(bottomWrap);
       btn.disabled = true;
 
       try{
-        const res = await fetch('http://127.0.0.1:7821/deploy', {
+        const res = await fetch('https://127.0.0.1:7821/deploy', {
           method : 'POST',
           headers: {'Content-Type':'application/json'},
           body   : JSON.stringify(products),
