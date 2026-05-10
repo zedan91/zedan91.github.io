@@ -6,6 +6,9 @@ const path = require("path");
 const http = require("http");
 const url = require("url");
 
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 
