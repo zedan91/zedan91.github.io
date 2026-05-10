@@ -2356,6 +2356,178 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   .affiliate-admin-row{grid-template-columns:1fr;}
 }
 
+
+/* MODERN HERO ACTION BUTTONS - FINAL */
+.hero-actions{
+  display:grid !important;
+  grid-template-columns:repeat(5, minmax(130px, 1fr)) !important;
+  gap:14px !important;
+  width:min(980px, 100%) !important;
+  margin:28px auto 18px !important;
+  animation:none !important;
+}
+
+.hero-actions .btn,
+.hero-actions .hero-whatsapp{
+  position:relative !important;
+  overflow:hidden !important;
+  min-height:94px !important;
+  padding:16px 14px !important;
+  margin:0 !important;
+  border-radius:24px !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+
+  color:#fff !important;
+  text-align:center !important;
+  text-decoration:none !important;
+  font-size:14px !important;
+  font-weight:800 !important;
+  line-height:1.25 !important;
+
+  border:1px solid rgba(255,255,255,.12) !important;
+  background:linear-gradient(145deg, rgba(15,23,42,.92), rgba(30,41,59,.72)) !important;
+  box-shadow:
+    0 18px 35px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+  backdrop-filter:blur(12px) !important;
+  transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease !important;
+}
+
+.hero-actions .btn::before,
+.hero-actions .hero-whatsapp::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:-1px !important;
+  background:
+    radial-gradient(circle at 20% 5%, rgba(255,255,255,.20), transparent 32%),
+    linear-gradient(135deg, rgba(255,255,255,.09), transparent 45%) !important;
+  pointer-events:none !important;
+}
+
+.hero-actions .btn::after,
+.hero-actions .hero-whatsapp::after{
+  content:"" !important;
+  width:42px !important;
+  height:42px !important;
+  order:-1 !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:16px !important;
+  margin-bottom:2px !important;
+  background:rgba(255,255,255,.12) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10) !important;
+  font-size:22px !important;
+  line-height:42px !important;
+  z-index:1 !important;
+}
+
+.hero-actions .btn,
+.hero-actions .hero-whatsapp,
+.hero-actions .hero-whatsapp-text{
+  z-index:1 !important;
+}
+
+.hero-actions .btn:hover,
+.hero-actions .hero-whatsapp:hover{
+  transform:translateY(-7px) scale(1.015) !important;
+  border-color:rgba(34,197,94,.48) !important;
+  box-shadow:
+    0 24px 48px rgba(0,0,0,.42),
+    0 0 24px rgba(34,197,94,.18) !important;
+}
+
+.hero-actions .hero-whatsapp{
+  background:linear-gradient(145deg,#052e1a,#15803d) !important;
+}
+
+.hero-actions .hero-whatsapp-icon{
+  display:none !important;
+}
+
+.hero-actions .hero-whatsapp::after{
+  content:"💬" !important;
+}
+
+.hero-actions .btn.orange{
+  background:linear-gradient(145deg,#7c2d12,#f97316) !important;
+}
+
+.hero-actions .btn.orange::after{
+  content:"📄" !important;
+}
+
+.hero-actions .btn.blue{
+  background:linear-gradient(145deg,#1e3a8a,#2563eb) !important;
+}
+
+.hero-actions .btn.blue::after{
+  content:"🧩" !important;
+}
+
+.hero-actions .btn[href="#affiliate"]{
+  background:linear-gradient(145deg,#172554,#3b82f6) !important;
+}
+
+.hero-actions .btn[href="#affiliate"]::after{
+  content:"🛒" !important;
+}
+
+.hero-actions .btn[href="tools/index.html"]{
+  background:linear-gradient(145deg,#14532d,#22c55e) !important;
+}
+
+.hero-actions .btn[href="tools/index.html"]::after{
+  content:"🛠️" !important;
+}
+
+.hero-actions .btn span,
+.hero-actions .hero-whatsapp-text{
+  display:block !important;
+  width:100% !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+  line-height:1.25 !important;
+}
+
+@media(max-width:980px){
+  .hero-actions{
+    grid-template-columns:repeat(2, minmax(150px, 1fr)) !important;
+    width:min(620px,100%) !important;
+  }
+}
+
+@media(max-width:560px){
+  .hero-actions{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  .hero-actions .btn,
+  .hero-actions .hero-whatsapp{
+    min-height:78px !important;
+    border-radius:18px !important;
+    flex-direction:row !important;
+    justify-content:flex-start !important;
+    padding:14px 18px !important;
+  }
+
+  .hero-actions .btn::after,
+  .hero-actions .hero-whatsapp::after{
+    margin-bottom:0 !important;
+    flex:0 0 42px !important;
+  }
+
+  .hero-actions .btn span,
+  .hero-actions .hero-whatsapp-text{
+    text-align:left !important;
+  }
+}
+
 </style>
 
 
@@ -2818,21 +2990,21 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <h3>&#129513; Software Tools</h3>
         <p>Selected tools for repairing, troubleshooting and optimizing Windows PCs.</p>
         <div class="price">Windows Utilities</div>
-        <a class="btn" href="https://www.azobss.com/Software%20Tools/">View Downloads</a>
+        <a class="btn" href="https://www.azobss.com/Software%20Tools/"><span>View Downloads</span></a>
       </div>
 
       <div class="card">
         <h3>&#128208; AutoCAD LISP</h3>
         <p>LISP tools to speed up AutoCAD text, layers, area tasks and drafting.</p>
         <div class="price">From RM10</div>
-        <a class="btn orange" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">Buy / Request LISP</a>
+        <a class="btn orange" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener"><span>Buy / Request LISP</span></a>
       </div>
 
       <div class="card">
         <h3>&#128216; Windows Guide E-book</h3>
         <p>A basic Windows troubleshooting guide for everyday users.</p>
         <div class="price">Coming Soon</div>
-        <a class="btn" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">Ask Availability</a>
+        <a class="btn" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener"><span>Ask Availability</span></a>
       </div>
     </div>
   </div>
@@ -3063,7 +3235,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <h3>Custom Budget Gaming PC Desktop RIG</h3>
           <p>FULL set DIY build with AMD Ryzen 7 5700G, 5600G, 5500GT or 3200G options.</p>
           <div class="affiliate-product-meta">Best for starter gaming setup</div>
-          <a class="btn blue" href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener">View on Shopee</a>
+          <a class="btn blue" href="https://s.shopee.com.my/60NniZJ8P1" target="_blank" rel="noopener"><span>View on Shopee</span></a>
         </article>
 
         <article class="affiliate-product-card" data-category="pc storage" data-keywords="maxby max7200 nvme ssd 1tb pcie gen4 hard drive storage 7200mb">
@@ -3074,7 +3246,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <h3>MAXBY MAX7200 PCIe Gen4 NVMe SSD 1TB</h3>
           <p>High-speed internal SSD rated up to 7200MB/s for PC storage upgrade.</p>
           <div class="affiliate-product-meta">Best for Windows and game loading</div>
-          <a class="btn blue" href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener">View on Shopee</a>
+          <a class="btn blue" href="https://s.shopee.com.my/901XVeIBKo" target="_blank" rel="noopener"><span>View on Shopee</span></a>
         </article>
 
         <article class="affiliate-product-card" data-category="gadget" data-keywords="qr pay soundbox mae payment business shop alert speaker">
@@ -3085,7 +3257,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <h3>QR Pay Soundbox MAE</h3>
           <p>Payment notification soundbox for shops, small business counters and QR payment alerts.</p>
           <div class="affiliate-product-meta">Useful for sellers and counters</div>
-          <a class="btn blue" href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener">View on Shopee</a>
+          <a class="btn blue" href="https://s.shopee.com.my/W2ipnkxT6" target="_blank" rel="noopener"><span>View on Shopee</span></a>
         </article>
 
         <article class="affiliate-product-card" data-category="gadget camera" data-keywords="ddpai z50 pro 4k hdr gps front rear dash cam 4g adas car camera">
@@ -3096,7 +3268,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <h3>DDPAI Z50 Pro 4K HDR Dash Cam</h3>
           <p>Front and rear dash cam with GPS, super capacitor, 4G connectivity and ADAS support.</p>
           <div class="affiliate-product-meta">Best for car safety recording</div>
-          <a class="btn blue" href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener">View on Shopee</a>
+          <a class="btn blue" href="https://s.shopee.com.my/AUqBLEzMlq" target="_blank" rel="noopener"><span>View on Shopee</span></a>
         </article>
 
         <article class="affiliate-product-card" data-category="gadget camera" data-keywords="tp-link tapo c325wb colorpro night vision c320ws tc65 2k smart cloud camera wifi ip66">
@@ -3107,7 +3279,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <h3>TP-LINK Tapo C325WB ColorPro Camera</h3>
           <p>4MP ColorPro night vision smart camera for outdoor or indoor monitoring.</p>
           <div class="affiliate-product-meta">Best for home and shop security</div>
-          <a class="btn blue" href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener">View on Shopee</a>
+          <a class="btn blue" href="https://s.shopee.com.my/4qBfiRPOZD" target="_blank" rel="noopener"><span>View on Shopee</span></a>
         </article>
       </div>
 
@@ -3254,9 +3426,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <p class="request-note" id="paLinkPreview" hidden></p>
       </form>
 
-      <a class="btn blue login-only" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
-        WhatsApp For Help
-      </a>
+      <a class="btn blue login-only" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener"><span>WhatsApp For Help</span></a>
 
       <div class="admin-purchase-panel" id="adminPurchasePanel">
         <div class="purchase-panel-layout">
@@ -6211,7 +6381,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <h3>${esc(p.title)}</h3>
         <p>${esc(p.desc)}</p>
         <div class="affiliate-product-meta">${esc(p.meta || '')}</div>
-        <a class="btn blue" href="${esc(p.link || '#')}" target="_blank" rel="noopener">View on Shopee</a>
+        <a class="btn blue" href="${esc(p.link || '#')}" target="_blank" rel="noopener"><span>View on Shopee</span></a>
       </article>
     `;
   }
@@ -6479,7 +6649,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <h3>${esc(p.title)}</h3>
         <p>${esc(p.desc)}</p>
         <div class="affiliate-product-meta">${esc(p.meta || '')}</div>
-        <a class="btn blue" href="${esc(p.link || '#')}" target="_blank" rel="noopener">View on Shopee</a>
+        <a class="btn blue" href="${esc(p.link || '#')}" target="_blank" rel="noopener"><span>View on Shopee</span></a>
       </article>`;
   }
 
