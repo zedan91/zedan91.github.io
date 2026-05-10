@@ -1,5 +1,75 @@
 [
   {
+    "id": "aff-1778398142826",
+    "icon": "Choc",
+    "badge": "Chocolate",
+    "title": "Daim Minis Caramel Chocolate",
+    "desc": "Daim Minis Caramel Chocolate 200g Halal Milk Coklat Viral Langkawi Harga Murah Promosi Ready Stock COD Import Sweden",
+    "category": "groceries",
+    "meta": "",
+    "link": "https://s.shopee.com.my/3B48SXRnIp"
+  },
+  {
+    "id": "aff-1778401184000",
+    "icon": "5G",
+    "badge": "Networking",
+    "title": "GteniQ iQ02X55-PRO AX3000 WiFi 6E 5G Router",
+    "desc": "Powerful AX3000 WiFi 6E 5G router with 3CA support, 2400Mbps wireless speed and 2.5Gbps WAN/LAN port. MCMC & SIRIM certified.",
+    "category": "computer",
+    "meta": "Best for high-speed 5G home internet setup",
+    "link": "https://s.shopee.com.my/AADsq2lyao"
+  },
+  {
+    "id": "aff-0-1778392246700",
+    "icon": "🖥️",
+    "badge": "Computer & Accessories",
+    "title": "Custom Budget Gaming PC Desktop RIG",
+    "desc": "FULL set DIY build with AMD Ryzen 7 5700G, 5600G, 5500GT or 3200G options.",
+    "category": "computer",
+    "meta": "Best for starter gaming setup",
+    "link": "https://s.shopee.com.my/60NniZJ8P1"
+  },
+  {
+    "id": "aff-1-1778392246700",
+    "icon": "SSD",
+    "badge": "Fast Storage",
+    "title": "MAXBY MAX7200 PCIe Gen4 NVMe SSD 1TB",
+    "desc": "High-speed internal SSD rated up to 7200MB/s for PC storage upgrade.",
+    "category": "computer",
+    "meta": "Best for Windows and game loading",
+    "link": "https://s.shopee.com.my/901XVeIBKo"
+  },
+  {
+    "id": "aff-2-1778392246700",
+    "icon": "QR",
+    "badge": "Business",
+    "title": "QR Pay Soundbox MAE",
+    "desc": "Payment notification soundbox for shops, small business counters and QR payment alerts.",
+    "category": "computer",
+    "meta": "Useful for sellers and counters",
+    "link": "https://s.shopee.com.my/W2ipnkxT6"
+  },
+  {
+    "id": "aff-3-1778392246700",
+    "icon": "4K",
+    "badge": "Dash Cam",
+    "title": "DDPAI Z50 Pro 4K HDR Dash Cam",
+    "desc": "Front and rear dash cam with GPS, super capacitor, 4G connectivity and ADAS support.",
+    "category": "camera",
+    "meta": "Best for car safety recording",
+    "link": "https://s.shopee.com.my/AUqBLEzMlq"
+  },
+  {
+    "id": "aff-4-1778392246700",
+    "icon": "CAM",
+    "badge": "Smart Camera",
+    "title": "TP-LINK Tapo C325WB ColorPro Camera",
+    "desc": "4MP ColorPro night vision smart camera for outdoor or indoor monitoring.",
+    "category": "camera",
+    "meta": "Best for home and shop security",
+    "link": "https://s.shopee.com.my/4qBfiRPOZD"
+  },
+  {
     "id": "aff-ugreen-200w-25000mah",
     "icon": "🔋",
     "badge": "Powerbank",
