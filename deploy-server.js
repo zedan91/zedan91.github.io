@@ -390,15 +390,20 @@ async function handler(req, res) {
 
     console.error(err);
 
-    return send(
-      res,
-      500,
-      JSON.stringify({
-        ok: false,
-        error: err.message
-      }),
-      "application/json"
-    );
+return send(
+  res,
+  500,
+  JSON.stringify({
+    ok: false,
+    error: err.message,
+    name: err.name,
+    cause: err.cause
+      ? String(err.cause)
+      : null,
+    stack: err.stack
+  }, null, 2),
+  "application/json"
+);
   }
 }
 
