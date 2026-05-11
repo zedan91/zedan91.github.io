@@ -6,6 +6,8 @@ const path = require("path");
 const http = require("http");
 const url = require("url");
 
+const sharp = require("sharp");
+const PDFDocument = require("pdfkit");
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
