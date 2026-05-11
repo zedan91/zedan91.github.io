@@ -2402,6 +2402,39 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   font-weight: 800 !important;
 }
 
+
+
+@media (max-width: 600px) {
+  .site-auth-actions {
+    position: fixed !important;
+    top: 10px !important;
+    right: 10px !important;
+    left: auto !important;
+    display: flex !important;
+    z-index: 99999 !important;
+    transform: scale(0.82);
+    transform-origin: top right;
+  }
+
+  .site-auth-btn {
+    padding: 7px 9px !important;
+    font-size: 11px !important;
+    border-radius: 7px !important;
+  }
+
+  .site-auth-btn svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+}
+
+
+
+/* Hide Sign In / Sign Up after login */
+.is-authenticated .site-auth-actions{
+  display:none !important;
+}
+
 </style>
 
 
