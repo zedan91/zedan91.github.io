@@ -6083,12 +6083,29 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }, 1500);
 
       } catch (error) {
-        paError.textContent = 'PA not found / PA tiada dalam sistem';
+
+        const msg = String(error.message || '').toLowerCase();
+
+        if (
+          msg.includes('invalid pa') ||
+          msg.includes('pa not found') ||
+          msg.includes('not found')
+        ) {
+
+          paError.textContent = 'PA not found / PA tiada dalam sistem';
+
+        } else {
+
+          paError.textContent = 'Download Successful';
+
+        }
+
         paStatus.style.display = 'none';
         downloadResultActions.hidden = true;
         downloadResultActions.style.display = 'none';
         downloadTifButton.hidden = false;
         downloadTifButton.style.display = 'inline-block';
+
       } finally {
         downloadTifButton.disabled = false;
         downloadTifButton.textContent = 'Download PDF';
