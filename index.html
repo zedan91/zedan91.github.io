@@ -1070,26 +1070,9 @@
       display: inline-block !important;
     }
 
-/* Hide panel default */
-#adminPurchasePanel {
-  display: none !important;
-}
-
-/* Semua member yang ada PA access boleh nampak panel rekod sendiri */
-.has-pa-access #adminPurchasePanel {
-  display: block !important;
-}
-
-/* Tapi tools admin sahaja hide untuk user biasa */
-body:not(.is-admin) .purchase-record-actions,
-body:not(.is-admin) .admin-user-tools,
-body:not(.is-admin) #purchasePanelNote,
-body:not(.is-admin) #refreshPurchaseButton,
-body:not(.is-admin) #togglePurchaseRecordsButton,
-body:not(.is-admin) .small-action-btn,
-body:not(.is-admin) #registeredUsersPanel {
-  display: none !important;
-}
+    .has-pa-access #adminPurchasePanel {
+      display: block !important;
+    }
 
     .is-admin #registeredUsersPanel {
       display: block !important;
@@ -2373,6 +2356,54 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   .affiliate-admin-row{grid-template-columns:1fr;}
 }
 
+
+/* PA DOWNLOAD BUTTON PRICE LABEL */
+#downloadTifButton{
+  position: relative !important;
+  width: 100% !important;
+  min-height: 54px !important;
+  padding: 14px 26px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
+  box-shadow: 0 10px 26px rgba(37,99,235,.22) !important;
+  overflow: hidden !important;
+}
+
+#downloadTifButton .download-tif-title{
+  flex: 1 !important;
+  text-align: center !important;
+  font-weight: 800 !important;
+}
+
+#downloadTifButton .download-tif-price{
+  position: absolute !important;
+  right: 28px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #fde047 !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+  text-shadow: 0 2px 8px rgba(0,0,0,.35) !important;
+}
+
+@media(max-width:640px){
+  #downloadTifButton{
+    min-height: 62px !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  #downloadTifButton .download-tif-price{
+    position: static !important;
+    transform: none !important;
+    font-size: 14px !important;
+  }
+}
+
 </style>
 
 
@@ -3254,7 +3285,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue" id="downloadTifButton" type="submit">
-          Download TIF
+          <span class="download-tif-title">Download TIF</span><span class="download-tif-price">RM5 satu unit</span>
         </button>
 
         <div id="downloadResultActions" hidden>
@@ -5999,7 +6030,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       paStatus.style.display = 'block';
       paStatus.textContent = 'Searching PA... please wait.';
       downloadTifButton.disabled = true;
-      downloadTifButton.textContent = 'Searching...';
+      downloadTifButton.innerHTML = '<span class="download-tif-title">Searching...</span><span class="download-tif-price">RM5 satu unit</span>';
 
       try {
         const res = await fetch(apiUrl, { cache: 'no-store' });
@@ -6012,38 +6043,32 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
 
         // Backend already holds the file. Now user downloads from AZOBSS backend.
-window.open(downloadUrl, '_blank');
+        window.open(downloadUrl, '_blank');
 
-pendingDownload = {
-  paValue,
-  selectedNegeri,
-  url: downloadUrl
-};
+        pendingDownload = {
+          paValue,
+          selectedNegeri,
+          url: downloadUrl
+        };
 
-paStatus.style.display = 'none';
-paStatus.textContent = '';
+        paStatus.textContent =
+          'Click button Successful Download';
 
-downloadTifButton.hidden = true;
-downloadTifButton.style.display = 'none';
-
-downloadResultActions.hidden = false;
-downloadResultActions.style.display = 'grid';
-
-// AUTO CLICK SUCCESSFUL DOWNLOAD
-setTimeout(() => {
-  confirmDownloadButton.click();
-}, 1500);
+        downloadTifButton.hidden = true;
+        downloadTifButton.style.display = 'none';
+        downloadResultActions.hidden = false;
+        downloadResultActions.style.display = 'grid';
 
         if (failedDownloadButton) {
           failedDownloadButton.style.display = 'none';
         }
 
       } catch (error) {
-        paError.textContent = 'PA not found / PA tiada dalam sistem';
+        paError.textContent = 'PA not found' + error.message;
         paStatus.style.display = 'none';
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.textContent = 'Download TIF';
+        downloadTifButton.innerHTML = '<span class="download-tif-title">Download TIF</span><span class="download-tif-price">RM5 satu unit</span>';
       }
     });
 
