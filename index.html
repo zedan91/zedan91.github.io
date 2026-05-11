@@ -2435,6 +2435,62 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   display:none !important;
 }
 
+
+
+/* Responsive auth buttons - always fit top right on any screen */
+.site-auth-actions{
+  position: fixed !important;
+  top: max(8px, env(safe-area-inset-top)) !important;
+  right: max(8px, env(safe-area-inset-right)) !important;
+  left: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: clamp(4px, 1.4vw, 10px) !important;
+  max-width: calc(100vw - 16px) !important;
+  z-index: 999999 !important;
+  transform: none !important;
+}
+
+.site-auth-btn{
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 46vw !important;
+  padding: clamp(5px, 1.6vw, 9px) clamp(7px, 2vw, 13px) !important;
+  font-size: clamp(10px, 2.4vw, 14px) !important;
+  line-height: 1.1 !important;
+  border-radius: 7px !important;
+  white-space: nowrap !important;
+}
+
+.site-auth-btn svg{
+  width: clamp(11px, 2.6vw, 17px) !important;
+  height: clamp(11px, 2.6vw, 17px) !important;
+  flex: 0 0 auto !important;
+}
+
+/* Hide Sign In / Sign Up after login */
+.is-authenticated .site-auth-actions{
+  display: none !important;
+}
+
+@media (max-width: 360px){
+  .site-auth-actions{
+    gap: 3px !important;
+  }
+
+  .site-auth-btn{
+    max-width: 48vw !important;
+    padding: 5px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .site-auth-btn svg{
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
+
 </style>
 
 
