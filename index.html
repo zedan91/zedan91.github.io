@@ -2491,6 +2491,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   }
 }
 
+
+
+/* FINAL FIX: hide Sign In / Sign Up when logged in */
+body.is-authenticated .site-auth-actions,
+body.has-pa-access .site-auth-actions,
+body.is-admin .site-auth-actions{
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 </style>
 
 
@@ -6984,6 +6995,52 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+
+
+
+<script>
+(function () {
+
+  function isAzobssLoggedIn() {
+    return (
+      document.body.classList.contains('is-authenticated') ||
+      document.body.classList.contains('has-pa-access') ||
+      document.body.classList.contains('is-admin') ||
+      !!sessionStorage.getItem('azobssCurrentUser') ||
+      !!localStorage.getItem('azobssCurrentUser')
+    );
+  }
+
+  function fixAuthButtons() {
+    const authBox = document.querySelector('.site-auth-actions');
+
+    if (!authBox) {
+      return;
+    }
+
+    if (isAzobssLoggedIn()) {
+      authBox.style.setProperty('display', 'none', 'important');
+      authBox.style.setProperty('visibility', 'hidden', 'important');
+      authBox.style.setProperty('pointer-events', 'none', 'important');
+    } else {
+      authBox.style.removeProperty('visibility');
+      authBox.style.removeProperty('pointer-events');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', fixAuthButtons);
+  window.addEventListener('load', fixAuthButtons);
+
+  const observer = new MutationObserver(fixAuthButtons);
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+
+  setInterval(fixAuthButtons, 500);
+
+})();
+</script>
 
 </body>
 </html>
