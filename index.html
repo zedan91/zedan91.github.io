@@ -2375,10 +2375,12 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 
-/* RM5 per unit clean style */
+/* FINAL Download PA button layout */
 #downloadTifButton.download-pdf-btn{
   position: relative !important;
   width: 100%;
+  font-size: 22px !important;
+  font-weight: 800 !important;
 }
 
 #downloadTifButton .pdf-price-tag{
@@ -2389,117 +2391,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   font-size: 18px;
   font-weight: 800;
   color: #ffe600;
-  text-shadow:
-    0 0 3px rgba(255,255,255,0.25);
+  text-shadow: 0 0 3px rgba(255,255,255,0.25);
   pointer-events: none;
   white-space: nowrap;
-}
-
-
-
-#downloadTifButton{
-  font-size: 22px !important;
-  font-weight: 800 !important;
-}
-
-
-
-@media (max-width: 600px) {
-  .site-auth-actions {
-    position: fixed !important;
-    top: 10px !important;
-    right: 10px !important;
-    left: auto !important;
-    display: flex !important;
-    z-index: 99999 !important;
-    transform: scale(0.82);
-    transform-origin: top right;
-  }
-
-  .site-auth-btn {
-    padding: 7px 9px !important;
-    font-size: 11px !important;
-    border-radius: 7px !important;
-  }
-
-  .site-auth-btn svg {
-    width: 13px !important;
-    height: 13px !important;
-  }
-}
-
-
-
-/* Hide Sign In / Sign Up after login */
-.is-authenticated .site-auth-actions{
-  display:none !important;
-}
-
-
-
-/* Responsive auth buttons - always fit top right on any screen */
-.site-auth-actions{
-  position: fixed !important;
-  top: max(8px, env(safe-area-inset-top)) !important;
-  right: max(8px, env(safe-area-inset-right)) !important;
-  left: auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  gap: clamp(4px, 1.4vw, 10px) !important;
-  max-width: calc(100vw - 16px) !important;
-  z-index: 999999 !important;
-  transform: none !important;
-}
-
-.site-auth-btn{
-  flex: 0 1 auto !important;
-  min-width: 0 !important;
-  max-width: 46vw !important;
-  padding: clamp(5px, 1.6vw, 9px) clamp(7px, 2vw, 13px) !important;
-  font-size: clamp(10px, 2.4vw, 14px) !important;
-  line-height: 1.1 !important;
-  border-radius: 7px !important;
-  white-space: nowrap !important;
-}
-
-.site-auth-btn svg{
-  width: clamp(11px, 2.6vw, 17px) !important;
-  height: clamp(11px, 2.6vw, 17px) !important;
-  flex: 0 0 auto !important;
-}
-
-/* Hide Sign In / Sign Up after login */
-.is-authenticated .site-auth-actions{
-  display: none !important;
-}
-
-@media (max-width: 360px){
-  .site-auth-actions{
-    gap: 3px !important;
-  }
-
-  .site-auth-btn{
-    max-width: 48vw !important;
-    padding: 5px 6px !important;
-    font-size: 10px !important;
-  }
-
-  .site-auth-btn svg{
-    width: 10px !important;
-    height: 10px !important;
-  }
-}
-
-
-
-/* FINAL FIX: hide Sign In / Sign Up when logged in */
-body.is-authenticated .site-auth-actions,
-body.has-pa-access .site-auth-actions,
-body.is-admin .site-auth-actions{
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
 }
 
 </style>
@@ -3776,17 +3670,6 @@ body.is-admin .site-auth-actions{
       return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
-    function buildPdfUrl() {
-      const number = cleanPaNumber(paNumber.value);
-      const selectedNegeri = negeri.value;
-
-      if (!number || !selectedNegeri) {
-        return '';
-      }
-
-      return `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
-    }
-
     function updatePreview() {
       const url = buildTifUrl();
       paError.textContent = '';
@@ -4871,44 +4754,47 @@ body.is-admin .site-auth-actions{
 
     async function recordPurchase(paValue, selectedNegeri, url) {
       if (!currentUser) {
-        throw new Error('User not logged in.');
-      }
-
-      if (!firebaseReady || !db) {
-        throw new Error('Firebase is not ready.');
+        return;
       }
 
       const purchaseId = `${Date.now()}-${currentUser.usernameKey}-${paValue}`;
       const summaryRef = doc(db, 'purchaseSummaries', currentUser.usernameKey);
       const logRef = doc(db, 'purchaseLogs', purchaseId);
 
-      await setDoc(logRef, {
-        purchaseId,
-        uid: currentUser.uid,
-        usernameKey: currentUser.usernameKey,
-        name: currentUser.name,
-        phone: currentUser.phone || '',
-        paNumber: paValue,
-        negeri: selectedNegeri,
-        amount: PURCHASE_PRICE,
-        url,
-        createdAt: serverTimestamp()
-      });
+      await runTransaction(db, async function (transaction) {
+        const summarySnapshot = await transaction.get(summaryRef);
+        const currentSummary = summarySnapshot.exists() ? summarySnapshot.data() : {};
+        const totalUnits = (currentSummary.totalUnits || 0) + 1;
+        const totalAmount = totalUnits * PURCHASE_PRICE;
 
-      await setDoc(summaryRef, {
-        uid: currentUser.uid,
-        usernameKey: currentUser.usernameKey,
-        name: currentUser.name,
-        phone: currentUser.phone || '',
-        totalUnits: increment(1),
-        totalAmount: increment(PURCHASE_PRICE),
-        lastPa: paValue,
-        lastNegeri: selectedNegeri,
-        deleted: false,
-        deletedAt: null,
-        deletedBy: null,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+        transaction.set(logRef, {
+          purchaseId,
+          uid: currentUser.uid,
+          usernameKey: currentUser.usernameKey,
+          name: currentUser.name,
+          phone: currentUser.phone || '',
+          paNumber: paValue,
+          negeri: selectedNegeri,
+          amount: PURCHASE_PRICE,
+          url,
+          createdAt: serverTimestamp()
+        });
+
+        transaction.set(summaryRef, {
+          uid: currentUser.uid,
+          usernameKey: currentUser.usernameKey,
+          name: currentUser.name,
+          phone: currentUser.phone || '',
+          totalUnits,
+          totalAmount,
+          lastPa: paValue,
+          lastNegeri: selectedNegeri,
+          deleted: false,
+          deletedAt: null,
+          deletedBy: null,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      });
 
       await loadPurchaseRecords();
     }
@@ -6119,7 +6005,7 @@ body.is-admin .site-auth-actions{
         return;
       }
 
-      const apiUrl = buildPdfUrl();
+      const apiUrl = buildTifUrl();
       const paValue = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
 
@@ -6140,101 +6026,48 @@ body.is-admin .site-auth-actions{
       downloadTifButton.textContent = 'Searching...';
 
       try {
-        const res = await fetch(apiUrl, {
-          cache: 'no-store'
-        });
+        const res = await fetch(apiUrl, { cache: 'no-store' });
+        const data = await res.json();
 
-        if (!res.ok) {
-          let errorMessage = 'PA not found.';
-
-          try {
-            const errorData = await res.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch (e) {}
-
-          throw new Error(errorMessage);
+        if (!data.ok) {
+          throw new Error(data.error || 'PA not found.');
         }
 
-        const contentType = res.headers.get('content-type') || '';
+        const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
 
-        if (!contentType.includes('application/pdf')) {
-          throw new Error('Invalid PA file');
-        }
+        // Backend already holds the file. Now user downloads from AZOBSS backend.
+window.open(downloadUrl, '_blank');
 
-        const pdfBlob = await res.blob();
-        const pdfUrl = URL.createObjectURL(pdfBlob);
+pendingDownload = {
+  paValue,
+  selectedNegeri,
+  url: downloadUrl
+};
 
-        const a = document.createElement('a');
-        a.href = pdfUrl;
-        a.download = `PA${paValue}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+paStatus.style.display = 'none';
+paStatus.textContent = '';
 
-        setTimeout(function () {
-          URL.revokeObjectURL(pdfUrl);
-        }, 3000);
+downloadTifButton.hidden = true;
+downloadTifButton.style.display = 'none';
 
-        await recordPurchase(
-          paValue,
-          selectedNegeri,
-          apiUrl
-        );
+downloadResultActions.hidden = false;
+downloadResultActions.style.display = 'grid';
 
-        // Force refresh display after Firestore save
-        await loadPurchaseRecords();
-
-        paError.textContent = 'Download Successful';
-        paStatus.style.display = 'none';
-        paStatus.textContent = '';
-
-        downloadResultActions.hidden = false;
-        downloadResultActions.style.display = 'grid';
-
-        if (confirmDownloadButton) {
-          confirmDownloadButton.disabled = true;
-          confirmDownloadButton.textContent = 'Download Successful';
-        }
+// AUTO CLICK SUCCESSFUL DOWNLOAD
+setTimeout(() => {
+  confirmDownloadButton.click();
+}, 1500);
 
         if (failedDownloadButton) {
           failedDownloadButton.style.display = 'none';
         }
 
-        setTimeout(function () {
-          downloadResultActions.hidden = true;
-          downloadResultActions.style.display = 'none';
-
-          if (confirmDownloadButton) {
-            confirmDownloadButton.disabled = false;
-            confirmDownloadButton.textContent = 'Download Successful';
-          }
-
-          downloadTifButton.hidden = false;
-          downloadTifButton.style.display = 'inline-block';
-        }, 1500);
-
       } catch (error) {
-        const msg = String(error.code || error.message || '').toLowerCase();
-
-        if (
-          msg.includes('invalid pa') ||
-          msg.includes('pa not found') ||
-          msg.includes('not found')
-        ) {
-          paError.textContent = 'PA not found / PA tiada dalam sistem';
-        } else {
-          paError.textContent = `Failed to save purchase record: ${error.code || error.message}`;
-        }
-
+        paError.textContent = 'PA not found / PA tiada dalam sistem';
         paStatus.style.display = 'none';
-        downloadResultActions.hidden = true;
-        downloadResultActions.style.display = 'none';
-        downloadTifButton.hidden = false;
-        downloadTifButton.style.display = 'inline-block';
-
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.textContent = 'Download PDF';
+        downloadTifButton.textContent = 'Download TIF';
       }
     });
 
@@ -6956,89 +6789,6 @@ body.is-admin .site-auth-actions{
   });
 
   window.azobssRefreshAffiliateProducts = initAffiliateFinal;
-})();
-</script>
-
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-  function updateAuthButtonsVisibility() {
-
-    const authBox =
-      document.querySelector('.site-auth-actions');
-
-    if (!authBox) return;
-
-    const loggedIn =
-      localStorage.getItem('loggedInUser') ||
-      localStorage.getItem('currentUser') ||
-      localStorage.getItem('username') ||
-      sessionStorage.getItem('loggedInUser');
-
-    if (loggedIn) {
-      authBox.style.display = 'none';
-      document.body.classList.add('is-authenticated');
-    } else {
-      authBox.style.display = 'flex';
-      document.body.classList.remove('is-authenticated');
-    }
-  }
-
-  updateAuthButtonsVisibility();
-
-  window.addEventListener('storage', updateAuthButtonsVisibility);
-
-  setInterval(updateAuthButtonsVisibility, 1000);
-
-});
-</script>
-
-
-
-
-<script>
-(function () {
-
-  function isAzobssLoggedIn() {
-    return (
-      document.body.classList.contains('is-authenticated') ||
-      document.body.classList.contains('has-pa-access') ||
-      document.body.classList.contains('is-admin') ||
-      !!sessionStorage.getItem('azobssCurrentUser') ||
-      !!localStorage.getItem('azobssCurrentUser')
-    );
-  }
-
-  function fixAuthButtons() {
-    const authBox = document.querySelector('.site-auth-actions');
-
-    if (!authBox) {
-      return;
-    }
-
-    if (isAzobssLoggedIn()) {
-      authBox.style.setProperty('display', 'none', 'important');
-      authBox.style.setProperty('visibility', 'hidden', 'important');
-      authBox.style.setProperty('pointer-events', 'none', 'important');
-    } else {
-      authBox.style.removeProperty('visibility');
-      authBox.style.removeProperty('pointer-events');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', fixAuthButtons);
-  window.addEventListener('load', fixAuthButtons);
-
-  const observer = new MutationObserver(fixAuthButtons);
-  observer.observe(document.body, {
-    attributes: true,
-    attributeFilter: ['class']
-  });
-
-  setInterval(fixAuthButtons, 500);
-
 })();
 </script>
 
