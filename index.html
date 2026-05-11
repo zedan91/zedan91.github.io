@@ -4741,47 +4741,44 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
     async function recordPurchase(paValue, selectedNegeri, url) {
       if (!currentUser) {
-        return;
+        throw new Error('User not logged in.');
+      }
+
+      if (!firebaseReady || !db) {
+        throw new Error('Firebase is not ready.');
       }
 
       const purchaseId = `${Date.now()}-${currentUser.usernameKey}-${paValue}`;
       const summaryRef = doc(db, 'purchaseSummaries', currentUser.usernameKey);
       const logRef = doc(db, 'purchaseLogs', purchaseId);
 
-      await runTransaction(db, async function (transaction) {
-        const summarySnapshot = await transaction.get(summaryRef);
-        const currentSummary = summarySnapshot.exists() ? summarySnapshot.data() : {};
-        const totalUnits = (currentSummary.totalUnits || 0) + 1;
-        const totalAmount = totalUnits * PURCHASE_PRICE;
-
-        transaction.set(logRef, {
-          purchaseId,
-          uid: currentUser.uid,
-          usernameKey: currentUser.usernameKey,
-          name: currentUser.name,
-          phone: currentUser.phone || '',
-          paNumber: paValue,
-          negeri: selectedNegeri,
-          amount: PURCHASE_PRICE,
-          url,
-          createdAt: serverTimestamp()
-        });
-
-        transaction.set(summaryRef, {
-          uid: currentUser.uid,
-          usernameKey: currentUser.usernameKey,
-          name: currentUser.name,
-          phone: currentUser.phone || '',
-          totalUnits,
-          totalAmount,
-          lastPa: paValue,
-          lastNegeri: selectedNegeri,
-          deleted: false,
-          deletedAt: null,
-          deletedBy: null,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
+      await setDoc(logRef, {
+        purchaseId,
+        uid: currentUser.uid,
+        usernameKey: currentUser.usernameKey,
+        name: currentUser.name,
+        phone: currentUser.phone || '',
+        paNumber: paValue,
+        negeri: selectedNegeri,
+        amount: PURCHASE_PRICE,
+        url,
+        createdAt: serverTimestamp()
       });
+
+      await setDoc(summaryRef, {
+        uid: currentUser.uid,
+        usernameKey: currentUser.usernameKey,
+        name: currentUser.name,
+        phone: currentUser.phone || '',
+        totalUnits: increment(1),
+        totalAmount: increment(PURCHASE_PRICE),
+        lastPa: paValue,
+        lastNegeri: selectedNegeri,
+        deleted: false,
+        deletedAt: null,
+        deletedBy: null,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
 
       await loadPurchaseRecords();
     }
@@ -6054,8 +6051,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           apiUrl
         );
 
+        // Force refresh display after Firestore save
         await loadPurchaseRecords();
 
+        paError.textContent = 'Download Successful';
         paStatus.style.display = 'none';
         paStatus.textContent = '';
 
@@ -6064,6 +6063,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         if (confirmDownloadButton) {
           confirmDownloadButton.disabled = true;
+          confirmDownloadButton.textContent = 'Download Successful';
         }
 
         if (failedDownloadButton) {
@@ -6076,6 +6076,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
           if (confirmDownloadButton) {
             confirmDownloadButton.disabled = false;
+            confirmDownloadButton.textContent = 'Download Successful';
           }
 
           downloadTifButton.hidden = false;
@@ -6083,21 +6084,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }, 1500);
 
       } catch (error) {
-
-        const msg = String(error.message || '').toLowerCase();
+        const msg = String(error.code || error.message || '').toLowerCase();
 
         if (
           msg.includes('invalid pa') ||
           msg.includes('pa not found') ||
           msg.includes('not found')
         ) {
-
           paError.textContent = 'PA not found / PA tiada dalam sistem';
-
         } else {
-
-          paError.textContent = 'Download Successful';
-
+          paError.textContent = `Failed to save purchase record: ${error.code || error.message}`;
         }
 
         paStatus.style.display = 'none';
