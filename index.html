@@ -2375,7 +2375,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 
-/* RM5 per unit style */
+/* RM5 per unit clean style */
 #downloadTifButton.download-pdf-btn{
   position: relative !important;
   width: 100%;
@@ -2386,15 +2386,20 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   right: 22px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 22px;
-  font-weight: 900;
+  font-size: 18px;
+  font-weight: 800;
   color: #ffe600;
-  -webkit-text-stroke: 2px #ff0000;
   text-shadow:
-    0 0 6px rgba(255,0,0,0.8),
-    0 0 12px rgba(255,255,0,0.8);
+    0 0 3px rgba(255,255,255,0.25);
   pointer-events: none;
   white-space: nowrap;
+}
+
+
+
+#downloadTifButton{
+  font-size: 22px !important;
+  font-weight: 800 !important;
 }
 
 </style>
@@ -3278,7 +3283,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue download-pdf-btn" id="downloadTifButton" type="submit">
-          <span>Download PDF</span>
+          <span>Download PA</span>
           <span class="pdf-price-tag">RM5 per unit</span>
         </button>
 
