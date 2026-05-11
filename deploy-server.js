@@ -476,12 +476,13 @@ if (
     const pdfBuffer =
       Buffer.concat(chunks);
 
-    res.writeHead(200, {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${noPA}.pdf"`,
-      "Cache-Control": "no-store",
-      "Access-Control-Allow-Origin": "*"
-    });
+res.writeHead(200, {
+  "Content-Type": "application/pdf",
+  "Content-Disposition":
+    `attachment; filename="${safeName}.pdf"`,
+  "Cache-Control": "no-store",
+  "Access-Control-Allow-Origin": "*"
+});
 
     res.end(pdfBuffer);
   });
