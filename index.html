@@ -6034,7 +6034,15 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         // AUTO CLICK SUCCESSFUL DOWNLOAD
         setTimeout(() => {
+
           confirmDownloadButton.click();
+
+          downloadResultActions.hidden = true;
+          downloadResultActions.style.display = 'none';
+
+          downloadTifButton.hidden = false;
+          downloadTifButton.style.display = 'inline-block';
+
         }, 1500);
 
         if (failedDownloadButton) {
