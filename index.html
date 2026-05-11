@@ -2375,11 +2375,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 
-.download-pdf-btn{
+/* Download PDF price label */
+#downloadTifButton.download-pdf-btn{
   position: relative !important;
+  width: 100%;
 }
 
-.pdf-price-tag{
+#downloadTifButton .pdf-price-tag{
   position: absolute;
   right: 18px;
   top: 50%;
@@ -2388,6 +2390,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   font-weight: 700;
   color: #ffd84d;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 </style>
@@ -3270,8 +3273,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         <p class="request-error" id="paError"></p>
 
-        <button class="btn blue" id="downloadTifButton" type="submit">
-          Download PDF
+        <button class="btn blue download-pdf-btn" id="downloadTifButton" type="submit">
+          <span>Download PDF</span>
+          <span class="pdf-price-tag">RM5 per unit</span>
         </button>
 
         <div id="downloadResultActions" hidden>
