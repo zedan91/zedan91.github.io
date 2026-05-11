@@ -1,6 +1,4 @@
-from pathlib import Path
-
-content = r'''// AZOBSS Render Backend Server
+// AZOBSS Render Backend Server
 // Supports: website hosting + affiliate online sync + JUPEM PA hold system
 
 const fs = require("fs");
@@ -322,9 +320,6 @@ async function handler(req, res) {
         );
       }
 
-      // FIX: filename download jadi PA sahaja
-      // Contoh: PA2131.tif
-      // Bukan lagi: 1778459105656-PA2131-JOHOR.tif
       const tempName =
 `${noPA}.tif`;
 
@@ -428,8 +423,3 @@ http.createServer(handler)
   console.log("");
 
 });
-'''
-
-out = Path("/mnt/data/deploy-server.js")
-out.write_text(content, encoding="utf-8")
-print("Done:", out)
