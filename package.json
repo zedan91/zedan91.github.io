@@ -13,7 +13,7 @@
     "digital tools"
   ],
   "scripts": {
-    "start": "npx serve .",
+    "start": "node deploy-server.js",
     "check": "echo \"Static AZOBSS docs ready\""
   },
   "dependencies": {

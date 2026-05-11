@@ -3642,20 +3642,19 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       if (!number || !selectedNegeri) {
         return '';
       }
-	  
-	function buildPdfUrl() {
-  const number = cleanPaNumber(paNumber.value);
-  const selectedNegeri = negeri.value;
 
-  if (!number || !selectedNegeri) {
-    return '';
-  }
+      return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}&negeri=${encodeURIComponent(selectedNegeri)}`;
+    }
 
-  return `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
-}  
-	  
+    function buildPdfUrl() {
+      const number = cleanPaNumber(paNumber.value);
+      const selectedNegeri = negeri.value;
 
-      return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+      if (!number || !selectedNegeri) {
+        return '';
+      }
+
+      return `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${number}&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
     function updatePreview() {
@@ -6015,36 +6014,56 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       try {
         const res = await fetch(apiUrl, { cache: 'no-store' });
-        const data = await res.json();
 
-        if (!data.ok) {
-          throw new Error(data.error || 'PA not found.');
+        if (!res.ok) {
+          let errorMessage = 'PA not found.';
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = await res.text() || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
 
-        const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
+        const contentType = res.headers.get('content-type') || '';
 
-        // Backend already holds the file. Now user downloads from AZOBSS backend.
-window.open(downloadUrl, '_blank');
+        if (!contentType.includes('application/pdf')) {
+          throw new Error('Invalid PDF response.');
+        }
 
-pendingDownload = {
-  paValue,
-  selectedNegeri,
-  url: downloadUrl
-};
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const downloadName = `PA${paValue}.pdf`;
 
-paStatus.style.display = 'none';
-paStatus.textContent = '';
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = downloadName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
 
-downloadTifButton.hidden = true;
-downloadTifButton.style.display = 'none';
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 30000);
 
-downloadResultActions.hidden = false;
-downloadResultActions.style.display = 'grid';
+        pendingDownload = {
+          paValue,
+          selectedNegeri,
+          url: apiUrl
+        };
 
-// AUTO CLICK SUCCESSFUL DOWNLOAD
-setTimeout(() => {
-  confirmDownloadButton.click();
-}, 1500);
+        paStatus.style.display = 'none';
+        paStatus.textContent = '';
+
+        downloadTifButton.hidden = true;
+        downloadTifButton.style.display = 'none';
+
+        downloadResultActions.hidden = false;
+        downloadResultActions.style.display = 'grid';
+
+        // AUTO CLICK SUCCESSFUL DOWNLOAD
+        setTimeout(() => {
+          confirmDownloadButton.click();
+        }, 1500);
 
         if (failedDownloadButton) {
           failedDownloadButton.style.display = 'none';
