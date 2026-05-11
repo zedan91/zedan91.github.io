@@ -6013,61 +6013,82 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       downloadTifButton.textContent = 'Searching...';
 
       try {
-        // Download PDF directly from backend endpoint
-const res = await fetch(apiUrl, {
-  cache: 'no-store'
-});
+        const res = await fetch(apiUrl, {
+          cache: 'no-store'
+        });
 
-if (!res.ok) {
+        if (!res.ok) {
+          let errorMessage = 'PA not found.';
 
-  let errorMessage = 'PA not found.';
+          try {
+            const errorData = await res.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {}
 
-  try {
-    const errorData = await res.json();
-    errorMessage = errorData.error || errorMessage;
-  } catch (e) {}
+          throw new Error(errorMessage);
+        }
 
-  throw new Error(errorMessage);
-}
+        const contentType = res.headers.get('content-type') || '';
 
-// hanya buka tab kalau PDF valid
-window.open(apiUrl, '_blank');
+        if (!contentType.includes('application/pdf')) {
+          throw new Error('Invalid PA file');
+        }
 
-await recordPurchase(
-  paValue,
-  selectedNegeri,
-  apiUrl
-);
+        const pdfBlob = await res.blob();
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        const a = document.createElement('a');
+        a.href = pdfUrl;
+        a.download = `PA${paValue}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(function () {
+          URL.revokeObjectURL(pdfUrl);
+        }, 3000);
+
+        await recordPurchase(
+          paValue,
+          selectedNegeri,
+          apiUrl
+        );
+
+        await loadPurchaseRecords();
 
         paStatus.style.display = 'none';
         paStatus.textContent = '';
 
-        downloadTifButton.hidden = true;
-        downloadTifButton.style.display = 'none';
-
         downloadResultActions.hidden = false;
         downloadResultActions.style.display = 'grid';
 
-        // AUTO CLICK SUCCESSFUL DOWNLOAD
-        setTimeout(() => {
-
-          confirmDownloadButton.click();
-
-          downloadResultActions.hidden = true;
-          downloadResultActions.style.display = 'none';
-
-          downloadTifButton.hidden = false;
-          downloadTifButton.style.display = 'inline-block';
-
-        }, 1500);
+        if (confirmDownloadButton) {
+          confirmDownloadButton.disabled = true;
+        }
 
         if (failedDownloadButton) {
           failedDownloadButton.style.display = 'none';
         }
 
+        setTimeout(function () {
+          downloadResultActions.hidden = true;
+          downloadResultActions.style.display = 'none';
+
+          if (confirmDownloadButton) {
+            confirmDownloadButton.disabled = false;
+          }
+
+          downloadTifButton.hidden = false;
+          downloadTifButton.style.display = 'inline-block';
+        }, 1500);
+
       } catch (error) {
         paError.textContent = 'PA not found / PA tiada dalam sistem';
         paStatus.style.display = 'none';
+        downloadResultActions.hidden = true;
+        downloadResultActions.style.display = 'none';
+        downloadTifButton.hidden = false;
+        downloadTifButton.style.display = 'inline-block';
       } finally {
         downloadTifButton.disabled = false;
         downloadTifButton.textContent = 'Download PDF';
