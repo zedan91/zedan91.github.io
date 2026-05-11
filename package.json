@@ -17,6 +17,8 @@
     "check": "echo \"Static AZOBSS docs ready\""
   },
   "dependencies": {
-    "selfsigned": "^5.5.0"
+    "selfsigned": "^5.5.0",
+    "sharp": "^0.33.5",
+    "pdfkit": "^0.15.0"
   }
 }
