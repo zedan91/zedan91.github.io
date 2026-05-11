@@ -713,39 +713,6 @@
       background: #f97316;
     }
 
-
-    .download-tif-btn {
-      position: relative;
-      width: 100%;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-    }
-
-    .download-tif-btn .download-price {
-      position: absolute;
-      right: 22px;
-      color: #ffff00;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 520px) {
-      .download-tif-btn {
-        justify-content: space-between;
-        padding-left: 18px;
-        padding-right: 18px;
-      }
-
-      .download-tif-btn .download-price {
-        position: static;
-      }
-    }
-
     .section {
       padding: 55px 20px;
       max-width: 1100px;
@@ -3286,9 +3253,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         <p class="request-error" id="paError"></p>
 
-        <button class="btn blue download-tif-btn" id="downloadTifButton" type="submit">
-          <span class="download-label">Download TIF</span>
-          <span class="download-price">RM5 per unit</span>
+        <button class="btn blue" id="downloadTifButton" type="submit">
+          Download TIF
         </button>
 
         <div id="downloadResultActions" hidden>
@@ -3685,7 +3651,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       paError.textContent = '';
       paStatus.style.display = 'none';
       downloadTifButton.hidden = false;
-      downloadTifButton.style.display = 'flex';
+      downloadTifButton.style.display = 'inline-block';
       downloadResultActions.hidden = true;
       downloadResultActions.style.display = 'none';
       pendingDownload = null;
@@ -5788,7 +5754,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       loginError.textContent = '';
       paStatus.style.display = 'none';
       downloadTifButton.hidden = false;
-      downloadTifButton.style.display = 'flex';
+      downloadTifButton.style.display = 'inline-block';
       downloadResultActions.hidden = true;
       downloadResultActions.style.display = 'none';
       pendingDownload = null;
@@ -6033,7 +5999,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       paStatus.style.display = 'block';
       paStatus.textContent = 'Searching PA... please wait.';
       downloadTifButton.disabled = true;
-      downloadTifButton.innerHTML = '<span class="download-label">Searching...</span><span class="download-price">RM5 per unit</span>';
+      downloadTifButton.textContent = 'Searching...';
 
       try {
         const res = await fetch(apiUrl, { cache: 'no-store' });
@@ -6077,7 +6043,7 @@ setTimeout(() => {
         paStatus.style.display = 'none';
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.innerHTML = '<span class="download-label">Download TIF</span><span class="download-price">RM5 per unit</span>';
+        downloadTifButton.textContent = 'Download TIF';
       }
     });
 
@@ -6096,7 +6062,7 @@ setTimeout(() => {
         downloadResultActions.hidden = true;
         downloadResultActions.style.display = 'none';
         downloadTifButton.hidden = false;
-        downloadTifButton.style.display = 'flex';
+        downloadTifButton.style.display = 'inline-block';
       } catch (error) {
         paError.textContent = `Failed to save purchase record: ${error.code || error.message}`;
       } finally {
@@ -6111,7 +6077,7 @@ setTimeout(() => {
       downloadResultActions.hidden = true;
       downloadResultActions.style.display = 'none';
       downloadTifButton.hidden = false;
-      downloadTifButton.style.display = 'flex';
+      downloadTifButton.style.display = 'inline-block';
     });
 
     const liveVisitors = document.getElementById('liveVisitors');
