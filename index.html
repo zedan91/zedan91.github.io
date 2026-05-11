@@ -2375,7 +2375,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 
-/* Download PDF price label */
+/* RM5 per unit style */
 #downloadTifButton.download-pdf-btn{
   position: relative !important;
   width: 100%;
@@ -2383,12 +2383,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 #downloadTifButton .pdf-price-tag{
   position: absolute;
-  right: 18px;
+  right: 22px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 13px;
-  font-weight: 700;
-  color: #ffd84d;
+  font-size: 22px;
+  font-weight: 900;
+  color: #ffe600;
+  -webkit-text-stroke: 2px #ff0000;
+  text-shadow:
+    0 0 6px rgba(255,0,0,0.8),
+    0 0 12px rgba(255,255,0,0.8);
   pointer-events: none;
   white-space: nowrap;
 }
