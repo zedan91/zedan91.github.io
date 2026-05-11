@@ -5995,21 +5995,27 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
 
         // Backend already holds the file. Now user downloads from AZOBSS backend.
-        window.open(downloadUrl, '_blank');
+window.open(downloadUrl, '_blank');
 
-        pendingDownload = {
-          paValue,
-          selectedNegeri,
-          url: downloadUrl
-        };
+pendingDownload = {
+  paValue,
+  selectedNegeri,
+  url: downloadUrl
+};
 
-        paStatus.textContent =
-          'Click button Successful Download';
+paStatus.style.display = 'none';
+paStatus.textContent = '';
 
-        downloadTifButton.hidden = true;
-        downloadTifButton.style.display = 'none';
-        downloadResultActions.hidden = false;
-        downloadResultActions.style.display = 'grid';
+downloadTifButton.hidden = true;
+downloadTifButton.style.display = 'none';
+
+downloadResultActions.hidden = false;
+downloadResultActions.style.display = 'grid';
+
+// AUTO CLICK SUCCESSFUL DOWNLOAD
+setTimeout(() => {
+  confirmDownloadButton.click();
+}, 1500);
 
         if (failedDownloadButton) {
           failedDownloadButton.style.display = 'none';
