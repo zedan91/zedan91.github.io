@@ -6948,5 +6948,42 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 })();
 </script>
 
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  function updateAuthButtonsVisibility() {
+
+    const authBox =
+      document.querySelector('.site-auth-actions');
+
+    if (!authBox) return;
+
+    const loggedIn =
+      localStorage.getItem('loggedInUser') ||
+      localStorage.getItem('currentUser') ||
+      localStorage.getItem('username') ||
+      sessionStorage.getItem('loggedInUser');
+
+    if (loggedIn) {
+      authBox.style.display = 'none';
+      document.body.classList.add('is-authenticated');
+    } else {
+      authBox.style.display = 'flex';
+      document.body.classList.remove('is-authenticated');
+    }
+  }
+
+  updateAuthButtonsVisibility();
+
+  window.addEventListener('storage', updateAuthButtonsVisibility);
+
+  setInterval(updateAuthButtonsVisibility, 1000);
+
+});
+</script>
+
+
 </body>
 </html>
