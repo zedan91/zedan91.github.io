@@ -17,6 +17,10 @@ const ROOT = process.cwd();
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 
+// AUTO DELETE FILE > 30 DAYS
+const FILE_EXPIRE_MS =
+  30 * 24 * 60 * 60 * 1000;
+  
 function send(res, status, body, type = "text/plain; charset=utf-8") {
 
   res.writeHead(status, {
@@ -555,6 +559,75 @@ return send(
 );
   }
 }
+
+// =========================
+// AUTO CLEAN TEMP FILES
+// =========================
+
+function cleanupTempFiles() {
+
+  try {
+
+    if (!fs.existsSync(TEMP_DIR)) {
+      return;
+    }
+
+    const files =
+      fs.readdirSync(TEMP_DIR);
+
+    const now = Date.now();
+
+    for (const file of files) {
+
+      const fullPath =
+        path.join(TEMP_DIR, file);
+
+      try {
+
+        const stat =
+          fs.statSync(fullPath);
+
+        const age =
+          now - stat.mtimeMs;
+
+        // DELETE FILE > 30 DAYS
+        if (age > FILE_EXPIRE_MS) {
+
+          fs.unlinkSync(fullPath);
+
+          console.log(
+            "Deleted old file:",
+            file
+          );
+        }
+
+      } catch (err) {
+
+        console.error(
+          "Cleanup file error:",
+          file,
+          err.message
+        );
+      }
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Cleanup temp error:",
+      err.message
+    );
+  }
+}
+
+// RUN EVERY 12 HOURS
+setInterval(
+  cleanupTempFiles,
+  12 * 60 * 60 * 1000
+);
+
+// RUN ON STARTUP
+cleanupTempFiles();
 
 http.createServer(handler)
 .listen(PORT, "0.0.0.0", () => {
