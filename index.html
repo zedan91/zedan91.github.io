@@ -6014,14 +6014,30 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       try {
         // Download PDF directly from backend endpoint
-        window.open(apiUrl, '_blank');
+const res = await fetch(apiUrl, {
+  cache: 'no-store'
+});
 
-        // Record purchase immediately after download is triggered
-        await recordPurchase(
-          paValue,
-          selectedNegeri,
-          apiUrl
-        );
+if (!res.ok) {
+
+  let errorMessage = 'PA not found.';
+
+  try {
+    const errorData = await res.json();
+    errorMessage = errorData.error || errorMessage;
+  } catch (e) {}
+
+  throw new Error(errorMessage);
+}
+
+// hanya buka tab kalau PDF valid
+window.open(apiUrl, '_blank');
+
+await recordPurchase(
+  paValue,
+  selectedNegeri,
+  apiUrl
+);
 
         paStatus.style.display = 'none';
         paStatus.textContent = '';
