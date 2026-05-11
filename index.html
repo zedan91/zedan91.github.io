@@ -3254,7 +3254,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue" id="downloadTifButton" type="submit">
-          Download TIF
+          Download PDF
         </button>
 
         <div id="downloadResultActions" hidden>
@@ -3642,6 +3642,18 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       if (!number || !selectedNegeri) {
         return '';
       }
+	  
+	function buildPdfUrl() {
+  const number = cleanPaNumber(paNumber.value);
+  const selectedNegeri = negeri.value;
+
+  if (!number || !selectedNegeri) {
+    return '';
+  }
+
+  return `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+}  
+	  
 
       return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
@@ -5981,7 +5993,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      const apiUrl = buildTifUrl();
+      const apiUrl = buildPdfUrl();
       const paValue = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
 
@@ -6043,7 +6055,7 @@ setTimeout(() => {
         paStatus.style.display = 'none';
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.textContent = 'Download TIF';
+        downloadTifButton.textContent = 'Download PDF';
       }
     });
 

@@ -358,6 +358,150 @@ async function handler(req, res) {
       );
     }
 
+// =========================
+// JUPEM PA PDF CONVERTER
+// =========================
+
+if (
+  pathname === "/api/pa-pdf" &&
+  req.method === "GET"
+) {
+
+  const noPA =
+    cleanPA(parsed.query.noPA);
+
+  const negeri =
+    cleanState(parsed.query.negeri);
+
+  if (!noPA) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Missing noPA"
+      }),
+      "application/json"
+    );
+  }
+
+  if (!negeri) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Missing negeri"
+      }),
+      "application/json"
+    );
+  }
+
+  const fileName =
+    `${noPA}.TIF`;
+
+  const jupemUrl =
+`https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
+
+  console.log(
+    "Fetching PDF:",
+    jupemUrl
+  );
+
+  const response =
+    await fetch(jupemUrl);
+
+  if (!response.ok) {
+    return send(
+      res,
+      404,
+      JSON.stringify({
+        ok: false,
+        error: "PA not found"
+      }),
+      "application/json"
+    );
+  }
+
+  const tifBuffer =
+    Buffer.from(
+      await response.arrayBuffer()
+    );
+
+  const firstText =
+    tifBuffer
+      .slice(0, 120)
+      .toString("utf8")
+      .toLowerCase();
+
+  if (
+    !tifBuffer.length ||
+    firstText.includes("<html")
+  ) {
+    return send(
+      res,
+      404,
+      JSON.stringify({
+        ok: false,
+        error: "Invalid PA file"
+      }),
+      "application/json"
+    );
+  }
+
+  const pngBuffer =
+    await sharp(tifBuffer)
+      .png()
+      .toBuffer();
+
+  const meta =
+    await sharp(pngBuffer)
+      .metadata();
+
+  const doc =
+    new PDFDocument({
+      autoFirstPage: false,
+      margin: 0
+    });
+
+  const chunks = [];
+
+  doc.on("data", chunk => chunks.push(chunk));
+
+  doc.on("end", () => {
+    const pdfBuffer =
+      Buffer.concat(chunks);
+
+    res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${noPA}.pdf"`,
+      "Cache-Control": "no-store",
+      "Access-Control-Allow-Origin": "*"
+    });
+
+    res.end(pdfBuffer);
+  });
+
+  doc.addPage({
+    size: [meta.width, meta.height],
+    margin: 0
+  });
+
+  doc.image(
+    pngBuffer,
+    0,
+    0,
+    {
+      width: meta.width,
+      height: meta.height
+    }
+  );
+
+  doc.end();
+
+  return;
+}
+
     // =========================
     // STATIC FILES
     // =========================
