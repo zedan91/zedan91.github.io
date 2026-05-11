@@ -1070,12 +1070,25 @@
       display: inline-block !important;
     }
 
-    .has-pa-access #adminPurchasePanel {
+/* Hide panel default */
+#adminPurchasePanel {
   display: none !important;
 }
 
-.is-admin #adminPurchasePanel {
+/* Semua member yang ada PA access boleh nampak panel rekod sendiri */
+.has-pa-access #adminPurchasePanel {
   display: block !important;
+}
+
+/* Tapi tools admin sahaja hide untuk user biasa */
+body:not(.is-admin) .purchase-record-actions,
+body:not(.is-admin) .admin-user-tools,
+body:not(.is-admin) #purchasePanelNote,
+body:not(.is-admin) #refreshPurchaseButton,
+body:not(.is-admin) #togglePurchaseRecordsButton,
+body:not(.is-admin) .small-action-btn,
+body:not(.is-admin) #registeredUsersPanel {
+  display: none !important;
 }
 
     .is-admin #registeredUsersPanel {
