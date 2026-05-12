@@ -3844,6 +3844,15 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     }
 
 
+
+    function buildPdfUrl(number, selectedNegeri) {
+      if (!number || !selectedNegeri) {
+        return '';
+      }
+
+      return `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+    }
+
     function buildCheckPaUrl(number, selectedNegeri) {
       if (!number || !selectedNegeri) {
         return '';
@@ -3919,7 +3928,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      resetDownloadPaButton();
+      downloadTifButton.innerHTML = `
+        <span class="download-pa-main">Download PA</span>
+        <span class="pdf-price-tag">RM5 per unit</span>
+      `;
     }
 
     function updatePreview() {
@@ -6372,7 +6384,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         try {
           for (const item of paCart) {
             const apiUrl =
-              `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${item.pa}.TIF&negeri=${encodeURIComponent(item.negeri)}`;
+              buildPdfUrl(item.pa, item.negeri);
 
             // apiUrl already returns PDF file directly.
             // Do not use res.json() here because PDF starts with %PDF.
@@ -6413,62 +6425,51 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      const apiUrl = buildTifUrl();
-      const paValue = cleanPaNumber(paNumber.value);
-      const selectedNegeri = negeri.value;
+      const paValue =
+        cleanPaNumber(paNumber.value);
+
+      const selectedNegeri =
+        negeri.value;
 
       if (!isLoggedIn) {
         paError.textContent = 'Please log in before downloading PA.';
         return;
       }
 
-      if (!apiUrl) {
+      if (!paValue || !selectedNegeri) {
         paError.textContent = 'Please enter the PA number and select a state first.';
         return;
       }
 
+      const pdfUrl =
+        buildPdfUrl(paValue, selectedNegeri);
+
       paError.textContent = '';
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Searching PA... please wait.';
+      paStatus.textContent = 'Checking PA... please wait.';
       downloadTifButton.disabled = true;
       downloadTifButton.innerHTML = '<span class="download-pa-main">Searching...</span>';
 
       try {
-        const res = await fetch(apiUrl, { cache: 'no-store' });
-        const data = await res.json();
+        await checkPaExists(paValue, selectedNegeri);
 
-        if (!data.ok) {
-          throw new Error(data.error || 'PA not found.');
-        }
+        // PDF endpoint returns PDF file directly, so do not use res.json().
+        triggerPaDownload(pdfUrl);
 
-        const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
+        await recordPurchase(
+          paValue,
+          selectedNegeri,
+          pdfUrl
+        );
 
-        // Backend already holds the file. Now user downloads from AZOBSS backend.
-triggerPaDownload(downloadUrl);
+        paStatus.style.display = 'block';
+        paStatus.textContent = 'Download Successful';
 
-pendingDownload = {
-  paValue,
-  selectedNegeri,
-  url: downloadUrl
-};
+        downloadTifButton.hidden = false;
+        downloadTifButton.style.display = 'inline-block';
 
-paStatus.style.display = 'none';
-paStatus.textContent = '';
-
-downloadTifButton.hidden = true;
-downloadTifButton.style.display = 'none';
-
-downloadResultActions.hidden = false;
-downloadResultActions.style.display = 'grid';
-
-// AUTO CLICK SUCCESSFUL DOWNLOAD
-setTimeout(() => {
-  confirmDownloadButton.click();
-}, 1500);
-
-        if (failedDownloadButton) {
-          failedDownloadButton.style.display = 'none';
-        }
+        downloadResultActions.hidden = true;
+        downloadResultActions.style.display = 'none';
 
       } catch (error) {
         paError.textContent = 'PA not found / PA tiada dalam sistem';
