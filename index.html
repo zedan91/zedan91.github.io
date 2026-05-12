@@ -10,8 +10,15 @@
   <meta name="description" content="AZOBSS menyediakan servis PC, troubleshoot Windows online, info lot, PA, affiliate links, e-book, software dan AutoCAD LISP.">
 
   <style>
+    html {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       margin: 0;
+      width: 100%;
+      overflow-x: hidden;
       font-family: Arial, sans-serif;
       background: #0f172a;
       color: white;
@@ -3177,7 +3184,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <input id="siteLoginPassword" type="password" placeholder="Password" required>
         </label>
         <p class="request-error" id="siteLoginError"></p>
-        <button class="btn blue" type="submit">Sign in</button>
+        <button class="btn blue" id="siteSignInSubmitButton" type="submit">Sign in</button>
         <p class="auth-switch-note">Don't have an account? <button id="switchToSiteSignup" type="button">Sign up</button></p>
       </form>
 
@@ -3739,7 +3746,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         <p class="request-error" id="loginError"></p>
 
-        <button class="btn blue" type="submit">
+        <button class="btn blue" id="loginSubmitButton" type="submit">
           Login
         </button>
       </form>
@@ -4072,6 +4079,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const siteLoginName = document.getElementById('siteLoginName');
     const siteLoginPassword = document.getElementById('siteLoginPassword');
     const siteLoginError = document.getElementById('siteLoginError');
+    const siteSignInSubmitButton = document.getElementById('siteSignInSubmitButton');
     const siteSignupName = document.getElementById('siteSignupName');
     const siteSignupPassword = document.getElementById('siteSignupPassword');
     const siteSignupPhone = document.getElementById('siteSignupPhone');
@@ -4086,6 +4094,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const memberUpgradeButton = document.getElementById('memberUpgradeButton');
     const memberUpgradeStatus = document.getElementById('memberUpgradeStatus');
     const paForm = document.getElementById('paForm');
+    const loginSubmitButton = document.getElementById('loginSubmitButton');
     const paNumber = document.getElementById('paNumber');
     const negeri = document.getElementById('negeri');
     const paError = document.getElementById('paError');
@@ -6019,6 +6028,18 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       closeCountryMenus();
     }
 
+    function setButtonLoading(button, isLoading, loadingText, defaultText) {
+      if (!button) {
+        return;
+      }
+
+      button.disabled = isLoading;
+      button.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+      button.innerHTML = isLoading
+        ? `<span class="button-loading-spinner" aria-hidden="true"></span><span>${loadingText}</span>`
+        : defaultText;
+    }
+
     function openSiteAuth(mode = 'signin') {
       const isSignup = mode === 'signup' || mode === 'upgrade';
       siteAuthTitle.textContent = isSignup ? 'Sign up' : 'Sign in';
@@ -6468,7 +6489,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
     siteSignInForm.addEventListener('submit', async function (event) {
       event.preventDefault();
-      await signInSiteUser(siteLoginName.value.trim(), siteLoginPassword.value.trim(), siteLoginError);
+      setButtonLoading(siteSignInSubmitButton, true, 'Signing in...', 'Sign in');
+
+      try {
+        await signInSiteUser(siteLoginName.value.trim(), siteLoginPassword.value.trim(), siteLoginError);
+      } finally {
+        setButtonLoading(siteSignInSubmitButton, false, 'Signing in...', 'Sign in');
+      }
     });
 
     siteSignUpForm.addEventListener('submit', async function (event) {
@@ -6600,6 +6627,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
+      setButtonLoading(loginSubmitButton, true, 'Signing in...', 'Login');
+
       try {
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
@@ -6644,6 +6673,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
 
         loginError.textContent = 'Username or password is incorrect. Please try again.';
+      } finally {
+        setButtonLoading(loginSubmitButton, false, 'Signing in...', 'Login');
       }
     });
 
