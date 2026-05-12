@@ -6339,6 +6339,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       });
     }
 
+
+    function triggerPaDownload(url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
     if (checkoutCartButton) {
       checkoutCartButton.addEventListener('click', async function () {
         if (!paCart.length) {
@@ -6378,7 +6389,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             const downloadUrl =
               data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
 
-            window.open(downloadUrl, '_blank');
+            triggerPaDownload(downloadUrl);
 
             await recordPurchase(
               item.pa,
@@ -6387,7 +6398,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             );
 
             await new Promise(function (resolve) {
-              setTimeout(resolve, 1000);
+              setTimeout(resolve, 1400);
             });
           }
 
@@ -6446,7 +6457,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
 
         // Backend already holds the file. Now user downloads from AZOBSS backend.
-window.open(downloadUrl, '_blank');
+triggerPaDownload(downloadUrl);
 
 pendingDownload = {
   paValue,
