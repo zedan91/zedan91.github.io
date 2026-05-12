@@ -37,6 +37,26 @@ Server akan validate produk, tulis `affiliate-products.json`, simpan `affiliate-
 
 `affiliate-backup.json`, `*.zip`, dan `temp/` tidak ditrack oleh Git.
 
+## Render.com Backend
+
+Render masih sesuai digunakan untuk backend public yang dipanggil oleh website:
+
+- `GET /api/pa`
+- `GET /api/check-pa`
+- `POST /api/pa-cart-zip`
+- `GET /api/pa-pdf`
+- `GET /api/download-pa/...`
+
+Tetapan Render:
+
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Environment: Node
+
+Render akan guna `process.env.PORT` secara automatik, dan server listen pada `0.0.0.0`.
+
+Endpoint `/deploy` dan `/api/save-affiliates` sengaja dikunci untuk localhost sahaja. Gunakan endpoint itu dari komputer admin untuk update `affiliate-products.json`, commit, dan push ke GitHub. Jangan guna Render untuk flow local deploy affiliate.
+
 ## Firebase Rules
 
 Rules berada di `firestore.rules` dan dikonfigurasi oleh `firebase.json`.
