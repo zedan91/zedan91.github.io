@@ -2666,74 +2666,20 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 }
 
 
-/* FIX QR PANEL OVERFLOW */
-.admin-purchase-panel,
-#adminPurchasePanel{
-  overflow:hidden !important;
-  box-sizing:border-box !important;
+/* FIX PURCHASE SORT DEFAULT + LAST PA TIME DISPLAY */
+.admin-lastpa-wrap{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:3px !important;
+  line-height:1.15 !important;
 }
 
-.purchase-panel-layout{
-  display:grid !important;
-  grid-template-columns:minmax(0,1fr) minmax(150px,170px) !important;
-  gap:18px !important;
-  align-items:start !important;
-  overflow:hidden !important;
-  box-sizing:border-box !important;
-}
-
-.payment-qr-wrap{
-  width:100% !important;
-  max-width:170px !important;
-  margin:0 auto !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-}
-
-.payment-qr-card{
-  width:100% !important;
-  max-width:170px !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-}
-
-.payment-qr-card img{
-  width:100% !important;
-  max-width:100% !important;
-  height:auto !important;
+.admin-lastpa-time{
   display:block !important;
-  border-radius:14px !important;
-  box-sizing:border-box !important;
-}
-
-.qr-actions{
-  width:100% !important;
-  display:grid !important;
-  gap:8px !important;
-  margin-top:10px !important;
-  box-sizing:border-box !important;
-}
-
-.qr-action-btn{
-  width:100% !important;
-  max-width:100% !important;
-  min-width:0 !important;
-  box-sizing:border-box !important;
-  margin:0 !important;
-  padding:10px 8px !important;
-  white-space:normal !important;
-  line-height:1.2 !important;
-}
-
-@media(max-width:900px){
-  .purchase-panel-layout{
-    grid-template-columns:1fr !important;
-  }
-
-  .payment-qr-wrap,
-  .payment-qr-card{
-    max-width:180px !important;
-  }
+  color:#cbd5e1 !important;
+  font-size:11px !important;
+  font-weight:normal !important;
+  white-space:nowrap !important;
 }
 
 </style>
@@ -4223,9 +4169,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
                 <span class="admin-lastpa-wrap">
                   <span class="admin-lastpa-wrap">
               <span>Last PA: <strong>${escapeHtml(lastPa)}</strong></span>
-              <span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>
+              ${summaryTime !== '-' ? `<span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>` : ''}
             </span>
-                  <span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>
+                  ${summaryTime !== '-' ? `<span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>` : ''}
                 </span>
                 <span>
                   <button class="admin-purchase-detail-btn" type="button" data-toggle-purchase-details="${escapeHtml(usernameKey)}">${isOpen ? 'Hide' : 'Show'}</button>
