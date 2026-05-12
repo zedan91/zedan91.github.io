@@ -3277,9 +3277,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <p class="request-error" id="paError"></p>
 
         <button class="btn blue download-pdf-btn" id="downloadTifButton" type="submit">
-          <span>Download PA</span>
-          <span class="pdf-price-tag">RM5 per unit</span>
-        </button>
+			<span class="download-pa-main">Download PA</span>
+			<span class="pdf-price-tag">RM5 per unit</span>
+		</button>
 
         <div id="downloadResultActions" hidden>
           <button class="btn" id="confirmDownloadButton" type="button">
@@ -6070,7 +6070,7 @@ setTimeout(() => {
         paStatus.style.display = 'none';
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.textContent = 'Download TIF';
+        downloadTifButton.textContent = 'Download PA';
       }
     });
 
