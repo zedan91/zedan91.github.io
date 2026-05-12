@@ -5,20 +5,16 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const url = require("url");
-const { execFile } = require("child_process");
 
 const sharp = require("sharp");
 const PDFDocument = require("pdfkit");
 
-if (process.env.AZOBSS_INSECURE_TLS === "1") {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-}
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
-const AFFILIATE_BACKUP_JSON = path.join(ROOT, "affiliate-backup.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 const DOWNLOAD_TOKENS = new Map();
 
@@ -33,108 +29,10 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
     "Cache-Control": "no-store",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Private-Network": "true"
+    "Access-Control-Allow-Headers": "Content-Type"
   });
 
   res.end(body);
-}
-
-function sendJson(res, status, payload) {
-  return send(
-    res,
-    status,
-    JSON.stringify(payload, null, 2),
-    "application/json"
-  );
-}
-
-function isLocalAddress(address) {
-  return [
-    "127.0.0.1",
-    "::1",
-    "::ffff:127.0.0.1"
-  ].includes(address);
-}
-
-function isLocalRequest(req) {
-  const socketAddress =
-    req.socket && req.socket.remoteAddress;
-
-  return isLocalAddress(socketAddress);
-}
-
-function requireLocalRequest(req, res) {
-  if (isLocalRequest(req)) {
-    return true;
-  }
-
-  sendJson(res, 403, {
-    ok: false,
-    error: "This write endpoint is only available from localhost."
-  });
-
-  return false;
-}
-
-function validateAffiliateProducts(data) {
-  if (!Array.isArray(data)) {
-    throw new Error("Expected an array of affiliate products.");
-  }
-
-  if (data.length > 250) {
-    throw new Error("Maximum 250 affiliate products allowed.");
-  }
-
-  return data.map((item, index) => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      throw new Error(`Invalid product at index ${index}.`);
-    }
-
-    const product = {
-      id: String(item.id || `aff-${Date.now()}-${index}`).trim(),
-      icon: String(item.icon || "AZ").trim().slice(0, 24),
-      badge: String(item.badge || "Affiliate").trim().slice(0, 80),
-      title: String(item.title || "").trim().slice(0, 160),
-      desc: String(item.desc || "").trim().slice(0, 600),
-      category: String(item.category || "others").trim().slice(0, 80),
-      meta: String(item.meta || "").trim().slice(0, 180),
-      link: String(item.link || "").trim()
-    };
-
-    if (!product.title) {
-      throw new Error(`Missing title at index ${index}.`);
-    }
-
-    if (!/^https:\/\/.+/i.test(product.link)) {
-      throw new Error(`Invalid HTTPS link at index ${index}.`);
-    }
-
-    return product;
-  });
-}
-
-function runGit(args) {
-  return new Promise((resolve, reject) => {
-    execFile(
-      "git",
-      args,
-      { cwd: ROOT, windowsHide: true },
-      (error, stdout, stderr) => {
-        if (error) {
-          error.stdout = stdout;
-          error.stderr = stderr;
-          reject(error);
-          return;
-        }
-
-        resolve({
-          stdout: stdout.trim(),
-          stderr: stderr.trim()
-        });
-      }
-    );
-  });
 }
 
 function readBody(req) {
@@ -197,10 +95,7 @@ function safePath(requestPath) {
   const resolved =
     path.normalize(path.join(ROOT, cleanPath));
 
-  if (
-    resolved !== ROOT &&
-    !resolved.startsWith(ROOT + path.sep)
-  ) {
+  if (!resolved.startsWith(ROOT)) {
     return null;
   }
 
@@ -229,224 +124,6 @@ function cleanState(negeri) {
 
   return v;
 }
-
-
-function getCrc32Buffer(buffer) {
-  const table =
-    getCrc32Buffer.table ||
-    (getCrc32Buffer.table = (() => {
-      const t = new Array(256);
-
-      for (let i = 0; i < 256; i++) {
-        let c = i;
-
-        for (let k = 0; k < 8; k++) {
-          c = c & 1
-            ? 0xedb88320 ^ (c >>> 1)
-            : c >>> 1;
-        }
-
-        t[i] = c >>> 0;
-      }
-
-      return t;
-    })());
-
-  let crc = 0 ^ -1;
-
-  for (let i = 0; i < buffer.length; i++) {
-    crc =
-      (crc >>> 8) ^
-      table[(crc ^ buffer[i]) & 0xff];
-  }
-
-  return (crc ^ -1) >>> 0;
-}
-
-function getDosDateTime(date = new Date()) {
-  const time =
-    (date.getHours() << 11) |
-    (date.getMinutes() << 5) |
-    Math.floor(date.getSeconds() / 2);
-
-  const dosDate =
-    ((date.getFullYear() - 1980) << 9) |
-    ((date.getMonth() + 1) << 5) |
-    date.getDate();
-
-  return { time, dosDate };
-}
-
-function buildZip(files) {
-  const localParts = [];
-  const centralParts = [];
-  let offset = 0;
-
-  const { time, dosDate } =
-    getDosDateTime();
-
-  for (const file of files) {
-    const nameBuffer =
-      Buffer.from(file.name, "utf8");
-
-    const data =
-      Buffer.isBuffer(file.data)
-        ? file.data
-        : Buffer.from(file.data);
-
-    const crc =
-      getCrc32Buffer(data);
-
-    const localHeader =
-      Buffer.alloc(30);
-
-    localHeader.writeUInt32LE(0x04034b50, 0);
-    localHeader.writeUInt16LE(20, 4);
-    localHeader.writeUInt16LE(0, 6);
-    localHeader.writeUInt16LE(0, 8);
-    localHeader.writeUInt16LE(time, 10);
-    localHeader.writeUInt16LE(dosDate, 12);
-    localHeader.writeUInt32LE(crc, 14);
-    localHeader.writeUInt32LE(data.length, 18);
-    localHeader.writeUInt32LE(data.length, 22);
-    localHeader.writeUInt16LE(nameBuffer.length, 26);
-    localHeader.writeUInt16LE(0, 28);
-
-    localParts.push(localHeader, nameBuffer, data);
-
-    const centralHeader =
-      Buffer.alloc(46);
-
-    centralHeader.writeUInt32LE(0x02014b50, 0);
-    centralHeader.writeUInt16LE(20, 4);
-    centralHeader.writeUInt16LE(20, 6);
-    centralHeader.writeUInt16LE(0, 8);
-    centralHeader.writeUInt16LE(0, 10);
-    centralHeader.writeUInt16LE(time, 12);
-    centralHeader.writeUInt16LE(dosDate, 14);
-    centralHeader.writeUInt32LE(crc, 16);
-    centralHeader.writeUInt32LE(data.length, 20);
-    centralHeader.writeUInt32LE(data.length, 24);
-    centralHeader.writeUInt16LE(nameBuffer.length, 28);
-    centralHeader.writeUInt16LE(0, 30);
-    centralHeader.writeUInt16LE(0, 32);
-    centralHeader.writeUInt16LE(0, 34);
-    centralHeader.writeUInt16LE(0, 36);
-    centralHeader.writeUInt32LE(0, 38);
-    centralHeader.writeUInt32LE(offset, 42);
-
-    centralParts.push(centralHeader, nameBuffer);
-
-    offset +=
-      localHeader.length +
-      nameBuffer.length +
-      data.length;
-  }
-
-  const centralSize =
-    centralParts.reduce((sum, part) => sum + part.length, 0);
-
-  const end =
-    Buffer.alloc(22);
-
-  end.writeUInt32LE(0x06054b50, 0);
-  end.writeUInt16LE(0, 4);
-  end.writeUInt16LE(0, 6);
-  end.writeUInt16LE(files.length, 8);
-  end.writeUInt16LE(files.length, 10);
-  end.writeUInt32LE(centralSize, 12);
-  end.writeUInt32LE(offset, 16);
-  end.writeUInt16LE(0, 20);
-
-  return Buffer.concat([
-    ...localParts,
-    ...centralParts,
-    end
-  ]);
-}
-
-async function createPaPdfBuffer(noPA, negeri) {
-  const fileName =
-    `${noPA}.TIF`;
-
-  const jupemUrl =
-`https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
-
-  const response =
-    await fetch(jupemUrl, {
-    redirect: "follow",
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
-      "Accept": "*/*"
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("PA not found");
-  }
-
-  const tifBuffer =
-    Buffer.from(
-      await response.arrayBuffer()
-    );
-
-  const firstText =
-    tifBuffer
-      .slice(0, 120)
-      .toString("utf8")
-      .toLowerCase();
-
-  if (
-    !tifBuffer.length ||
-    firstText.includes("<html")
-  ) {
-    throw new Error("Invalid PA file");
-  }
-
-  const pngBuffer =
-    await sharp(tifBuffer)
-      .png()
-      .toBuffer();
-
-  const meta =
-    await sharp(pngBuffer)
-      .metadata();
-
-  return await new Promise((resolve, reject) => {
-    const doc =
-      new PDFDocument({
-        autoFirstPage: false,
-        margin: 0
-      });
-
-    const chunks = [];
-
-    doc.on("data", chunk => chunks.push(chunk));
-    doc.on("error", reject);
-
-    doc.on("end", () => {
-      resolve(Buffer.concat(chunks));
-    });
-
-    doc.addPage({
-      size: [meta.width, meta.height],
-      margin: 0
-    });
-
-    doc.image(
-      pngBuffer,
-      0,
-      0,
-      {
-        width: meta.width,
-        height: meta.height
-      }
-    );
-
-    doc.end();
-  });
-}
-
 
 async function handler(req, res) {
 
@@ -510,9 +187,6 @@ async function handler(req, res) {
       pathname === "/api/save-affiliates" &&
       req.method === "POST"
     ) {
-      if (!requireLocalRequest(req, res)) {
-        return;
-      }
 
       const body = await readBody(req);
 
@@ -522,19 +196,15 @@ async function handler(req, res) {
         data = JSON.parse(body);
       } catch (err) {
 
-        return sendJson(res, 400, {
-          ok: false,
-          error: "Invalid JSON"
-        });
-      }
-
-      try {
-        data = validateAffiliateProducts(data);
-      } catch (err) {
-        return sendJson(res, 400, {
-          ok: false,
-          error: err.message
-        });
+        return send(
+          res,
+          400,
+          JSON.stringify({
+            ok: false,
+            error: "Invalid JSON"
+          }),
+          "application/json"
+        );
       }
 
       fs.writeFileSync(
@@ -543,80 +213,15 @@ async function handler(req, res) {
         "utf8"
       );
 
-      return sendJson(res, 200, {
-        ok: true,
-        saved: data.length
-      });
-    }
-
-    // =========================
-    // LOCAL AFFILIATE DEPLOY
-    // =========================
-
-    if (
-      pathname === "/deploy" &&
-      req.method === "POST"
-    ) {
-      if (!requireLocalRequest(req, res)) {
-        return;
-      }
-
-      const body = await readBody(req);
-      let data;
-
-      try {
-        data = validateAffiliateProducts(JSON.parse(body));
-      } catch (err) {
-        return sendJson(res, 400, {
-          ok: false,
-          message: err.message
-        });
-      }
-
-      fs.writeFileSync(
-        AFFILIATE_JSON,
-        JSON.stringify(data, null, 2) + "\n",
-        "utf8"
-      );
-
-      fs.writeFileSync(
-        AFFILIATE_BACKUP_JSON,
+      return send(
+        res,
+        200,
         JSON.stringify({
-          exportedAt: new Date().toISOString(),
-          count: data.length,
-          products: data
-        }, null, 2) + "\n",
-        "utf8"
-      );
-
-      try {
-        await runGit(["add", "affiliate-products.json"]);
-
-        const status =
-          await runGit(["status", "--porcelain", "--", "affiliate-products.json"]);
-
-        if (!status.stdout) {
-          return sendJson(res, 200, {
-            ok: true,
-            message: "Affiliate products already up to date. No commit needed.",
-            count: data.length
-          });
-        }
-
-        await runGit(["commit", "-m", "Update affiliate products"]);
-        await runGit(["push"]);
-
-        return sendJson(res, 200, {
           ok: true,
-          message: `Deployed ${data.length} affiliate products to GitHub.`,
-          count: data.length
-        });
-      } catch (err) {
-        return sendJson(res, 500, {
-          ok: false,
-          message: err.stderr || err.stdout || err.message
-        });
-      }
+          saved: data.length
+        }),
+        "application/json"
+      );
     }
 
     // =========================
@@ -677,13 +282,7 @@ async function handler(req, res) {
       );
 
       const response =
-        await fetch(jupemUrl, {
-    redirect: "follow",
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
-      "Accept": "*/*"
-    }
-  });
+        await fetch(jupemUrl);
 
       if (!response.ok) {
 
@@ -772,241 +371,6 @@ async function handler(req, res) {
       );
     }
 
-
-// =========================
-// JUPEM PA EXISTENCE CHECK
-// =========================
-
-if (
-  pathname === "/api/check-pa" &&
-  req.method === "GET"
-) {
-
-  const noPA =
-    cleanPA(parsed.query.noPA);
-
-  const negeri =
-    cleanState(parsed.query.negeri);
-
-  if (!noPA) {
-    return send(
-      res,
-      400,
-      JSON.stringify({
-        ok: false,
-        error: "Missing noPA"
-      }),
-      "application/json"
-    );
-  }
-
-  if (!negeri) {
-    return send(
-      res,
-      400,
-      JSON.stringify({
-        ok: false,
-        error: "Missing negeri"
-      }),
-      "application/json"
-    );
-  }
-
-  const fileName =
-    `${noPA}.TIF`;
-
-  const jupemUrl =
-`https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
-
-  console.log(
-    "Checking PA:",
-    jupemUrl
-  );
-
-  const response =
-    await fetch(jupemUrl, {
-    redirect: "follow",
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
-      "Accept": "*/*"
-    }
-  });
-
-  if (!response.ok) {
-    return send(
-      res,
-      404,
-      JSON.stringify({
-        ok: false,
-        error: "PA not found"
-      }),
-      "application/json"
-    );
-  }
-
-  const buffer =
-    Buffer.from(
-      await response.arrayBuffer()
-    );
-
-  const firstText =
-    buffer
-      .slice(0, 120)
-      .toString("utf8")
-      .toLowerCase();
-
-  if (
-    !buffer.length ||
-    firstText.includes("<html")
-  ) {
-    return send(
-      res,
-      404,
-      JSON.stringify({
-        ok: false,
-        error: "Invalid PA file"
-      }),
-      "application/json"
-    );
-  }
-
-  return send(
-    res,
-    200,
-    JSON.stringify({
-      ok: true,
-      noPA,
-      negeri,
-      size: buffer.length
-    }, null, 2),
-    "application/json"
-  );
-}
-
-
-// =========================
-// JUPEM PA CART ZIP DOWNLOAD
-// =========================
-
-if (
-  pathname === "/api/pa-cart-zip" &&
-  req.method === "POST"
-) {
-
-  const body =
-    await readBody(req);
-
-  let data;
-
-  try {
-    data = JSON.parse(body || "{}");
-  } catch (err) {
-    return send(
-      res,
-      400,
-      JSON.stringify({
-        ok: false,
-        error: "Invalid JSON"
-      }),
-      "application/json"
-    );
-  }
-
-  const items =
-    Array.isArray(data.items)
-      ? data.items
-      : [];
-
-  if (!items.length) {
-    return send(
-      res,
-      400,
-      JSON.stringify({
-        ok: false,
-        error: "Cart empty"
-      }),
-      "application/json"
-    );
-  }
-
-  if (items.length > 30) {
-    return send(
-      res,
-      400,
-      JSON.stringify({
-        ok: false,
-        error: "Maximum 30 PA per ZIP"
-      }),
-      "application/json"
-    );
-  }
-
-  const files = [];
-
-  for (const item of items) {
-    let noPA =
-      cleanPA(item.noPA || item.pa || "");
-
-    const negeri =
-      cleanState(item.negeri || item.state || "");
-
-    if (/^\d+$/.test(noPA)) {
-      noPA = `PA${noPA}`;
-    }
-
-    if (!noPA || !negeri) {
-      return send(
-        res,
-        400,
-        JSON.stringify({
-          ok: false,
-          error: "Invalid cart item"
-        }),
-        "application/json"
-      );
-    }
-
-    try {
-      const pdfBuffer =
-        await createPaPdfBuffer(noPA, negeri);
-
-      const safeName =
-        `${noPA}`.replace(/[^A-Z0-9_-]/gi, "");
-
-      files.push({
-        name: `${safeName}.pdf`,
-        data: pdfBuffer
-      });
-
-    } catch (err) {
-      return send(
-        res,
-        404,
-        JSON.stringify({
-          ok: false,
-          error: `${noPA} not found / PA tiada dalam sistem`
-        }),
-        "application/json"
-      );
-    }
-  }
-
-  const zipBuffer =
-    buildZip(files);
-
-  res.writeHead(200, {
-    "Content-Type": "application/zip",
-    "Content-Disposition":
-      `attachment; filename="AZOBSS-PA-Cart.zip"`,
-    "Cache-Control": "no-store",
-    "Access-Control-Allow-Origin": "*"
-  });
-
-  res.end(zipBuffer);
-
-  return;
-}
-
 // =========================
 // JUPEM PA PDF CONVERTER
 // =========================
@@ -1058,13 +422,7 @@ if (
   );
 
   const response =
-    await fetch(jupemUrl, {
-    redirect: "follow",
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
-      "Accept": "*/*"
-    }
-  });
+    await fetch(jupemUrl);
 
   if (!response.ok) {
     return send(
@@ -1271,14 +629,22 @@ const filePath =
 
   } catch (err) {
 
-    console.error("BACKEND ERROR:");
     console.error(err);
 
-    return sendJson(res, 500, {
-      ok: false,
-      error: err.message || "Unknown error",
-      stack: String(err.stack || "")
-    });
+return send(
+  res,
+  500,
+  JSON.stringify({
+    ok: false,
+    error: err.message,
+    name: err.name,
+    cause: err.cause
+      ? String(err.cause)
+      : null,
+    stack: err.stack
+  }, null, 2),
+  "application/json"
+);
   }
 }
 

@@ -1,8 +1,5 @@
 traffic-data.json
-affiliate-backup.json
 *.log
-*.zip
-temp/
 node_modules/
 .DS_Store
 Thumbs.db
