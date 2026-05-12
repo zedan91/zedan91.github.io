@@ -16,6 +16,7 @@ const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
 const TEMP_DIR = path.join(ROOT, "temp");
+const DOWNLOAD_TOKENS = new Map();
 
 // AUTO DELETE FILE > 30 DAYS
 const FILE_EXPIRE_MS =
@@ -346,6 +347,14 @@ async function handler(req, res) {
         tempName
       );
 
+      const token =
+        Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+      DOWNLOAD_TOKENS.set(token, {
+        file: tempName,
+        expires: Date.now() + 5 * 60 * 1000
+      });
+
       return send(
         res,
         200,
@@ -356,7 +365,7 @@ async function handler(req, res) {
           filename: tempName,
           size: buffer.length,
           download:
-            `/api/download-pa/${tempName}`
+            `/api/download-pa/${tempName}?token=${token}`
         }, null, 2),
         "application/json"
       );
@@ -522,6 +531,27 @@ if (
   const fileName =
     path.basename(pathname);
 
+  const token =
+    parsed.query.token;
+
+  const saved =
+    DOWNLOAD_TOKENS.get(token);
+
+  if (
+    !saved ||
+    saved.file !== fileName ||
+    saved.expires < Date.now()
+  ) {
+
+    return send(
+      res,
+      403,
+      "Unauthorized"
+    );
+  }
+
+  DOWNLOAD_TOKENS.delete(token);
+
   const filePath =
     path.join(TEMP_DIR, fileName);
 
@@ -548,6 +578,21 @@ if (
   return;
 }
 
+
+    // =========================
+    // BLOCK DIRECT TEMP ACCESS
+    // =========================
+
+    if (
+      pathname === "/temp" ||
+      pathname.startsWith("/temp/")
+    ) {
+      return send(
+        res,
+        403,
+        "Forbidden"
+      );
+    }
 
     // =========================
     // STATIC FILES
