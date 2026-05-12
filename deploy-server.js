@@ -125,6 +125,17 @@ function cleanState(negeri) {
   return v;
 }
 
+async function fetchJupem(jupemUrl) {
+  return await fetch(jupemUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+      "Accept": "image/tiff,image/*,*/*",
+      "Referer": "https://ebiz.jupem.gov.my/"
+    }
+  });
+}
+
 async function handler(req, res) {
 
   try {
@@ -282,7 +293,7 @@ async function handler(req, res) {
       );
 
       const response =
-        await fetch(jupemUrl);
+        await fetchJupem(jupemUrl);
 
       if (!response.ok) {
 
@@ -422,7 +433,7 @@ if (
   );
 
   const response =
-    await fetch(jupemUrl);
+    await fetchJupem(jupemUrl);
 
   if (!response.ok) {
     return send(

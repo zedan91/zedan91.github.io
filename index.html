@@ -3659,7 +3659,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         .replace(/[^0-9]/g, '');
     }
 
-    function buildTifUrl() {
+    function buildPdfUrl() {
       const number = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
 
@@ -3667,11 +3667,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return '';
       }
 
-      return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+      return `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
     }
 
     function updatePreview() {
-      const url = buildTifUrl();
+      const url = buildPdfUrl();
       paError.textContent = '';
       paStatus.style.display = 'none';
       downloadTifButton.hidden = false;
@@ -3679,7 +3679,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       downloadResultActions.hidden = true;
       downloadResultActions.style.display = 'none';
       pendingDownload = null;
-      paLinkPreview.textContent = url || 'Link TIF akan dijana selepas nombor PA dan negeri dipilih.';
+      paLinkPreview.textContent = url || 'Link PDF akan dijana selepas nombor PA dan negeri dipilih.';
     }
 
     function normalizeUsername(name) {
@@ -6005,7 +6005,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      const apiUrl = buildTifUrl();
+      const pdfUrl = buildPdfUrl();
       const paValue = cleanPaNumber(paNumber.value);
       const selectedNegeri = negeri.value;
 
@@ -6014,63 +6014,81 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return;
       }
 
-      if (!apiUrl) {
+      if (!pdfUrl) {
         paError.textContent = 'Please enter the PA number and select a state first.';
         return;
       }
 
       paError.textContent = '';
       paStatus.style.display = 'block';
-      paStatus.textContent = 'Searching PA... please wait.';
+      paStatus.textContent = 'Converting PA to PDF... please wait.';
       downloadTifButton.disabled = true;
-	  downloadTifButton.innerHTML = `
-  <span class="download-pa-main">Download PA</span>
-  <span class="pdf-price-tag">RM5 per unit</span>
-`;
+      downloadTifButton.innerHTML = `
+        <span class="download-pa-main">Converting PDF...</span>
+        <span class="pdf-price-tag">RM5 per unit</span>
+      `;
 
       try {
-        const res = await fetch(apiUrl, { cache: 'no-store' });
-        const data = await res.json();
+        const res = await fetch(pdfUrl, { cache: 'no-store' });
 
-        if (!data.ok) {
-          throw new Error(data.error || 'PA not found.');
+        if (!res.ok) {
+          let message = 'PA not found / PA tiada dalam sistem';
+
+          try {
+            const errorData = await res.json();
+            message = errorData.error || message;
+          } catch (jsonError) {
+            // PDF endpoint may return non-JSON errors. Keep the friendly message.
+          }
+
+          throw new Error(message);
         }
 
-        const downloadUrl = data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
+        const pdfBlob = await res.blob();
 
-        // Backend already holds the file. Now user downloads from AZOBSS backend.
-window.open(downloadUrl, '_blank');
+        if (!pdfBlob || !pdfBlob.size) {
+          throw new Error('PDF kosong / failed convert.');
+        }
 
-pendingDownload = {
-  paValue,
-  selectedNegeri,
-  url: downloadUrl
-};
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `PA${paValue}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
 
-paStatus.style.display = 'none';
-paStatus.textContent = '';
+        setTimeout(function () {
+          URL.revokeObjectURL(blobUrl);
+        }, 5000);
 
-downloadTifButton.hidden = true;
-downloadTifButton.style.display = 'none';
+        pendingDownload = {
+          paValue,
+          selectedNegeri,
+          url: pdfUrl
+        };
 
-downloadResultActions.hidden = false;
-downloadResultActions.style.display = 'grid';
+        await recordPurchase(paValue, selectedNegeri, pdfUrl);
 
-// AUTO CLICK SUCCESSFUL DOWNLOAD
-setTimeout(() => {
-  confirmDownloadButton.click();
-}, 1500);
+        paStatus.style.display = 'block';
+        paStatus.textContent = 'PDF downloaded successfully.';
+
+        downloadResultActions.hidden = true;
+        downloadResultActions.style.display = 'none';
 
         if (failedDownloadButton) {
           failedDownloadButton.style.display = 'none';
         }
 
       } catch (error) {
-        paError.textContent = 'PA not found / PA tiada dalam sistem';
+        paError.textContent = error.message || 'PA not found / PA tiada dalam sistem';
         paStatus.style.display = 'none';
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.textContent = 'Download PA';
+        downloadTifButton.innerHTML = `
+          <span class="download-pa-main">Download PA</span>
+          <span class="pdf-price-tag">RM5 per unit</span>
+        `;
       }
     });
 
