@@ -1419,24 +1419,30 @@ body:not(.is-admin) #registeredUsersPanel {
       color: #22c55e;
     }
 
-    .user-compact-actions {
-      width: 92px !important;
+    .user-compact-actions{
+      width: 70px !important;
       display: flex !important;
       flex-direction: column !important;
-      align-items: flex-start !important;
+      align-items: stretch !important;
       justify-content: flex-start !important;
-      gap: 5px !important;
+      gap: 6px !important;
       flex-wrap: nowrap !important;
     }
 
-    .user-compact-actions .small-action-btn {
-      padding: 5px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      line-height: 1;
+    .admin-purchase-detail-btn,
+    .user-compact-actions .small-action-btn{
+      width: 100% !important;
+      min-width: 100% !important;
+      height: 30px !important;
+      padding: 0 !important;
+      border-radius: 7px !important;
+      text-align: center !important;
+      justify-content: center !important;
+      display:flex !important;
+      align-items:center !important;
     }
 
-    .user-edit-details {
+.user-edit-details {
       display: none;
       padding-top: 8px;
       border-top: 1px solid rgba(148,163,184,0.14);
@@ -2590,15 +2596,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 .admin-purchase-user-top{
   grid-template-columns:minmax(145px,1fr) 55px 70px 95px 92px !important;
-}
-
-.admin-purchase-detail-btn,
-.user-compact-actions .small-action-btn{
-  width:58px !important;
-  height:30px !important;
-  padding:0 !important;
-  text-align:center !important;
-  justify-content:center !important;
 }
 
 </style>
