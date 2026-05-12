@@ -75,6 +75,23 @@
       fill: currentColor;
     }
 
+    .button-loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.45);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: buttonSpin 0.75s linear infinite;
+      vertical-align: -3px;
+    }
+
+    @keyframes buttonSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
 
     .admin-online-summary {
       position: absolute !important;
