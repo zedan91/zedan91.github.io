@@ -373,7 +373,13 @@ async function createPaPdfBuffer(noPA, negeri) {
 `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
 
   const response =
-    await fetch(jupemUrl);
+    await fetch(jupemUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+      "Accept": "*/*"
+    }
+  });
 
   if (!response.ok) {
     throw new Error("PA not found");
@@ -671,7 +677,13 @@ async function handler(req, res) {
       );
 
       const response =
-        await fetch(jupemUrl);
+        await fetch(jupemUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+      "Accept": "*/*"
+    }
+  });
 
       if (!response.ok) {
 
@@ -812,7 +824,13 @@ if (
   );
 
   const response =
-    await fetch(jupemUrl);
+    await fetch(jupemUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+      "Accept": "*/*"
+    }
+  });
 
   if (!response.ok) {
     return send(
@@ -1040,7 +1058,13 @@ if (
   );
 
   const response =
-    await fetch(jupemUrl);
+    await fetch(jupemUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+      "Accept": "*/*"
+    }
+  });
 
   if (!response.ok) {
     return send(
@@ -1247,11 +1271,13 @@ const filePath =
 
   } catch (err) {
 
+    console.error("BACKEND ERROR:");
     console.error(err);
 
     return sendJson(res, 500, {
       ok: false,
-      error: "Internal server error"
+      error: err.message || "Unknown error",
+      stack: String(err.stack || "")
     });
   }
 }
