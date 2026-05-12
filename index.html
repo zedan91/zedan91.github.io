@@ -2880,9 +2880,16 @@ body{
 }
 
 
-/* HIDE SIGN IN/SIGN UP AFTER LOGIN */
-.is-authenticated .site-auth-actions{
+
+/* FORCE HIDE SIGN IN/SIGN UP AFTER LOGIN */
+body.is-authenticated .site-auth-actions,
+body.has-pa-access .site-auth-actions,
+body.is-admin .site-auth-actions,
+.site-auth-actions.auth-hidden{
   display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
 }
 
 </style>
@@ -7688,6 +7695,39 @@ body{
   });
 
   window.azobssRefreshAffiliateProducts = initAffiliateFinal;
+})();
+</script>
+
+
+<script>
+(function(){
+  function forceHideAuthButtonsAfterLogin(){
+    var authBox = document.querySelector('.site-auth-actions');
+    var userMenu = document.getElementById('userMenu') || document.querySelector('.user-menu');
+    var body = document.body;
+
+    var loggedIn =
+      body.classList.contains('is-authenticated') ||
+      body.classList.contains('has-pa-access') ||
+      body.classList.contains('is-admin') ||
+      (userMenu && getComputedStyle(userMenu).display !== 'none');
+
+    if(authBox && loggedIn){
+      authBox.classList.add('auth-hidden');
+      authBox.style.setProperty('display','none','important');
+      authBox.style.setProperty('visibility','hidden','important');
+      authBox.style.setProperty('opacity','0','important');
+      authBox.style.setProperty('pointer-events','none','important');
+    }
+  }
+
+  window.forceHideAuthButtonsAfterLogin = forceHideAuthButtonsAfterLogin;
+  document.addEventListener('DOMContentLoaded', forceHideAuthButtonsAfterLogin);
+  window.addEventListener('load', forceHideAuthButtonsAfterLogin);
+  setInterval(forceHideAuthButtonsAfterLogin, 800);
+
+  var obs = new MutationObserver(forceHideAuthButtonsAfterLogin);
+  obs.observe(document.documentElement, { attributes:true, childList:true, subtree:true });
 })();
 </script>
 
