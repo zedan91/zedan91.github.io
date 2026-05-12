@@ -5910,6 +5910,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
 
+    function clearSiteAuthInputs() {
+      siteSignInForm.reset();
+      siteSignUpForm.reset();
+      siteLoginError.textContent = '';
+      siteSignupError.textContent = '';
+      memberUpgradeStatus.textContent = '';
+      memberUpgradeCode.value = '';
+      setCountryValue(siteSignupCountrySearch, siteSignupCountryButton, siteSignupPhonePrefix, 'Malaysia +60');
+      closeCountryMenus();
+    }
+
     function openSiteAuth(mode = 'signin') {
       const isSignup = mode === 'signup' || mode === 'upgrade';
       siteAuthTitle.textContent = isSignup ? 'Sign up' : 'Sign in';
@@ -5932,6 +5943,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     function closeSiteAuth() {
       siteAuthModal.classList.remove('is-open');
       siteAuthModal.setAttribute('aria-hidden', 'true');
+      clearSiteAuthInputs();
     }
 
     async function signInSiteUser(name, password, errorElement) {
