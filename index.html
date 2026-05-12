@@ -2396,6 +2396,143 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   white-space: nowrap;
 }
 
+
+
+/* PA Cart */
+.pa-cart-box{
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid rgba(34,197,94,0.26);
+  border-radius: 12px;
+  background: rgba(15,23,42,0.72);
+}
+
+.pa-cart-box h3{
+  margin: 0 0 10px;
+  color: #e2e8f0;
+  font-size: 18px;
+}
+
+.pa-cart-items{
+  display: grid;
+  gap: 8px;
+}
+
+.pa-cart-empty{
+  margin: 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.pa-cart-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148,163,184,0.18);
+  border-radius: 9px;
+  background: rgba(30,41,59,0.78);
+  color: #e2e8f0;
+}
+
+.pa-cart-item strong{
+  color: #22c55e;
+}
+
+.pa-cart-remove{
+  border: 0;
+  border-radius: 7px;
+  background: #ef4444;
+  color: white;
+  padding: 7px 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pa-cart-total{
+  margin-top: 12px;
+  color: #e2e8f0;
+  font-weight: 800;
+}
+
+.pa-cart-total strong{
+  color: #22c55e;
+}
+
+.pa-cart-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#addToCartButton{
+  width: min(240px, 100%);
+  justify-self: center;
+  border: 0;
+  cursor: pointer;
+}
+
+#checkoutCartButton,
+#clearCartButton{
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+#clearCartButton{
+  background: #475569;
+}
+
+
+
+/* FINAL PA main button layout */
+#downloadTifButton.download-pdf-btn{
+  position: relative !important;
+  width: 100% !important;
+  min-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+#downloadTifButton .download-pa-main{
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: block !important;
+  width: auto !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+#downloadTifButton .pdf-price-tag{
+  position: absolute !important;
+  right: 18px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: block !important;
+  width: auto !important;
+  color: #ffe600 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  text-shadow: none !important;
+  pointer-events: none !important;
+}
+
 </style>
 
 
@@ -3281,6 +3418,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 			<span class="pdf-price-tag">RM5 per unit</span>
 		</button>
 
+        <button class="btn" id="addToCartButton" type="button">
+          Add To Cart
+        </button>
+
         <div id="downloadResultActions" hidden>
           <button class="btn" id="confirmDownloadButton" type="button">
             Successful Download
@@ -3289,6 +3430,30 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             Failed Download
           </button>
         </div>
+
+
+      <div class="pa-cart-box" id="paCartBox" hidden>
+        <h3>🛒 PA Cart</h3>
+
+        <div class="pa-cart-items" id="paCartItems">
+          <p class="pa-cart-empty">Cart kosong.</p>
+        </div>
+
+        <div class="pa-cart-total">
+          Unit: <strong id="paCartUnit">0</strong>
+          &nbsp; Total: <strong>RM<span id="paCartTotal">0</span></strong>
+        </div>
+
+        <div class="pa-cart-actions">
+          <button class="btn blue" id="checkoutCartButton" type="button">
+            Download All PA
+          </button>
+
+          <button class="btn" id="clearCartButton" type="button">
+            Clear Cart
+          </button>
+        </div>
+      </div>
 
         <p class="request-status" id="paStatus"></p>
 
@@ -3567,6 +3732,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const downloadResultActions = document.getElementById('downloadResultActions');
     const confirmDownloadButton = document.getElementById('confirmDownloadButton');
     const failedDownloadButton = document.getElementById('failedDownloadButton');
+    const addToCartButton = document.getElementById('addToCartButton');
+    const paCartBox = document.getElementById('paCartBox');
+    const paCartItems = document.getElementById('paCartItems');
+    const paCartUnit = document.getElementById('paCartUnit');
+    const paCartTotal = document.getElementById('paCartTotal');
+    const checkoutCartButton = document.getElementById('checkoutCartButton');
+    const clearCartButton = document.getElementById('clearCartButton');
     const adminPurchasePanel = document.getElementById('adminPurchasePanel');
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
     const togglePurchaseRecordsButton = document.getElementById('togglePurchaseRecordsButton');
@@ -3608,6 +3780,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     let currentUser = null;
     let signupGateTimer = null;
     let pendingDownload = null;
+    let paCart = [];
     let allPurchaseSummaries = [];
     let purchaseRecordsPage = 1;
     let purchaseRecordsVisible = true;
@@ -3668,6 +3841,85 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       }
 
       return `https://azobss-backend.onrender.com/api/pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+    }
+
+
+    function buildCheckPaUrl(number, selectedNegeri) {
+      if (!number || !selectedNegeri) {
+        return '';
+      }
+
+      return `https://azobss-backend.onrender.com/api/check-pa?noPA=PA${number}.TIF&negeri=${encodeURIComponent(selectedNegeri)}`;
+    }
+
+    function renderPaCart() {
+      if (!paCartBox || !paCartItems || !paCartUnit || !paCartTotal) {
+        return;
+      }
+
+      paCartBox.hidden = paCart.length === 0;
+
+      if (!paCart.length) {
+        paCartItems.innerHTML = '<p class="pa-cart-empty">Cart kosong.</p>';
+      } else {
+        paCartItems.innerHTML = '';
+
+        paCart.forEach(function (item, index) {
+          const row = document.createElement('div');
+          row.className = 'pa-cart-item';
+
+          row.innerHTML = `
+            <div>
+              <strong>PA${item.pa}</strong><br>
+              <span>${item.negeri}</span>
+            </div>
+
+            <button class="pa-cart-remove" type="button" data-remove-cart="${index}">
+              Remove
+            </button>
+          `;
+
+          paCartItems.appendChild(row);
+        });
+      }
+
+      paCartUnit.textContent = paCart.length;
+      paCartTotal.textContent = paCart.length * PURCHASE_PRICE;
+    }
+
+    async function checkPaExists(paValue, selectedNegeri) {
+      const checkUrl =
+        buildCheckPaUrl(paValue, selectedNegeri);
+
+      if (!checkUrl) {
+        throw new Error('Please enter the PA number and select a state first.');
+      }
+
+      const res =
+        await fetch(checkUrl, {
+          cache: 'no-store'
+        });
+
+      if (!res.ok) {
+        throw new Error('PA not found / PA tiada dalam sistem');
+      }
+
+      const data =
+        await res.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'PA not found / PA tiada dalam sistem');
+      }
+
+      return data;
+    }
+
+    function resetDownloadPaButton() {
+      if (!downloadTifButton) {
+        return;
+      }
+
+      resetDownloadPaButton();
     }
 
     function updatePreview() {
@@ -5997,6 +6249,164 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       }, 2500);
     });
 
+
+    if (paCartItems) {
+      paCartItems.addEventListener('click', function (event) {
+        const removeButton = event.target.closest('[data-remove-cart]');
+
+        if (!removeButton) {
+          return;
+        }
+
+        const index =
+          Number(removeButton.dataset.removeCart);
+
+        if (!Number.isNaN(index)) {
+          paCart.splice(index, 1);
+          renderPaCart();
+        }
+      });
+    }
+
+    if (addToCartButton) {
+      addToCartButton.addEventListener('click', async function () {
+        if (!isLoggedIn) {
+          paError.textContent = 'Please log in before adding PA to cart.';
+          return;
+        }
+
+        if (!isAdminUser(currentUser) && currentUser && currentUser.paAccess === false) {
+          paError.textContent = 'Standard accounts do not have Request PA / Info Lot access.';
+          return;
+        }
+
+        const paValue =
+          cleanPaNumber(paNumber.value);
+
+        const selectedNegeri =
+          negeri.value;
+
+        if (!paValue || !selectedNegeri) {
+          paError.textContent = 'Please enter the PA number and select a state first.';
+          return;
+        }
+
+        const exists =
+          paCart.find(function (item) {
+            return item.pa === paValue && item.negeri === selectedNegeri;
+          });
+
+        if (exists) {
+          paError.textContent = 'PA already in cart.';
+          return;
+        }
+
+        paError.textContent = '';
+        paStatus.style.display = 'block';
+        paStatus.textContent = 'Checking PA...';
+
+        addToCartButton.disabled = true;
+        addToCartButton.textContent = 'Checking PA...';
+
+        try {
+          await checkPaExists(paValue, selectedNegeri);
+
+          paCart.push({
+            pa: paValue,
+            negeri: selectedNegeri
+          });
+
+          renderPaCart();
+
+          paError.textContent = '';
+          paStatus.style.display = 'block';
+          paStatus.textContent = `PA${paValue} added to cart.`;
+
+        } catch (error) {
+          paStatus.style.display = 'none';
+          paError.textContent = 'PA not found / PA tiada dalam sistem';
+        } finally {
+          addToCartButton.disabled = false;
+          addToCartButton.textContent = 'Add To Cart';
+        }
+      });
+    }
+
+    if (clearCartButton) {
+      clearCartButton.addEventListener('click', function () {
+        paCart = [];
+        renderPaCart();
+      });
+    }
+
+    if (checkoutCartButton) {
+      checkoutCartButton.addEventListener('click', async function () {
+        if (!paCart.length) {
+          paError.textContent = 'Cart kosong.';
+          return;
+        }
+
+        if (!isLoggedIn) {
+          paError.textContent = 'Please log in before downloading PA.';
+          return;
+        }
+
+        checkoutCartButton.disabled = true;
+        checkoutCartButton.textContent = 'Downloading...';
+
+        paError.textContent = '';
+        paStatus.style.display = 'block';
+        paStatus.textContent = 'Downloading PA from cart...';
+
+        try {
+          for (const item of paCart) {
+            const apiUrl =
+              `https://azobss-backend.onrender.com/api/pa?noPA=PA${item.pa}.TIF&negeri=${encodeURIComponent(item.negeri)}`;
+
+            const res =
+              await fetch(apiUrl, {
+                cache: 'no-store'
+              });
+
+            const data =
+              await res.json();
+
+            if (!data.ok) {
+              throw new Error(`PA${item.pa} not found`);
+            }
+
+            const downloadUrl =
+              data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
+
+            window.open(downloadUrl, '_blank');
+
+            await recordPurchase(
+              item.pa,
+              item.negeri,
+              downloadUrl
+            );
+
+            await new Promise(function (resolve) {
+              setTimeout(resolve, 1000);
+            });
+          }
+
+          paCart = [];
+          renderPaCart();
+
+          paStatus.style.display = 'block';
+          paStatus.textContent = 'Download cart completed.';
+
+        } catch (error) {
+          paStatus.style.display = 'none';
+          paError.textContent = error.message || 'Failed to download cart.';
+        } finally {
+          checkoutCartButton.disabled = false;
+          checkoutCartButton.textContent = 'Download All PA';
+        }
+      });
+    }
+
     paForm.addEventListener('submit', async function (event) {
       event.preventDefault();
 
@@ -6023,10 +6433,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       paStatus.style.display = 'block';
       paStatus.textContent = 'Searching PA... please wait.';
       downloadTifButton.disabled = true;
-	  downloadTifButton.innerHTML = `
-  <span class="download-pa-main">Download PA</span>
-  <span class="pdf-price-tag">RM5 per unit</span>
-`;
+      downloadTifButton.innerHTML = '<span class="download-pa-main">Searching...</span>';
 
       try {
         const res = await fetch(apiUrl, { cache: 'no-store' });
@@ -6070,7 +6477,7 @@ setTimeout(() => {
         paStatus.style.display = 'none';
       } finally {
         downloadTifButton.disabled = false;
-        downloadTifButton.textContent = 'Download PA';
+        resetDownloadPaButton();
       }
     });
 

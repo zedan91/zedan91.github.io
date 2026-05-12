@@ -371,6 +371,111 @@ async function handler(req, res) {
       );
     }
 
+
+// =========================
+// JUPEM PA EXISTENCE CHECK
+// =========================
+
+if (
+  pathname === "/api/check-pa" &&
+  req.method === "GET"
+) {
+
+  const noPA =
+    cleanPA(parsed.query.noPA);
+
+  const negeri =
+    cleanState(parsed.query.negeri);
+
+  if (!noPA) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Missing noPA"
+      }),
+      "application/json"
+    );
+  }
+
+  if (!negeri) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Missing negeri"
+      }),
+      "application/json"
+    );
+  }
+
+  const fileName =
+    `${noPA}.TIF`;
+
+  const jupemUrl =
+`https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
+
+  console.log(
+    "Checking PA:",
+    jupemUrl
+  );
+
+  const response =
+    await fetch(jupemUrl);
+
+  if (!response.ok) {
+    return send(
+      res,
+      404,
+      JSON.stringify({
+        ok: false,
+        error: "PA not found"
+      }),
+      "application/json"
+    );
+  }
+
+  const buffer =
+    Buffer.from(
+      await response.arrayBuffer()
+    );
+
+  const firstText =
+    buffer
+      .slice(0, 120)
+      .toString("utf8")
+      .toLowerCase();
+
+  if (
+    !buffer.length ||
+    firstText.includes("<html")
+  ) {
+    return send(
+      res,
+      404,
+      JSON.stringify({
+        ok: false,
+        error: "Invalid PA file"
+      }),
+      "application/json"
+    );
+  }
+
+  return send(
+    res,
+    200,
+    JSON.stringify({
+      ok: true,
+      noPA,
+      negeri,
+      size: buffer.length
+    }, null, 2),
+    "application/json"
+  );
+}
+
 // =========================
 // JUPEM PA PDF CONVERTER
 // =========================
