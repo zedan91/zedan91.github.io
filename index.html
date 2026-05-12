@@ -4708,18 +4708,25 @@ body:not(.is-admin) .affiliate-card-admin-actions{
               return;
             }
 
-            const latestUserLog = adminLogs
+            const userLogs = adminLogs
               .filter(function (log) {
                 return (log.usernameKey && log.usernameKey === usernameKey) || (data.uid && log.uid === data.uid);
-              })
+              });
+            const latestUserLog = userLogs
+              .slice()
               .sort(function (a, b) {
                 return getPurchaseLogMs(b) - getPurchaseLogMs(a);
               })[0];
+            const logTotalUnits = userLogs.length;
 
             summariesByKey.set(usernameKey, {
               ...activeUsersByKey.get(usernameKey),
               ...data,
               usernameKey,
+              totalUnits: logTotalUnits || data.totalUnits || 0,
+              totalAmount: logTotalUnits ? logTotalUnits * PURCHASE_PRICE : data.totalAmount || 0,
+              lastPa: latestUserLog ? String(latestUserLog.paNumber || '').replace(/^PA/i, '') : data.lastPa || '',
+              lastNegeri: latestUserLog ? latestUserLog.negeri : data.lastNegeri || '',
               updatedAt: latestUserLog ? latestUserLog.createdAt : data.updatedAt
             });
           });
