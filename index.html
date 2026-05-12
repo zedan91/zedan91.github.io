@@ -3905,6 +3905,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       getAuth,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
+      deleteUser,
       signOut,
       onAuthStateChanged,
       setPersistence,
@@ -4154,6 +4155,19 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
     function clearCurrentUser() {
       sessionStorage.removeItem('azobssCurrentUser');
+    }
+
+    async function cleanupPartialAuthSession() {
+      clearCurrentUser();
+      sessionStorage.removeItem('azobssLoggedIn');
+
+      try {
+        if (auth && auth.currentUser) {
+          await signOut(auth);
+        }
+      } catch (error) {
+        // Auth cleanup should not hide the original login/signup error.
+      }
     }
 
     function showAccessToast(message) {
@@ -5922,6 +5936,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
     async function signInSiteUser(name, password, errorElement) {
       const usernameKey = normalizeUsername(name);
+      let authSignInStarted = false;
 
       if (!name || !password) {
         errorElement.textContent = 'Please enter username and password.';
@@ -5942,6 +5957,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
         const credential = await signInWithEmailAndPassword(auth, buildUserEmail(usernameKey), password);
+        authSignInStarted = true;
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
         const profile = userSnap.exists() ? userSnap.data() : {
@@ -5977,6 +5993,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         closeSiteAuth();
         setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
+        if (authSignInStarted) {
+          await cleanupPartialAuthSession();
+        }
+
         errorElement.textContent = 'Username or password is incorrect. Please try again.';
       }
     }
@@ -6034,12 +6054,14 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       let credential;
       let existingData = null;
       let isReactivation = false;
+      let isNewAuthUser = false;
 
       stopAuthRestoreListener();
       await ensureAuthSessionPersistence();
 
       try {
         credential = await createUserWithEmailAndPassword(auth, email, options.password);
+        isNewAuthUser = true;
       } catch (error) {
         if (error.code !== 'auth/email-already-in-use') {
           throw error;
@@ -6091,7 +6113,22 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         profileData.createdAt = serverTimestamp();
       }
 
-      await setDoc(userRef, profileData, { merge: true });
+      try {
+        await setDoc(userRef, profileData, { merge: true });
+      } catch (error) {
+        if (isNewAuthUser && credential && credential.user) {
+          try {
+            await deleteUser(credential.user);
+          } catch (deleteError) {
+            await cleanupPartialAuthSession();
+          }
+        } else {
+          await cleanupPartialAuthSession();
+        }
+
+        throw error;
+      }
+
       return user;
     }
     async function signUpSiteUser() {
@@ -6441,6 +6478,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const name = loginName.value.trim();
       const password = loginPassword.value.trim();
       const usernameKey = normalizeUsername(name);
+      let authSignInStarted = false;
 
       if (!name || !password) {
         loginError.textContent = 'Please enter username and password.';
@@ -6456,6 +6494,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
         const credential = await signInWithEmailAndPassword(auth, buildUserEmail(usernameKey), password);
+        authSignInStarted = true;
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
         const profile = userSnap.exists() ? userSnap.data() : {
@@ -6490,6 +6529,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         await recordLoginHistory(user);
         setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
+        if (authSignInStarted) {
+          await cleanupPartialAuthSession();
+        }
+
         loginError.textContent = 'Username or password is incorrect. Please try again.';
       }
     });
