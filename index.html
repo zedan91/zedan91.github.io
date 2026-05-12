@@ -1419,28 +1419,32 @@ body:not(.is-admin) #registeredUsersPanel {
       color: #22c55e;
     }
 
-    .user-compact-actions{
-      width: 70px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: stretch !important;
-      justify-content: flex-start !important;
-      gap: 6px !important;
-      flex-wrap: nowrap !important;
-    }
+    
+.user-compact-actions{
+  width: 58px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+  gap:6px !important;
+  justify-self:end !important;
+}
 
-    .admin-purchase-detail-btn,
-    .user-compact-actions .small-action-btn{
-      width: 100% !important;
-      min-width: 100% !important;
-      height: 30px !important;
-      padding: 0 !important;
-      border-radius: 7px !important;
-      text-align: center !important;
-      justify-content: center !important;
-      display:flex !important;
-      align-items:center !important;
-    }
+.admin-purchase-detail-btn,
+.user-compact-actions .small-action-btn{
+  width:58px !important;
+  min-width:58px !important;
+  height:30px !important;
+  padding:0 !important;
+  border-radius:7px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:11px !important;
+  line-height:1 !important;
+}
+
 
 .user-edit-details {
       display: none;
@@ -2595,7 +2599,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 .admin-purchase-user-top{
-  grid-template-columns:minmax(145px,1fr) 55px 70px 95px 92px !important;
+  grid-template-columns:minmax(145px,1fr) 55px 70px 95px 58px !important;
+  align-items:center !important;
 }
 
 </style>
