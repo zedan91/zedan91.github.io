@@ -356,7 +356,7 @@ async function handler(req, res) {
           filename: tempName,
           size: buffer.length,
           download:
-            `/temp/${tempName}`
+            `/api/download-pa/${tempName}`
         }, null, 2),
         "application/json"
       );
@@ -509,6 +509,45 @@ const safeName =
 
   return;
 }
+
+// =========================
+// SECURE PA DOWNLOAD
+// =========================
+
+if (
+  pathname.startsWith("/api/download-pa/") &&
+  req.method === "GET"
+) {
+
+  const fileName =
+    path.basename(pathname);
+
+  const filePath =
+    path.join(TEMP_DIR, fileName);
+
+  if (!fs.existsSync(filePath)) {
+
+    return send(
+      res,
+      404,
+      "File not found"
+    );
+  }
+
+  res.writeHead(200, {
+    "Content-Type": "image/tiff",
+    "Content-Disposition":
+      `attachment; filename="${fileName}"`,
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*"
+  });
+
+  fs.createReadStream(filePath)
+    .pipe(res);
+
+  return;
+}
+
 
     // =========================
     // STATIC FILES
