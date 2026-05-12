@@ -550,9 +550,9 @@ if (
     );
   }
 
-  DOWNLOAD_TOKENS.delete(token);
+  // DOWNLOAD_TOKENS.delete(token); // allow IDM/browser retry
 
-  const filePath =
+const filePath =
     path.join(TEMP_DIR, fileName);
 
   if (!fs.existsSync(filePath)) {
