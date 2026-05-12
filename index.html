@@ -6562,6 +6562,26 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       updatePresence(false);
       updateVisitorPresence(false);
     });
+    function clearRestoredSession() {
+      authStateReady = true;
+      clearCurrentUser();
+      sessionStorage.removeItem('azobssLoggedIn');
+      restoreSignupAccess();
+      startVisitorPresenceHeartbeat();
+    }
+
+    async function rejectRestoredSession() {
+      try {
+        if (auth) {
+          await signOut(auth);
+        }
+      } catch (error) {
+        // Local session cleanup still needs to continue if Firebase signout fails.
+      }
+
+      clearRestoredSession();
+    }
+
     async function initializeSavedSession() {
       const savedUser = getSavedUser();
 
@@ -6580,15 +6600,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       await ensureAuthSessionPersistence();
       stopAuthRestoreListener();
-      authRestoreUnsubscribe = onAuthStateChanged(auth, function (firebaseUser) {
+      authRestoreUnsubscribe = onAuthStateChanged(auth, async function (firebaseUser) {
         stopAuthRestoreListener();
 
         if (!firebaseUser) {
-          authStateReady = true;
-          clearCurrentUser();
-          sessionStorage.removeItem('azobssLoggedIn');
-          restoreSignupAccess();
-          startVisitorPresenceHeartbeat();
+          clearRestoredSession();
           return;
         }
 
@@ -6596,25 +6612,43 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         const activeEmail = (firebaseUser.email || '').toLowerCase();
 
         if (activeEmail !== expectedEmail) {
-          authStateReady = true;
-          clearCurrentUser();
-          sessionStorage.removeItem('azobssLoggedIn');
-          restoreSignupAccess();
-          startVisitorPresenceHeartbeat();
+          await rejectRestoredSession();
           return;
         }
 
-        setLoggedIn({
-          ...savedUser,
-          uid: firebaseUser.uid
-        });
+        try {
+          const userSnap = await getDoc(doc(db, 'users', savedUser.usernameKey));
+
+          if (!userSnap.exists()) {
+            await rejectRestoredSession();
+            return;
+          }
+
+          const profile = userSnap.data();
+
+          if (profile.deleted) {
+            await rejectRestoredSession();
+            return;
+          }
+
+          const restoredUser = {
+            uid: profile.uid || firebaseUser.uid,
+            name: profile.name || savedUser.name || savedUser.usernameKey,
+            usernameKey: profile.usernameKey || savedUser.usernameKey,
+            phone: profile.phone || '',
+            email: profile.email || firebaseUser.email || '',
+            contactEmail: profile.contactEmail || '',
+            paAccess: profile.paAccess !== false
+          };
+
+          saveCurrentUser(restoredUser);
+          setLoggedIn(restoredUser);
+        } catch (error) {
+          await rejectRestoredSession();
+        }
       }, function () {
         stopAuthRestoreListener();
-        authStateReady = true;
-        clearCurrentUser();
-        sessionStorage.removeItem('azobssLoggedIn');
-        restoreSignupAccess();
-        startVisitorPresenceHeartbeat();
+        clearRestoredSession();
       });
     }
 
