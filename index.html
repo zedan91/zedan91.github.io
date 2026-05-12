@@ -1082,13 +1082,19 @@
 
 /* Tapi tools admin sahaja hide untuk user biasa */
 body:not(.is-admin) .purchase-record-actions,
-body:not(.is-admin) .admin-user-tools,
-body:not(.is-admin) #purchasePanelNote,
 body:not(.is-admin) #refreshPurchaseButton,
 body:not(.is-admin) #togglePurchaseRecordsButton,
 body:not(.is-admin) .small-action-btn,
 body:not(.is-admin) #registeredUsersPanel {
   display: none !important;
+}
+
+body:not(.is-admin) #purchaseRecordTools {
+  display: grid !important;
+}
+
+body:not(.is-admin) #purchasePanelNote {
+  display: block !important;
 }
 
     .is-admin #registeredUsersPanel {
@@ -1238,59 +1244,31 @@ body:not(.is-admin) #registeredUsersPanel {
       font-size: 12px;
     }
 
-    .purchase-recent-panel {
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(148,163,184,0.18);
+    .purchase-log-item {
+      grid-template-columns: minmax(110px, 1fr) minmax(80px, 0.8fr) minmax(90px, 0.8fr) minmax(140px, 1fr) auto !important;
     }
 
-    .purchase-recent-panel h4 {
-      margin: 0 0 10px;
-      color: #e2e8f0;
-      font-size: 16px;
+    .purchase-log-date {
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.35;
     }
 
-    .purchase-recent-list {
-      display: grid;
-      gap: 8px;
+    .purchase-log-link {
+      color: #93c5fd;
+      font-size: 12px;
+      font-weight: bold;
+      text-decoration: none;
+      white-space: nowrap;
     }
 
-    .purchase-recent-item {
-      display: grid;
-      grid-template-columns: minmax(120px, 1fr) auto auto;
-      gap: 10px;
-      align-items: center;
-      padding: 10px 12px;
-      border: 1px solid rgba(34,197,94,0.20);
-      border-radius: 9px;
-      background: rgba(15,23,42,0.72);
-      color: #e2e8f0;
-      font-size: 13px;
-    }
-
-    .purchase-recent-item strong {
+    .purchase-log-link:hover {
       color: #22c55e;
     }
 
-    .purchase-recent-meta {
-      color: #94a3b8;
-      white-space: nowrap;
-      font-size: 12px;
-    }
-
-    .purchase-recent-user {
-      color: #cbd5e1;
-      font-size: 12px;
-    }
-
     @media (max-width: 700px) {
-      .purchase-recent-item {
-        grid-template-columns: 1fr;
-        align-items: start;
-      }
-
-      .purchase-recent-meta {
-        white-space: normal;
+      .purchase-log-item {
+        grid-template-columns: 1fr !important;
       }
     }
     .small-action-btn {
@@ -3373,16 +3351,19 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             <div class="admin-user-tools" id="purchaseRecordTools" hidden>
               <label for="purchaseRecordSearch">
                 Search purchase record
-                <input id="purchaseRecordSearch" type="search" placeholder="Search username, phone or PA">
+                <input id="purchaseRecordSearch" type="search" placeholder="Search PA, negeri, username, phone or date">
               </label>
               <label for="purchaseRecordSort">
                 Sort by
                 <select id="purchaseRecordSort">
+                  <option value="dateNewest">Latest purchase</option>
+                  <option value="dateOldest">Oldest purchase</option>
+                  <option value="paDesc">PA number: highest</option>
+                  <option value="paAsc">PA number: lowest</option>
                   <option value="amountDesc">Total amount: highest</option>
                   <option value="amountAsc">Total amount: lowest</option>
                   <option value="unitsDesc">Unit: highest</option>
                   <option value="unitsAsc">Unit: lowest</option>
-                  <option value="updatedNewest">Latest updated</option>
                   <option value="username">Username A-Z</option>
                 </select>
               </label>
@@ -3393,14 +3374,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
                 No purchase records yet.
               </div>
             </div>
-
-            <div class="purchase-recent-panel" id="purchaseRecentPanel">
-              <h4>Latest PA Purchase List</h4>
-              <div class="purchase-recent-list" id="purchaseRecentList">
-                <div class="purchase-summary-item">No PA purchase list yet.</div>
-              </div>
-            </div>
-
             <div class="guest-history-pagination" id="purchaseRecordsPagination"></div>
           </div>
 
@@ -3544,7 +3517,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       runTransaction,
       setDoc,
       serverTimestamp,
-      increment
+      increment,
+      query as firestoreQuery,
+      where
     } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
 
     const firebaseConfig = {
@@ -3639,8 +3614,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const purchaseRecordSort = document.getElementById('purchaseRecordSort');
     const purchaseAdminError = document.getElementById('purchaseAdminError');
     const purchaseSummaryList = document.getElementById('purchaseSummaryList');
-    const purchaseRecentPanel = document.getElementById('purchaseRecentPanel');
-    const purchaseRecentList = document.getElementById('purchaseRecentList');
     const purchaseRecordsPagination = document.getElementById('purchaseRecordsPagination');
     const purchasePanelTitle = document.getElementById('purchasePanelTitle');
     const purchasePanelNote = document.getElementById('purchasePanelNote');
@@ -3675,7 +3648,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     let signupGateTimer = null;
     let pendingDownload = null;
     let allPurchaseSummaries = [];
-    let allPurchaseLogs = [];
     let purchaseRecordsPage = 1;
     let purchaseRecordsVisible = true;
     let allRegisteredUsers = [];
@@ -3687,7 +3659,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     let allGuestHistory = [];
     let guestHistoryPage = 1;
     const HISTORY_PAGE_SIZE = 3;
-    const PURCHASE_RECORDS_PAGE_SIZE = 10;
+    const PURCHASE_RECORDS_PAGE_SIZE = 5;
     const HISTORY_PAGINATION_MAX_BUTTONS = 10;
     let presenceHeartbeatTimer = null;
     let liveUsersUnsubscribe = null;
@@ -3804,6 +3776,24 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return user && user.usernameKey === ADMIN_USERNAME;
     }
 
+    function formatPurchaseDateTime(value) {
+      const ms = getFirestoreTimestampMs(value) || Number(value || 0);
+
+      if (!ms) {
+        return '-';
+      }
+
+      const date = new Date(ms);
+
+      return date.toLocaleString('en-MY', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
     function renderPurchaseSummaries(summaries, requestedPage = purchaseRecordsPage) {
       if (!summaries.length) {
         purchaseRecordsPage = 1;
@@ -3816,6 +3806,26 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       purchaseRecordsPage = pageData.page;
 
       purchaseSummaryList.innerHTML = pageData.pageItems.map(function (summary) {
+        if (summary.recordType === 'log') {
+          const paNumber = summary.paNumber ? `PA${summary.paNumber}` : '-';
+          const negeriText = summary.negeri || '-';
+          const amount = summary.amount || PURCHASE_PRICE;
+          const createdText = formatPurchaseDateTime(summary.createdAtMs || summary.createdAt);
+          const downloadLink = summary.url
+            ? `<a class="purchase-log-link" href="${escapeHtml(summary.url)}" target="_blank" rel="noopener">PDF</a>`
+            : '<span>-</span>';
+
+          return `
+            <div class="purchase-summary-item purchase-log-item">
+              <span><strong>${escapeHtml(paNumber)}</strong><br>${escapeHtml(negeriText)}</span>
+              <span>Unit: <strong>1</strong></span>
+              <span>Total: <strong>RM${amount}</strong></span>
+              <span class="purchase-log-date">${escapeHtml(createdText)}</span>
+              ${downloadLink}
+            </div>
+          `;
+        }
+
         const units = summary.totalUnits || 0;
         const amount = summary.totalAmount || 0;
         const lastPa = summary.lastPa ? `PA${summary.lastPa}` : '-';
@@ -3837,96 +3847,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       renderHistoryPagination(purchaseRecordsPagination, pageData.totalPages, purchaseRecordsPage, 'purchaseRecords');
     }
 
-
-    function formatPurchaseDateTime(value) {
-      const ms = getFirestoreTimestampMs(value);
-
-      if (!ms) {
-        return '-';
-      }
-
-      return new Date(ms).toLocaleString('en-MY', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-
-    function getPurchaseLogMs(log) {
-      return getFirestoreTimestampMs(log.createdAt)
-        || Number(log.createdAtMs || 0)
-        || 0;
-    }
-
-    function renderRecentPurchaseLogs(logs) {
-      if (!purchaseRecentList) {
-        return;
-      }
-
-      if (!logs.length) {
-        purchaseRecentList.innerHTML = '<div class="purchase-summary-item">No PA purchase list yet.</div>';
-        return;
-      }
-
-      const latestLogs = logs
-        .slice()
-        .sort(function (a, b) {
-          return getPurchaseLogMs(b) - getPurchaseLogMs(a);
-        })
-        .slice(0, isAdminUser(currentUser) ? 30 : 20);
-
-      purchaseRecentList.innerHTML = latestLogs.map(function (log) {
-        const paText = log.paNumber ? `PA${log.paNumber}` : '-';
-        const negeriText = log.negeri || '-';
-        const dateText = formatPurchaseDateTime(log.createdAt);
-        const userText = isAdminUser(currentUser)
-          ? `<span class="purchase-recent-user">${escapeHtml(log.name || log.usernameKey || '-')} ${escapeHtml(log.phone || '')}</span>`
-          : '';
-
-        return `
-          <div class="purchase-recent-item">
-            <span>
-              <strong>${escapeHtml(paText)}</strong><br>
-              <span>${escapeHtml(negeriText)}</span>
-              ${userText}
-            </span>
-            <span>RM${log.amount || PURCHASE_PRICE}</span>
-            <span class="purchase-recent-meta">${escapeHtml(dateText)}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function loadRecentPurchaseLogs() {
-      if (!currentUser) {
-        allPurchaseLogs = [];
-        renderRecentPurchaseLogs([]);
-        return;
-      }
-
-      const logs = [];
-      const logSnapshot = await getDocs(collection(db, 'purchaseLogs'));
-
-      logSnapshot.forEach(function (item) {
-        const data = item.data();
-        const usernameKey = data.usernameKey || '';
-
-        if (!isAdminUser(currentUser) && usernameKey !== currentUser.usernameKey) {
-          return;
-        }
-
-        logs.push({
-          purchaseId: data.purchaseId || item.id,
-          ...data
-        });
-      });
-
-      allPurchaseLogs = logs;
-      renderRecentPurchaseLogs(allPurchaseLogs);
-    }
-
     function getFirestoreTimestampMs(value) {
       if (value && typeof value.toMillis === 'function') {
         return value.toMillis();
@@ -3936,18 +3856,30 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         return value.seconds * 1000;
       }
 
+      if (typeof value === 'number') {
+        return value;
+      }
+
       return 0;
     }
 
     function getPurchaseUpdatedMs(summary) {
-      return getFirestoreTimestampMs(summary.updatedAt)
+      return getFirestoreTimestampMs(summary.createdAtMs)
+        || getFirestoreTimestampMs(summary.createdAt)
+        || getFirestoreTimestampMs(summary.updatedAt)
         || getFirestoreTimestampMs(summary.resetAt)
         || 0;
     }
 
+    function getPurchasePaNumber(summary) {
+      const value = summary.paNumber || summary.lastPa || '';
+      const number = String(value).replace(/[^0-9]/g, '');
+      return Number(number || 0);
+    }
+
     function getFilteredPurchaseSummaries() {
       const queryText = (purchaseRecordSearch ? purchaseRecordSearch.value : '').trim().toLowerCase();
-      const sortMode = purchaseRecordSort ? purchaseRecordSort.value : 'amountDesc';
+      const sortMode = purchaseRecordSort ? purchaseRecordSort.value : (isAdminUser(currentUser) ? 'amountDesc' : 'dateNewest');
       let summaries = allPurchaseSummaries.slice();
 
       if (queryText) {
@@ -3956,8 +3888,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             summary.usernameKey || '',
             summary.name || '',
             summary.phone || '',
+            summary.paNumber || '',
             summary.lastPa || '',
-            summary.lastNegeri || ''
+            summary.negeri || '',
+            summary.lastNegeri || '',
+            formatPurchaseDateTime(summary.createdAtMs || summary.createdAt)
           ].join(' ').toLowerCase();
 
           return searchable.includes(queryText);
@@ -3965,23 +3900,40 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       }
 
       summaries.sort(function (a, b) {
+        if (sortMode === 'dateNewest' || sortMode === 'updatedNewest') {
+          return getPurchaseUpdatedMs(b) - getPurchaseUpdatedMs(a)
+            || getPurchasePaNumber(b) - getPurchasePaNumber(a)
+            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        if (sortMode === 'dateOldest') {
+          return getPurchaseUpdatedMs(a) - getPurchaseUpdatedMs(b)
+            || getPurchasePaNumber(a) - getPurchasePaNumber(b)
+            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
+        }
+
+        if (sortMode === 'paDesc') {
+          return getPurchasePaNumber(b) - getPurchasePaNumber(a)
+            || getPurchaseUpdatedMs(b) - getPurchaseUpdatedMs(a);
+        }
+
+        if (sortMode === 'paAsc') {
+          return getPurchasePaNumber(a) - getPurchasePaNumber(b)
+            || getPurchaseUpdatedMs(b) - getPurchaseUpdatedMs(a);
+        }
+
         if (sortMode === 'amountAsc') {
-          return (a.totalAmount || 0) - (b.totalAmount || 0)
+          return (a.totalAmount || a.amount || 0) - (b.totalAmount || b.amount || 0)
             || (a.usernameKey || '').localeCompare(b.usernameKey || '');
         }
 
         if (sortMode === 'unitsDesc') {
-          return (b.totalUnits || 0) - (a.totalUnits || 0)
+          return (b.totalUnits || 1) - (a.totalUnits || 1)
             || (a.usernameKey || '').localeCompare(b.usernameKey || '');
         }
 
         if (sortMode === 'unitsAsc') {
-          return (a.totalUnits || 0) - (b.totalUnits || 0)
-            || (a.usernameKey || '').localeCompare(b.usernameKey || '');
-        }
-
-        if (sortMode === 'updatedNewest') {
-          return getPurchaseUpdatedMs(b) - getPurchaseUpdatedMs(a)
+          return (a.totalUnits || 1) - (b.totalUnits || 1)
             || (a.usernameKey || '').localeCompare(b.usernameKey || '');
         }
 
@@ -3989,7 +3941,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           return (a.usernameKey || '').localeCompare(b.usernameKey || '');
         }
 
-        return (b.totalAmount || 0) - (a.totalAmount || 0)
+        return (b.totalAmount || b.amount || 0) - (a.totalAmount || a.amount || 0)
           || (a.usernameKey || '').localeCompare(b.usernameKey || '');
       });
 
@@ -4014,11 +3966,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         purchaseRecordsPagination.hidden = !visible;
       }
 
-      if (purchaseRecentPanel) {
-        purchaseRecentPanel.hidden = !visible;
-      }
-
-      if (purchaseRecordTools && isAdminUser(currentUser)) {
+      if (purchaseRecordTools) {
         purchaseRecordTools.hidden = !visible;
       }
     }
@@ -4060,7 +4008,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       try {
         purchaseAdminError.textContent = '';
         const summaries = [];
-        purchaseRecordTools.hidden = !isAdminUser(currentUser) || !purchaseRecordsVisible;
+        purchaseRecordTools.hidden = !purchaseRecordsVisible;
         if (togglePurchaseRecordsButton) {
           togglePurchaseRecordsButton.style.display = isAdminUser(currentUser) ? 'inline-block' : 'none';
         }
@@ -4116,21 +4064,37 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           });
         } else {
           purchasePanelTitle.textContent = 'Purchase Records Saya';
-          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. You can only view your own records.';
-
-          const summarySnapshot = await getDoc(doc(db, 'purchaseSummaries', currentUser.usernameKey));
-
-          if (summarySnapshot.exists()) {
-            const data = summarySnapshot.data();
-
-            if (!data.deleted) {
-              summaries.push(data);
-            }
+          purchasePanelNote.textContent = 'Senarai ini hanya menunjukkan PA yang dibeli oleh akaun anda sahaja.';
+          if (purchaseRecordSort) {
+            purchaseRecordSort.value = purchaseRecordSort.value || 'dateNewest';
           }
+
+          const logQuery = firestoreQuery(
+            collection(db, 'purchaseLogs'),
+            where('uid', '==', auth.currentUser.uid)
+          );
+          const logSnapshot = await getDocs(logQuery);
+
+          logSnapshot.forEach(function (item) {
+            const data = item.data();
+            summaries.push({
+              recordType: 'log',
+              purchaseId: data.purchaseId || item.id,
+              uid: data.uid,
+              usernameKey: data.usernameKey || currentUser.usernameKey,
+              name: data.name || currentUser.name,
+              phone: data.phone || currentUser.phone || '',
+              paNumber: data.paNumber || '',
+              negeri: data.negeri || '',
+              amount: data.amount || PURCHASE_PRICE,
+              url: data.url || '',
+              createdAt: data.createdAt || null,
+              createdAtMs: getFirestoreTimestampMs(data.createdAt)
+            });
+          });
         }
 
         allPurchaseSummaries = summaries;
-        await loadRecentPurchaseLogs();
         setPurchaseRecordsVisible(purchaseRecordsVisible);
         applyPurchaseRecordFilters();
       } catch (error) {
@@ -4939,8 +4903,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           negeri: selectedNegeri,
           amount: PURCHASE_PRICE,
           url,
-          createdAt: serverTimestamp(),
-          createdAtMs: Date.now()
+          createdAt: serverTimestamp()
         });
 
         transaction.set(summaryRef, {
