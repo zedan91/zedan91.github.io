@@ -4209,8 +4209,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
               <span>Last PA: <strong>${escapeHtml(lastPa)}</strong></span>
               ${summaryTime !== '-' ? `<span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>` : ''}
             </span>
-                  ${summaryTime !== '-' ? `<span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>` : ''}
-                </span>
                 <span>
                   <button class="admin-purchase-detail-btn" type="button" data-toggle-purchase-details="${escapeHtml(usernameKey)}">${isOpen ? 'Hide' : 'Show'}</button>
                   <button class="small-action-btn" type="button" data-reset-purchase="${escapeHtml(usernameKey)}">Reset</button>
