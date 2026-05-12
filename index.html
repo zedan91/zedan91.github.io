@@ -608,7 +608,7 @@
       display: flex;
       justify-content: center;
       gap: 12px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       margin: 34px auto 0;
       max-width: 420px;
       animation: heroFloat 7.5s ease-in-out infinite;
@@ -2495,7 +2495,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   width: fit-content !important;
   min-width: auto !important;
   margin: 0;
-  padding: 5px 8px !important;
+  width:auto !important;
+  min-width:58px !important;
+  height:30px !important;
+  padding:0 10px !important;
   border: 0;
   border-radius: 6px !important;
   background: #2563eb;
