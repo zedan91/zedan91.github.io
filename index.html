@@ -6374,27 +6374,14 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             const apiUrl =
               `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${item.pa}.TIF&negeri=${encodeURIComponent(item.negeri)}`;
 
-            const res =
-              await fetch(apiUrl, {
-                cache: 'no-store'
-              });
-
-            const data =
-              await res.json();
-
-            if (!data.ok) {
-              throw new Error(`PA${item.pa} not found`);
-            }
-
-            const downloadUrl =
-              data.fullDownloadUrl || ('https://azobss-backend.onrender.com' + data.download);
-
-            triggerPaDownload(downloadUrl);
+            // apiUrl already returns PDF file directly.
+            // Do not use res.json() here because PDF starts with %PDF.
+            triggerPaDownload(apiUrl);
 
             await recordPurchase(
               item.pa,
               item.negeri,
-              downloadUrl
+              apiUrl
             );
 
             await new Promise(function (resolve) {
