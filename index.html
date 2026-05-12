@@ -2426,22 +2426,58 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 /* FINAL Download PA button layout */
 #downloadTifButton.download-pdf-btn{
   position: relative !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   width: 100%;
+  min-height: 62px;
+  box-sizing: border-box;
+  padding: 14px 22px !important;
   font-size: 22px !important;
   font-weight: 800 !important;
 }
 
+#downloadTifButton .download-pa-main{
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+  line-height: 1.15;
+}
+
 #downloadTifButton .pdf-price-tag{
-  position: absolute;
-  right: 22px;
-  top: 50%;
-  transform: translateY(-50%);
+  flex: 0 0 auto;
   font-size: 18px;
   font-weight: 800;
   color: #ffe600;
   text-shadow: 0 0 3px rgba(255,255,255,0.25);
   pointer-events: none;
   white-space: nowrap;
+}
+
+@media(max-width:560px){
+  #downloadTifButton.download-pdf-btn{
+    flex-direction: column;
+    gap: 4px;
+    min-height: 76px;
+    padding: 12px 14px !important;
+    font-size: 20px !important;
+  }
+
+  #downloadTifButton .pdf-price-tag{
+    font-size: 16px;
+    line-height: 1.1;
+  }
+}
+
+@media(max-width:360px){
+  #downloadTifButton.download-pdf-btn{
+    font-size: 18px !important;
+  }
+
+  #downloadTifButton .pdf-price-tag{
+    font-size: 15px;
+  }
 }
 
 
