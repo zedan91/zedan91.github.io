@@ -1420,36 +1420,6 @@ body:not(.is-admin) #registeredUsersPanel {
     }
 
     
-.user-compact-actions{
-  width:72px !important;
-  padding:8px 8px !important;
-  border-left:1px solid rgba(148,163,184,0.18) !important;
-  align-self:stretch !important;
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:center !important;
-  align-items:stretch !important;
-  gap:8px !important;
-  justify-self:end !important;
-}
-
-.admin-purchase-detail-btn,
-.user-compact-actions .small-action-btn{
-  width:58px !important;
-  min-width:58px !important;
-  height:30px !important;
-  margin:0 auto !important;
-  padding:0 !important;
-  border-radius:7px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  text-align:center !important;
-  font-size:11px !important;
-  line-height:1 !important;
-}
-
-
 .user-edit-details {
       display: none;
       padding-top: 8px;
@@ -2500,13 +2470,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   gap: 10px !important;
 }
 
-.admin-purchase-user-top{
-  display: grid;
-  grid-template-columns: minmax(150px, 1fr) auto auto auto auto;
-  gap: 10px;
-  align-items: center;
-}
-
 .admin-purchase-detail-btn{
   width: fit-content !important;
   min-width: auto !important;
@@ -2602,70 +2565,43 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 
+
+/* CLEAN SHOW RESET ALIGN */
+.purchase-summary-item.admin-purchase-user-card{
+  overflow:hidden !important;
+}
+
 .admin-purchase-user-top{
-  grid-template-columns:minmax(145px,1fr) 55px 70px 95px 72px !important;
+  display:grid !important;
+  grid-template-columns:minmax(150px,1fr) 60px 80px 100px 72px !important;
+  gap:10px !important;
   align-items:center !important;
 }
 
-
-/* FINAL FORCE ALIGN SHOW / RESET BUTTONS */
-.purchase-summary-item.admin-purchase-user-card{
-  position: relative !important;
-  min-height: 78px !important;
-  padding-right: 92px !important;
-  box-sizing: border-box !important;
-}
-
-.admin-purchase-user-top{
-  display: grid !important;
-  grid-template-columns: minmax(145px,1fr) 55px 70px 95px !important;
-  gap: 10px !important;
-  align-items: center !important;
-}
-
 .user-compact-actions{
-  position: absolute !important;
-  right: 14px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  width: 64px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-left: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  width:72px !important;
 }
 
 .admin-purchase-detail-btn,
 .user-compact-actions .small-action-btn{
-  width: 58px !important;
-  min-width: 58px !important;
-  max-width: 58px !important;
-  height: 30px !important;
-  min-height: 30px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 7px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  font-size: 11px !important;
-  line-height: 1 !important;
-  font-weight: bold !important;
-}
-
-.admin-purchase-detail-btn{
-  background: #2563eb !important;
-  color: #fff !important;
-}
-
-.user-compact-actions .small-action-btn{
-  background: #ef4444 !important;
-  color: #fff !important;
+  width:60px !important;
+  height:30px !important;
+  min-width:60px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border-radius:7px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:11px !important;
+  font-weight:bold !important;
+  line-height:1 !important;
 }
 
 </style>
