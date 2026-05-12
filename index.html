@@ -6375,82 +6375,51 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
 
         checkoutCartButton.disabled = true;
-        checkoutCartButton.textContent = 'Preparing ZIP...';
+        checkoutCartButton.textContent = 'Downloading...';
 
         paError.textContent = '';
         paStatus.style.display = 'block';
-        paStatus.textContent = 'Preparing PA ZIP... please wait.';
+        paStatus.textContent = 'Downloading all PA... please wait.';
 
         try {
-          const res =
-            await fetch('https://azobss-backend.onrender.com/api/pa-cart-zip', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              cache: 'no-store',
-              body: JSON.stringify({
-                items: paCart.map(function (item) {
-                  return {
-                    noPA: `PA${item.pa}.TIF`,
-                    negeri: item.negeri
-                  };
-                })
-              })
-            });
-
-          if (!res.ok) {
-            let errorMessage = 'Failed to prepare ZIP.';
-
-            try {
-              const errorData =
-                await res.json();
-
-              errorMessage =
-                errorData.error || errorMessage;
-            } catch (err) {}
-
-            throw new Error(errorMessage);
-          }
-
-          const zipBlob =
-            await res.blob();
-
-          const zipUrl =
-            URL.createObjectURL(zipBlob);
-
-          const a =
-            document.createElement('a');
-
-          a.href = zipUrl;
-          a.download = 'AZOBSS-PA-Cart.zip';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-
-          setTimeout(function () {
-            URL.revokeObjectURL(zipUrl);
-          }, 3000);
 
           for (const item of paCart) {
+
+            const pdfUrl =
+              `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${item.pa}.TIF&negeri=${encodeURIComponent(item.negeri)}`;
+
+            const a =
+              document.createElement('a');
+
+            a.href = pdfUrl;
+            a.download = '';
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
             await recordPurchase(
               item.pa,
               item.negeri,
-              'AZOBSS-PA-Cart.zip'
+              pdfUrl
+            );
+
+            await new Promise(resolve =>
+              setTimeout(resolve, 2200)
             );
           }
 
-          paCart = [];
-          renderPaCart();
-
           paStatus.style.display = 'block';
-          paStatus.textContent = 'Download ZIP Successful.';
+          paStatus.textContent = 'All PA downloaded successfully.';
 
         } catch (error) {
+
           paStatus.style.display = 'none';
+
           paError.textContent =
-            error.message || 'Failed to download ZIP.';
+            error.message || 'Failed to download PA.';
         } finally {
+
           checkoutCartButton.disabled = false;
           checkoutCartButton.textContent = 'Download All PA';
         }
