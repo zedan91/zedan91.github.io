@@ -1619,11 +1619,26 @@ body:not(.is-admin) #registeredUsersPanel {
     }
 
     .qr-action-btn.whatsapp {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       background: #16a34a;
     }
 
+    .qr-action-btn.whatsapp svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      flex: 0 0 auto;
+    }
+
     .payment-reset-note {
-      margin: 2px 0 0;
+      margin: 4px 0 0;
+      padding: 8px 9px;
+      border: 1px solid rgba(249,115,22,0.28);
+      border-radius: 8px;
+      background: rgba(249,115,22,0.08);
       color: #fed7aa;
       font-size: 12px;
       line-height: 1.35;
