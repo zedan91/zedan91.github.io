@@ -1420,6 +1420,33 @@ body:not(.is-admin) #registeredUsersPanel {
     }
 
     
+.user-compact-actions{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  width:72px !important;
+}
+
+.admin-purchase-detail-btn,
+.user-compact-actions .small-action-btn{
+  width:60px !important;
+  height:30px !important;
+  min-width:60px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border-radius:7px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  font-size:11px !important;
+  font-weight:bold !important;
+  line-height:1 !important;
+}
+
+
 .user-edit-details {
       display: none;
       padding-top: 8px;
@@ -2470,6 +2497,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   gap: 10px !important;
 }
 
+.admin-purchase-user-top{
+  display:grid !important;
+  grid-template-columns:minmax(150px,1fr) 70px 90px 220px 72px !important;
+  gap:12px !important;
+  align-items:center !important;
+}
+
 .admin-purchase-detail-btn{
   width: fit-content !important;
   min-width: auto !important;
@@ -2565,43 +2599,27 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 
-
-/* CLEAN SHOW RESET ALIGN */
-.purchase-summary-item.admin-purchase-user-card{
-  overflow:hidden !important;
-}
-
 .admin-purchase-user-top{
-  display:grid !important;
-  grid-template-columns:minmax(150px,1fr) 60px 80px 100px 72px !important;
-  gap:10px !important;
+  grid-template-columns:minmax(145px,1fr) 55px 70px 95px 72px !important;
   align-items:center !important;
 }
 
-.user-compact-actions{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:8px !important;
-  width:72px !important;
+
+.admin-lastpa-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  line-height:1.2;
 }
 
-.admin-purchase-detail-btn,
-.user-compact-actions .small-action-btn{
-  width:60px !important;
-  height:30px !important;
-  min-width:60px !important;
-  padding:0 !important;
-  margin:0 !important;
-  border-radius:7px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  text-align:center !important;
-  font-size:11px !important;
-  font-weight:bold !important;
-  line-height:1 !important;
+.admin-lastpa-main{
+  color:#22c55e;
+  font-weight:bold;
+}
+
+.admin-lastpa-time{
+  color:#cbd5e1;
+  font-size:11px;
 }
 
 </style>
