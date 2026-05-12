@@ -4692,15 +4692,46 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       try {
         purchaseAdminError.textContent = '';
+        const userSnapshot = await getDoc(doc(db, 'users', usernameKey));
+        const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+        const userUid = userData.uid || '';
+        const logsSnapshot = await getDocs(collection(db, 'purchaseLogs'));
+        const resetLogWrites = [];
+
+        logsSnapshot.forEach(function (item) {
+          const data = item.data();
+          const matchesUser = (data.usernameKey && data.usernameKey === usernameKey)
+            || (userUid && data.uid === userUid);
+
+          if (matchesUser && !data.deleted) {
+            resetLogWrites.push(setDoc(doc(db, 'purchaseLogs', item.id), {
+              deleted: true,
+              resetBy: currentUser.usernameKey,
+              resetAt: serverTimestamp()
+            }, { merge: true }));
+          }
+        });
+
+        await Promise.all(resetLogWrites);
+
         await setDoc(doc(db, 'purchaseSummaries', usernameKey), {
+          usernameKey,
+          uid: userUid || null,
+          name: userData.name || usernameKey,
+          phone: userData.phone || '',
           totalUnits: 0,
           totalAmount: 0,
           lastPa: '',
           lastNegeri: '',
+          deleted: false,
+          deletedAt: null,
+          deletedBy: null,
           resetBy: currentUser.usernameKey,
           resetAt: serverTimestamp()
         }, { merge: true });
 
+        adminPurchaseDetailsOpen.delete(usernameKey);
+        adminPurchaseDetailsPage.delete(usernameKey);
         await loadPurchaseRecords();
       } catch (error) {
         purchaseAdminError.textContent = `Failed to reset purchase records: ${error.code || error.message}`;
