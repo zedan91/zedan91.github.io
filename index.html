@@ -6372,7 +6372,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         try {
           for (const item of paCart) {
             const apiUrl =
-              `https://azobss-backend.onrender.com/api/pa?noPA=PA${item.pa}.TIF&negeri=${encodeURIComponent(item.negeri)}`;
+              `https://azobss-backend.onrender.com/api/pa-pdf?noPA=PA${item.pa}.TIF&negeri=${encodeURIComponent(item.negeri)}`;
 
             const res =
               await fetch(apiUrl, {
