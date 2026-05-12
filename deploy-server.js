@@ -125,6 +125,218 @@ function cleanState(negeri) {
   return v;
 }
 
+
+function getCrc32Buffer(buffer) {
+  const table =
+    getCrc32Buffer.table ||
+    (getCrc32Buffer.table = (() => {
+      const t = new Array(256);
+
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+
+        for (let k = 0; k < 8; k++) {
+          c = c & 1
+            ? 0xedb88320 ^ (c >>> 1)
+            : c >>> 1;
+        }
+
+        t[i] = c >>> 0;
+      }
+
+      return t;
+    })());
+
+  let crc = 0 ^ -1;
+
+  for (let i = 0; i < buffer.length; i++) {
+    crc =
+      (crc >>> 8) ^
+      table[(crc ^ buffer[i]) & 0xff];
+  }
+
+  return (crc ^ -1) >>> 0;
+}
+
+function getDosDateTime(date = new Date()) {
+  const time =
+    (date.getHours() << 11) |
+    (date.getMinutes() << 5) |
+    Math.floor(date.getSeconds() / 2);
+
+  const dosDate =
+    ((date.getFullYear() - 1980) << 9) |
+    ((date.getMonth() + 1) << 5) |
+    date.getDate();
+
+  return { time, dosDate };
+}
+
+function buildZip(files) {
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  const { time, dosDate } =
+    getDosDateTime();
+
+  for (const file of files) {
+    const nameBuffer =
+      Buffer.from(file.name, "utf8");
+
+    const data =
+      Buffer.isBuffer(file.data)
+        ? file.data
+        : Buffer.from(file.data);
+
+    const crc =
+      getCrc32Buffer(data);
+
+    const localHeader =
+      Buffer.alloc(30);
+
+    localHeader.writeUInt32LE(0x04034b50, 0);
+    localHeader.writeUInt16LE(20, 4);
+    localHeader.writeUInt16LE(0, 6);
+    localHeader.writeUInt16LE(0, 8);
+    localHeader.writeUInt16LE(time, 10);
+    localHeader.writeUInt16LE(dosDate, 12);
+    localHeader.writeUInt32LE(crc, 14);
+    localHeader.writeUInt32LE(data.length, 18);
+    localHeader.writeUInt32LE(data.length, 22);
+    localHeader.writeUInt16LE(nameBuffer.length, 26);
+    localHeader.writeUInt16LE(0, 28);
+
+    localParts.push(localHeader, nameBuffer, data);
+
+    const centralHeader =
+      Buffer.alloc(46);
+
+    centralHeader.writeUInt32LE(0x02014b50, 0);
+    centralHeader.writeUInt16LE(20, 4);
+    centralHeader.writeUInt16LE(20, 6);
+    centralHeader.writeUInt16LE(0, 8);
+    centralHeader.writeUInt16LE(0, 10);
+    centralHeader.writeUInt16LE(time, 12);
+    centralHeader.writeUInt16LE(dosDate, 14);
+    centralHeader.writeUInt32LE(crc, 16);
+    centralHeader.writeUInt32LE(data.length, 20);
+    centralHeader.writeUInt32LE(data.length, 24);
+    centralHeader.writeUInt16LE(nameBuffer.length, 28);
+    centralHeader.writeUInt16LE(0, 30);
+    centralHeader.writeUInt16LE(0, 32);
+    centralHeader.writeUInt16LE(0, 34);
+    centralHeader.writeUInt16LE(0, 36);
+    centralHeader.writeUInt32LE(0, 38);
+    centralHeader.writeUInt32LE(offset, 42);
+
+    centralParts.push(centralHeader, nameBuffer);
+
+    offset +=
+      localHeader.length +
+      nameBuffer.length +
+      data.length;
+  }
+
+  const centralSize =
+    centralParts.reduce((sum, part) => sum + part.length, 0);
+
+  const end =
+    Buffer.alloc(22);
+
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(0, 4);
+  end.writeUInt16LE(0, 6);
+  end.writeUInt16LE(files.length, 8);
+  end.writeUInt16LE(files.length, 10);
+  end.writeUInt32LE(centralSize, 12);
+  end.writeUInt32LE(offset, 16);
+  end.writeUInt16LE(0, 20);
+
+  return Buffer.concat([
+    ...localParts,
+    ...centralParts,
+    end
+  ]);
+}
+
+async function createPaPdfBuffer(noPA, negeri) {
+  const fileName =
+    `${noPA}.TIF`;
+
+  const jupemUrl =
+`https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
+
+  const response =
+    await fetch(jupemUrl);
+
+  if (!response.ok) {
+    throw new Error("PA not found");
+  }
+
+  const tifBuffer =
+    Buffer.from(
+      await response.arrayBuffer()
+    );
+
+  const firstText =
+    tifBuffer
+      .slice(0, 120)
+      .toString("utf8")
+      .toLowerCase();
+
+  if (
+    !tifBuffer.length ||
+    firstText.includes("<html")
+  ) {
+    throw new Error("Invalid PA file");
+  }
+
+  const pngBuffer =
+    await sharp(tifBuffer)
+      .png()
+      .toBuffer();
+
+  const meta =
+    await sharp(pngBuffer)
+      .metadata();
+
+  return await new Promise((resolve, reject) => {
+    const doc =
+      new PDFDocument({
+        autoFirstPage: false,
+        margin: 0
+      });
+
+    const chunks = [];
+
+    doc.on("data", chunk => chunks.push(chunk));
+    doc.on("error", reject);
+
+    doc.on("end", () => {
+      resolve(Buffer.concat(chunks));
+    });
+
+    doc.addPage({
+      size: [meta.width, meta.height],
+      margin: 0
+    });
+
+    doc.image(
+      pngBuffer,
+      0,
+      0,
+      {
+        width: meta.width,
+        height: meta.height
+      }
+    );
+
+    doc.end();
+  });
+}
+
+
 async function handler(req, res) {
 
   try {
@@ -474,6 +686,130 @@ if (
     }, null, 2),
     "application/json"
   );
+}
+
+
+// =========================
+// JUPEM PA CART ZIP DOWNLOAD
+// =========================
+
+if (
+  pathname === "/api/pa-cart-zip" &&
+  req.method === "POST"
+) {
+
+  const body =
+    await readBody(req);
+
+  let data;
+
+  try {
+    data = JSON.parse(body || "{}");
+  } catch (err) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Invalid JSON"
+      }),
+      "application/json"
+    );
+  }
+
+  const items =
+    Array.isArray(data.items)
+      ? data.items
+      : [];
+
+  if (!items.length) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Cart empty"
+      }),
+      "application/json"
+    );
+  }
+
+  if (items.length > 30) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Maximum 30 PA per ZIP"
+      }),
+      "application/json"
+    );
+  }
+
+  const files = [];
+
+  for (const item of items) {
+    let noPA =
+      cleanPA(item.noPA || item.pa || "");
+
+    const negeri =
+      cleanState(item.negeri || item.state || "");
+
+    if (/^\d+$/.test(noPA)) {
+      noPA = `PA${noPA}`;
+    }
+
+    if (!noPA || !negeri) {
+      return send(
+        res,
+        400,
+        JSON.stringify({
+          ok: false,
+          error: "Invalid cart item"
+        }),
+        "application/json"
+      );
+    }
+
+    try {
+      const pdfBuffer =
+        await createPaPdfBuffer(noPA, negeri);
+
+      const safeName =
+        `${noPA}`.replace(/[^A-Z0-9_-]/gi, "");
+
+      files.push({
+        name: `${safeName}.pdf`,
+        data: pdfBuffer
+      });
+
+    } catch (err) {
+      return send(
+        res,
+        404,
+        JSON.stringify({
+          ok: false,
+          error: `${noPA} not found / PA tiada dalam sistem`
+        }),
+        "application/json"
+      );
+    }
+  }
+
+  const zipBuffer =
+    buildZip(files);
+
+  res.writeHead(200, {
+    "Content-Type": "application/zip",
+    "Content-Disposition":
+      `attachment; filename="AZOBSS-PA-Cart.zip"`,
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*"
+  });
+
+  res.end(zipBuffer);
+
+  return;
 }
 
 // =========================

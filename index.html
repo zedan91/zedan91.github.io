@@ -6375,41 +6375,81 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
 
         checkoutCartButton.disabled = true;
-        checkoutCartButton.textContent = 'Downloading...';
+        checkoutCartButton.textContent = 'Preparing ZIP...';
 
         paError.textContent = '';
         paStatus.style.display = 'block';
-        paStatus.textContent = 'Downloading PA from cart...';
+        paStatus.textContent = 'Preparing PA ZIP... please wait.';
 
         try {
+          const res =
+            await fetch('https://azobss-backend.onrender.com/api/pa-cart-zip', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              cache: 'no-store',
+              body: JSON.stringify({
+                items: paCart.map(function (item) {
+                  return {
+                    noPA: `PA${item.pa}.TIF`,
+                    negeri: item.negeri
+                  };
+                })
+              })
+            });
+
+          if (!res.ok) {
+            let errorMessage = 'Failed to prepare ZIP.';
+
+            try {
+              const errorData =
+                await res.json();
+
+              errorMessage =
+                errorData.error || errorMessage;
+            } catch (err) {}
+
+            throw new Error(errorMessage);
+          }
+
+          const zipBlob =
+            await res.blob();
+
+          const zipUrl =
+            URL.createObjectURL(zipBlob);
+
+          const a =
+            document.createElement('a');
+
+          a.href = zipUrl;
+          a.download = 'AZOBSS-PA-Cart.zip';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          setTimeout(function () {
+            URL.revokeObjectURL(zipUrl);
+          }, 3000);
+
           for (const item of paCart) {
-            const apiUrl =
-              buildPdfUrl(item.pa, item.negeri);
-
-            // apiUrl already returns PDF file directly.
-            // Do not use res.json() here because PDF starts with %PDF.
-            triggerPaDownload(apiUrl);
-
             await recordPurchase(
               item.pa,
               item.negeri,
-              apiUrl
+              'AZOBSS-PA-Cart.zip'
             );
-
-            await new Promise(function (resolve) {
-              setTimeout(resolve, 1400);
-            });
           }
 
           paCart = [];
           renderPaCart();
 
           paStatus.style.display = 'block';
-          paStatus.textContent = 'Download cart completed.';
+          paStatus.textContent = 'Download ZIP Successful.';
 
         } catch (error) {
           paStatus.style.display = 'none';
-          paError.textContent = error.message || 'Failed to download cart.';
+          paError.textContent =
+            error.message || 'Failed to download ZIP.';
         } finally {
           checkoutCartButton.disabled = false;
           checkoutCartButton.textContent = 'Download All PA';
