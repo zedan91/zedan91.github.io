@@ -6581,6 +6581,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 (function(){
   const STORAGE_KEY = 'azobss_affiliate_products_v4';
   const ADMIN_USERNAME = 'zedan91';
+  const DEPLOY_SERVER = 'http://127.0.0.1:3000';
 
   function qs(s){return document.querySelector(s);}
   function qsa(s){return Array.from(document.querySelectorAll(s));}
@@ -6606,12 +6607,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
     // Your existing login system uses usernameKey
     if(currentUser && clean(currentUser.usernameKey) === ADMIN_USERNAME){
-      return true;
-    }
-
-    // Fallback if visible username is exactly zedan91
-    const signedInName = clean(qs('#signedInName')?.textContent || qs('.user-name')?.textContent);
-    if(signedInName === ADMIN_USERNAME){
       return true;
     }
 
@@ -6713,6 +6708,32 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   }
 
   let products = [];
+
+  function normalizeProduct(p, index){
+    return {
+      id: String(p && p.id || ('aff-' + Date.now() + '-' + index)),
+      icon: String(p && p.icon || 'AZ'),
+      badge: String(p && p.badge || 'Affiliate'),
+      title: String(p && p.title || 'Affiliate Product'),
+      desc: String(p && p.desc || ''),
+      category: String(p && p.category || 'others'),
+      meta: String(p && p.meta || ''),
+      link: String(p && p.link || '#')
+    };
+  }
+
+  function setProducts(nextProducts, persistLocal){
+    if(!Array.isArray(nextProducts)) return;
+    products = nextProducts.map(normalizeProduct);
+    if(persistLocal){
+      saveProducts(products);
+    }
+    renderProducts();
+  }
+
+  window.azobssSetAffiliateProducts = function(nextProducts){
+    setProducts(nextProducts, true);
+  };
 
   function renderProducts(){
     const wrap = getWrap();
@@ -6834,9 +6855,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           const imported = JSON.parse(reader.result);
           if(!Array.isArray(imported)) throw new Error('Invalid file');
 
-          products = imported;
-          saveProducts(products);
-          renderProducts();
+          setProducts(imported, true);
           alert('Affiliate backup imported.');
         }catch(err){
           alert('Invalid affiliate backup file.');
@@ -6851,9 +6870,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       if(confirm('Reset affiliate local changes?')){
         localStorage.removeItem(STORAGE_KEY);
-        products = getProductsFromDOM();
-        saveProducts(products);
-        renderProducts();
+        if(typeof window.azobssLoadAffiliateProducts === 'function'){
+          window.azobssLoadAffiliateProducts();
+        }else{
+          setProducts(getProductsFromDOM(), true);
+        }
       }
     });
 
@@ -6866,7 +6887,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       // 1. Check server aktif
       let serverOk = false;
       try{
-        const health = await fetch('https://127.0.0.1:7821/health', {signal: AbortSignal.timeout(2500)});
+        const health = await fetch(DEPLOY_SERVER + '/health', {signal: AbortSignal.timeout(2500)});
         serverOk = health.ok;
       }catch(e){}
 
@@ -6877,12 +6898,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           '  1. Buka Command Prompt\n' +
           '  2. cd ke folder website anda\n' +
           '  3. Taip: node deploy-server.js\n' +
-          '  4. Cuba semula button ini'
+          '  4. Pastikan server berjalan di ' + DEPLOY_SERVER + '\n' +
+          '  5. Cuba semula button ini'
         );
         return;
       }
 
-      if(!confirm('Deploy ' + products.length + ' produk ke GitHub sekarang?\n\nIni akan:\n\u2022 Tulis affiliate-products.json\n\u2022 Tulis affiliate-backup.json\n\u2022 Git commit + push')) return;
+      if(!confirm('Deploy ' + products.length + ' produk ke GitHub sekarang?\n\nIni akan:\n- Tulis affiliate-products.json\n- Tulis affiliate-backup.json\n- Git commit + push')) return;
 
       // 2. Deploy
       const origHTML = btn.innerHTML;
@@ -6890,7 +6912,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       btn.disabled = true;
 
       try{
-        const res = await fetch('https://127.0.0.1:7821/deploy', {
+        const res = await fetch(DEPLOY_SERVER + '/deploy', {
           method : 'POST',
           headers: {'Content-Type':'application/json'},
           body   : JSON.stringify(products),
@@ -6922,12 +6944,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const saved = loadSavedProducts();
 
     if(saved){
-      products = saved;
-      renderProducts();
+      setProducts(saved, false);
     }else{
       ensureCardAdminButtons();
-      products = getProductsFromDOM();
-      saveProducts(products);
+      setProducts(getProductsFromDOM(), true);
     }
 
     bindAdmin();
@@ -6990,6 +7010,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const products = await res.json();
       if(!Array.isArray(products)) return;
 
+      if(typeof window.azobssSetAffiliateProducts === 'function'){
+        window.azobssSetAffiliateProducts(products);
+        return;
+      }
+
       wrap.innerHTML = products.map(productHTML).join('');
 
       try{
@@ -6999,6 +7024,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       document.dispatchEvent(new CustomEvent('azobssAffiliateUpdated'));
     }catch(e){}
   }
+
+  window.azobssLoadAffiliateProducts = loadAffiliateJSON;
 
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', loadAffiliateJSON);

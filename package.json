@@ -14,11 +14,11 @@
   ],
   "scripts": {
     "start": "node deploy-server.js",
-    "check": "echo \"Static AZOBSS docs ready\""
+    "check": "node --check deploy-server.js && node -e \"JSON.parse(require('fs').readFileSync('affiliate-products.json','utf8')); console.log('Static AZOBSS docs ready')\"",
+    "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
-    "selfsigned": "^5.5.0",
-    "sharp": "^0.33.5",
-    "pdfkit": "^0.15.0"
+    "pdfkit": "^0.15.0",
+    "sharp": "^0.33.5"
   }
 }
