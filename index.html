@@ -5578,41 +5578,47 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const purchaseId = `${Date.now()}-${currentUser.usernameKey}-${paValue}`;
       const summaryRef = doc(db, 'purchaseSummaries', currentUser.usernameKey);
       const logRef = doc(db, 'purchaseLogs', purchaseId);
+      const purchaseLog = {
+        purchaseId,
+        uid: currentUser.uid,
+        usernameKey: currentUser.usernameKey,
+        name: currentUser.name,
+        phone: currentUser.phone || '',
+        paNumber: paValue,
+        negeri: selectedNegeri,
+        amount: PURCHASE_PRICE,
+        url,
+        deleted: false,
+        createdAt: serverTimestamp()
+      };
 
-      await runTransaction(db, async function (transaction) {
-        const summarySnapshot = await transaction.get(summaryRef);
-        const currentSummary = summarySnapshot.exists() ? summarySnapshot.data() : {};
-        const totalUnits = (currentSummary.totalUnits || 0) + 1;
-        const totalAmount = totalUnits * PURCHASE_PRICE;
+      await setDoc(logRef, purchaseLog);
 
-        transaction.set(logRef, {
-          purchaseId,
-          uid: currentUser.uid,
-          usernameKey: currentUser.usernameKey,
-          name: currentUser.name,
-          phone: currentUser.phone || '',
-          paNumber: paValue,
-          negeri: selectedNegeri,
-          amount: PURCHASE_PRICE,
-          url,
-          createdAt: serverTimestamp()
+      try {
+        await runTransaction(db, async function (transaction) {
+          const summarySnapshot = await transaction.get(summaryRef);
+          const currentSummary = summarySnapshot.exists() ? summarySnapshot.data() : {};
+          const totalUnits = Number(currentSummary.totalUnits || 0) + 1;
+          const totalAmount = totalUnits * PURCHASE_PRICE;
+
+          transaction.set(summaryRef, {
+            uid: currentUser.uid,
+            usernameKey: currentUser.usernameKey,
+            name: currentUser.name,
+            phone: currentUser.phone || '',
+            totalUnits,
+            totalAmount,
+            lastPa: paValue,
+            lastNegeri: selectedNegeri,
+            deleted: false,
+            deletedAt: null,
+            deletedBy: null,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
         });
-
-        transaction.set(summaryRef, {
-          uid: currentUser.uid,
-          usernameKey: currentUser.usernameKey,
-          name: currentUser.name,
-          phone: currentUser.phone || '',
-          totalUnits,
-          totalAmount,
-          lastPa: paValue,
-          lastNegeri: selectedNegeri,
-          deleted: false,
-          deletedAt: null,
-          deletedBy: null,
-          updatedAt: serverTimestamp()
-        }, { merge: true });
-      });
+      } catch (error) {
+        // purchaseLogs is the source of truth; summary is only a fast admin cache.
+      }
 
       await loadPurchaseRecords();
     }
