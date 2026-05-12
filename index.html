@@ -2442,15 +2442,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 .user-pa-item{
   display: grid;
-  grid-template-columns: minmax(105px,0.8fr) minmax(120px,1fr) minmax(150px,1.1fr) auto;
-  gap: 10px;
+  grid-template-columns: minmax(92px,0.75fr) minmax(110px,0.95fr) minmax(130px,1.05fr);
+  gap: 8px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 7px 10px;
   border: 1px solid rgba(148,163,184,0.2);
-  border-radius: 10px;
+  border-radius: 9px;
   background: rgba(30,41,59,0.75);
   color: #e2e8f0;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.15;
 }
 
 .user-pa-item strong{
@@ -2491,13 +2492,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 }
 
 .admin-purchase-detail-btn{
-  width: fit-content;
+  width: fit-content !important;
+  min-width: auto !important;
   margin: 0;
-  padding: 9px 12px;
+  padding: 7px 10px !important;
   border: 0;
-  border-radius: 8px;
+  border-radius: 7px !important;
   background: #2563eb;
   color: white;
+  font-size: 12px !important;
+  line-height: 1 !important;
   font-weight: bold;
   cursor: pointer;
 }
@@ -2515,15 +2519,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 .admin-pa-detail-row{
   display: grid;
-  grid-template-columns: minmax(96px,0.7fr) minmax(110px,0.9fr) minmax(140px,1.2fr) auto;
-  gap: 10px;
+  grid-template-columns: minmax(92px,0.75fr) minmax(110px,0.95fr) minmax(130px,1.05fr);
+  gap: 8px;
   align-items: center;
-  padding: 9px 11px;
+  padding: 7px 10px;
   border: 1px solid rgba(148,163,184,0.16);
   border-radius: 9px;
   background: rgba(15,23,42,0.72);
   color: #e2e8f0;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.15;
 }
 
 .admin-pa-detail-row strong{
@@ -2532,7 +2537,41 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 .admin-pa-detail-note{
   color: #94a3b8;
-  font-size: 12px;
+  font-size: 11px;
+}
+
+.admin-pa-detail-pagination{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+  align-items:center;
+}
+
+.admin-pa-page-btn{
+  min-width:38px;
+  height:38px;
+  padding:0 12px;
+  border:1px solid rgba(37,99,235,0.55);
+  border-radius:10px;
+  background:#07142a;
+  color:#ffffff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.admin-pa-page-btn.is-active{
+  background:#22c55e;
+  border-color:#22c55e;
+}
+
+.admin-pa-page-btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
 }
 
 @media(max-width:700px){
@@ -3791,6 +3830,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     let allUserPaPurchases = [];
     let allAdminPurchaseLogs = [];
     const adminPurchaseDetailsOpen = new Set();
+    const adminPurchaseDetailsPage = new Map();
     let userPaPurchasePage = 1;
     let allRegisteredUsers = [];
     let registeredUsersPage = 1;
@@ -3919,6 +3959,51 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return user && user.usernameKey === ADMIN_USERNAME;
     }
 
+
+    function renderAdminPaDetailPagination(usernameKey, totalItems, currentPage) {
+      const pageSize = 5;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+      if (totalPages <= 1) {
+        return '';
+      }
+
+      const maxButtons = 10;
+      let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+      if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+
+      const buttons = [
+        { text: '<<', page: 1, disabled: currentPage === 1 },
+        { text: 'P', page: Math.max(1, currentPage - 1), disabled: currentPage === 1 }
+      ];
+
+      for (let i = startPage; i <= endPage; i += 1) {
+        buttons.push({ text: String(i), page: i, active: i === currentPage });
+      }
+
+      buttons.push({ text: 'N', page: Math.min(totalPages, currentPage + 1), disabled: currentPage === totalPages });
+      buttons.push({ text: '>>', page: totalPages, disabled: currentPage === totalPages });
+
+      return `
+        <div class="admin-pa-detail-pagination">
+          ${buttons.map(function (button) {
+            return `
+              <button class="admin-pa-page-btn${button.active ? ' is-active' : ''}" type="button"
+                data-admin-detail-user="${escapeHtml(usernameKey)}"
+                data-admin-detail-page="${button.page}"
+                ${button.disabled ? 'disabled' : ''}>
+                ${button.text}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
     function renderPurchaseSummaries(summaries, requestedPage = purchaseRecordsPage) {
       if (!summaries.length) {
         purchaseRecordsPage = 1;
@@ -3947,27 +4032,28 @@ body:not(.is-admin) .affiliate-card-admin-actions{
               return getPurchaseLogMs(b) - getPurchaseLogMs(a);
             });
 
-          const latestFive = userLogs.slice(0, 5);
+          const detailPageSize = 5;
+          const detailTotalPages = Math.max(1, Math.ceil(userLogs.length / detailPageSize));
+          const savedDetailPage = Number(adminPurchaseDetailsPage.get(usernameKey) || 1);
+          const detailPage = Math.min(Math.max(savedDetailPage, 1), detailTotalPages);
+          adminPurchaseDetailsPage.set(usernameKey, detailPage);
+          const pagedLogs = userLogs.slice((detailPage - 1) * detailPageSize, detailPage * detailPageSize);
           const detailsHtml = isOpen
             ? `
               <div class="admin-purchase-user-details">
-                ${latestFive.length ? latestFive.map(function (log) {
+                ${pagedLogs.length ? pagedLogs.map(function (log) {
                   const paText = log.paNumber ? `PA${String(log.paNumber).replace(/^PA/i, '')}` : '-';
                   const amountText = log.amount ? `RM${log.amount}` : `RM${PURCHASE_PRICE}`;
-                  const downloadLink = log.url
-                    ? `<a class="user-pa-download" href="${escapeHtml(log.url)}" target="_blank" rel="noopener">Download</a>`
-                    : '';
 
                   return `
                     <div class="admin-pa-detail-row">
                       <span>PA: <strong>${escapeHtml(paText)}</strong></span>
                       <span>Negeri: <strong>${escapeHtml(log.negeri || '-')}</strong><br>Amount: <strong>${escapeHtml(amountText)}</strong></span>
                       <span>Date/Time:<br><strong>${escapeHtml(formatPurchaseLogDate(log))}</strong></span>
-                      ${downloadLink}
                     </div>
                   `;
                 }).join('') : '<div class="admin-pa-detail-row">No PA purchase details yet.</div>'}
-                ${userLogs.length > 5 ? `<div class="admin-pa-detail-note">Showing latest 5 from ${userLogs.length} purchases.</div>` : ''}
+                ${renderAdminPaDetailPagination(usernameKey, userLogs.length, detailPage)}
               </div>
             `
             : '';
@@ -4097,16 +4183,12 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       userPaPurchaseList.innerHTML = pageData.pageItems.map(function (log) {
         const paText = log.paNumber ? `PA${String(log.paNumber).replace(/^PA/i, '')}` : '-';
         const amountText = log.amount ? `RM${log.amount}` : `RM${PURCHASE_PRICE}`;
-        const downloadLink = log.url
-          ? `<a class="user-pa-download" href="${escapeHtml(log.url)}" target="_blank" rel="noopener">Download</a>`
-          : '';
 
         return `
           <div class="user-pa-item">
             <span>PA: <strong>${escapeHtml(paText)}</strong></span>
             <span>Negeri: <strong>${escapeHtml(log.negeri || '-')}</strong><br>Amount: <strong>${escapeHtml(amountText)}</strong></span>
             <span>Date/Time:<br><strong>${escapeHtml(formatPurchaseLogDate(log))}</strong></span>
-            ${downloadLink}
           </div>
         `;
       }).join('');
@@ -4347,6 +4429,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         } else {
           allAdminPurchaseLogs = [];
           adminPurchaseDetailsOpen.clear();
+          adminPurchaseDetailsPage.clear();
           purchasePanelTitle.textContent = 'Purchase Records Saya';
           purchasePanelNote.textContent = 'Price: RM5 for 1 PA. You can only view your own records.';
 
@@ -6363,6 +6446,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       userPaPurchaseSort.addEventListener('change', function () { applyUserPaPurchaseFilters(1); });
     }
     purchaseSummaryList.addEventListener('click', function (event) {
+      const adminDetailPageButton = event.target.closest('[data-admin-detail-page]');
+
+      if (adminDetailPageButton && !adminDetailPageButton.disabled) {
+        const usernameKey = adminDetailPageButton.dataset.adminDetailUser || '';
+        const page = Number(adminDetailPageButton.dataset.adminDetailPage || 1);
+        adminPurchaseDetailsPage.set(usernameKey, page);
+        renderPurchaseSummaries(getFilteredPurchaseSummaries(), purchaseRecordsPage);
+        return;
+      }
+
       const detailButton = event.target.closest('[data-toggle-purchase-details]');
 
       if (detailButton) {
@@ -6372,6 +6465,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           adminPurchaseDetailsOpen.delete(usernameKey);
         } else {
           adminPurchaseDetailsOpen.add(usernameKey);
+          if (!adminPurchaseDetailsPage.has(usernameKey)) {
+            adminPurchaseDetailsPage.set(usernameKey, 1);
+          }
         }
 
         renderPurchaseSummaries(getFilteredPurchaseSummaries(), purchaseRecordsPage);
