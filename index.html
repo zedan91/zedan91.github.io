@@ -121,6 +121,38 @@
     }
 
     @media (max-width: 760px) {
+      .site-auth-actions {
+        top: calc(env(safe-area-inset-top, 0px) + 10px);
+        left: 12px;
+        right: 12px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: auto;
+        max-width: calc(100vw - 24px);
+        z-index: 3500;
+      }
+
+      .site-auth-btn {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 13px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .site-auth-btn svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .top-login-toast {
+        top: calc(env(safe-area-inset-top, 0px) + 62px);
+        left: 12px;
+        right: 12px;
+        max-width: none;
+      }
+
       .admin-online-summary {
         top: 64px !important;
         right: 12px !important;
