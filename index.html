@@ -2812,86 +2812,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   }
 }
 
-
-/* MOBILE FIX: keep Sign In / Sign Up floating buttons inside phone screen */
-html,
-body{
-  max-width:100% !important;
-  overflow-x:hidden !important;
-}
-
-.site-auth-actions{
-  position:fixed !important;
-  top:calc(10px + env(safe-area-inset-top, 0px)) !important;
-  right:calc(10px + env(safe-area-inset-right, 0px)) !important;
-  left:auto !important;
-  max-width:calc(100vw - 20px) !important;
-  box-sizing:border-box !important;
-  display:flex !important;
-  justify-content:flex-end !important;
-  align-items:center !important;
-  gap:8px !important;
-  flex-wrap:wrap !important;
-  z-index:9999 !important;
-}
-
-.site-auth-btn{
-  box-sizing:border-box !important;
-  max-width:calc(50vw - 14px) !important;
-  white-space:nowrap !important;
-}
-
-@media(max-width:560px){
-  .site-auth-actions{
-    top:calc(8px + env(safe-area-inset-top, 0px)) !important;
-    right:calc(8px + env(safe-area-inset-right, 0px)) !important;
-    left:8px !important;
-    max-width:calc(100vw - 16px) !important;
-    justify-content:flex-end !important;
-    gap:6px !important;
-  }
-
-  .site-auth-btn{
-    padding:7px 9px !important;
-    border-radius:8px !important;
-    font-size:12px !important;
-    max-width:calc(50vw - 12px) !important;
-    min-height:34px !important;
-  }
-
-  .site-auth-btn svg{
-    width:14px !important;
-    height:14px !important;
-  }
-
-  .top-login-toast{
-    top:58px !important;
-    left:10px !important;
-    right:10px !important;
-    max-width:calc(100vw - 20px) !important;
-  }
-}
-
-@media(max-width:360px){
-  .site-auth-btn{
-    padding:6px 8px !important;
-    font-size:11px !important;
-  }
-}
-
-
-
-/* FORCE HIDE SIGN IN/SIGN UP AFTER LOGIN */
-body.is-authenticated .site-auth-actions,
-body.has-pa-access .site-auth-actions,
-body.is-admin .site-auth-actions,
-.site-auth-actions.auth-hidden{
-  display:none !important;
-  visibility:hidden !important;
-  opacity:0 !important;
-  pointer-events:none !important;
-}
-
 </style>
 
 
@@ -7695,39 +7615,6 @@ body.is-admin .site-auth-actions,
   });
 
   window.azobssRefreshAffiliateProducts = initAffiliateFinal;
-})();
-</script>
-
-
-<script>
-(function(){
-  function forceHideAuthButtonsAfterLogin(){
-    var authBox = document.querySelector('.site-auth-actions');
-    var userMenu = document.getElementById('userMenu') || document.querySelector('.user-menu');
-    var body = document.body;
-
-    var loggedIn =
-      body.classList.contains('is-authenticated') ||
-      body.classList.contains('has-pa-access') ||
-      body.classList.contains('is-admin') ||
-      (userMenu && getComputedStyle(userMenu).display !== 'none');
-
-    if(authBox && loggedIn){
-      authBox.classList.add('auth-hidden');
-      authBox.style.setProperty('display','none','important');
-      authBox.style.setProperty('visibility','hidden','important');
-      authBox.style.setProperty('opacity','0','important');
-      authBox.style.setProperty('pointer-events','none','important');
-    }
-  }
-
-  window.forceHideAuthButtonsAfterLogin = forceHideAuthButtonsAfterLogin;
-  document.addEventListener('DOMContentLoaded', forceHideAuthButtonsAfterLogin);
-  window.addEventListener('load', forceHideAuthButtonsAfterLogin);
-  setInterval(forceHideAuthButtonsAfterLogin, 800);
-
-  var obs = new MutationObserver(forceHideAuthButtonsAfterLogin);
-  obs.observe(document.documentElement, { attributes:true, childList:true, subtree:true });
 })();
 </script>
 
