@@ -2608,16 +2608,47 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 }
 
 
-/* FINAL ADMIN PURCHASE CARD LAYOUT + LAST PA DATETIME */
-.purchase-summary-item.admin-purchase-user-card{
+
+/* FIX PURCHASE ROW WIDTH + SHOW RESET BUTTONS */
+.purchase-panel-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) 160px !important;
+  gap:14px !important;
+  align-items:start !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+
+#purchaseSummaryList .purchase-summary-item.admin-purchase-user-card{
+  padding:8px 10px !important;
   overflow:hidden !important;
 }
 
 .admin-purchase-user-top{
   display:grid !important;
-  grid-template-columns:minmax(145px,1fr) 65px 90px 170px 72px !important;
-  gap:12px !important;
+  grid-template-columns:minmax(108px,1fr) 48px 68px 118px 60px !important;
+  gap:7px !important;
   align-items:center !important;
+}
+
+.admin-purchase-user-top > span{
+  min-width:0 !important;
+}
+
+.admin-lastpa-wrap{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:2px !important;
+  line-height:1.12 !important;
+  min-width:0 !important;
+}
+
+.admin-lastpa-time{
+  display:block !important;
+  color:#cbd5e1 !important;
+  font-size:10px !important;
+  font-weight:normal !important;
+  white-space:nowrap !important;
 }
 
 .user-compact-actions{
@@ -2625,15 +2656,18 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   flex-direction:column !important;
   align-items:center !important;
   justify-content:center !important;
-  gap:8px !important;
-  width:72px !important;
+  gap:6px !important;
+  width:60px !important;
+  min-width:60px !important;
 }
 
 .admin-purchase-detail-btn,
 .user-compact-actions .small-action-btn{
-  width:60px !important;
-  height:30px !important;
-  min-width:60px !important;
+  width:56px !important;
+  min-width:56px !important;
+  max-width:56px !important;
+  height:28px !important;
+  min-height:28px !important;
   padding:0 !important;
   margin:0 !important;
   border-radius:7px !important;
@@ -2641,45 +2675,49 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   align-items:center !important;
   justify-content:center !important;
   text-align:center !important;
-  font-size:11px !important;
+  font-size:10px !important;
   font-weight:bold !important;
   line-height:1 !important;
 }
 
-.admin-lastpa-wrap{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:3px !important;
-  line-height:1.15 !important;
+.admin-purchase-detail-btn{
+  background:#2563eb !important;
+  color:#fff !important;
 }
 
-.admin-lastpa-time{
-  color:#cbd5e1 !important;
-  font-size:11px !important;
-  font-weight:normal !important;
+.user-compact-actions .small-action-btn{
+  background:#ef4444 !important;
+  color:#fff !important;
 }
 
-@media(max-width:700px){
-  .admin-purchase-user-top{
+.payment-qr-card{
+  max-width:160px !important;
+}
+
+@media(max-width:900px){
+  .purchase-panel-layout{
     grid-template-columns:1fr !important;
+  }
+
+  .admin-purchase-user-top{
+    grid-template-columns:minmax(110px,1fr) 48px 68px 118px 60px !important;
+  }
+
+  .payment-qr-card{
+    max-width:170px !important;
   }
 }
 
+@media(max-width:640px){
+  .admin-purchase-user-top{
+    grid-template-columns:1fr !important;
+  }
 
-/* FIX PURCHASE SORT DEFAULT + LAST PA TIME DISPLAY */
-.admin-lastpa-wrap{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:3px !important;
-  line-height:1.15 !important;
-}
-
-.admin-lastpa-time{
-  display:block !important;
-  color:#cbd5e1 !important;
-  font-size:11px !important;
-  font-weight:normal !important;
-  white-space:nowrap !important;
+  .user-compact-actions{
+    width:100% !important;
+    flex-direction:row !important;
+    justify-content:flex-start !important;
+  }
 }
 
 </style>
