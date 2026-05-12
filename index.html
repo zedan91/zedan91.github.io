@@ -1420,11 +1420,13 @@ body:not(.is-admin) #registeredUsersPanel {
     }
 
     .user-compact-actions {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      justify-content: flex-end;
-      flex-wrap: wrap;
+      width: 92px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      justify-content: flex-start !important;
+      gap: 5px !important;
+      flex-wrap: nowrap !important;
     }
 
     .user-compact-actions .small-action-btn {
@@ -2582,6 +2584,21 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   .admin-pa-detail-row{
     grid-template-columns: 1fr;
   }
+}
+
+
+
+.admin-purchase-user-top{
+  grid-template-columns:minmax(145px,1fr) 55px 70px 95px 92px !important;
+}
+
+.admin-purchase-detail-btn,
+.user-compact-actions .small-action-btn{
+  width:58px !important;
+  height:30px !important;
+  padding:0 !important;
+  text-align:center !important;
+  justify-content:center !important;
 }
 
 </style>
