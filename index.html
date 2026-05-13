@@ -7001,6 +7001,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     function setLoggedIn(user, toastMessage = '') {
       isLoggedIn = true;
       currentUser = user;
+      document.body.classList.toggle('is-admin', isAdminUser(user));
       loginForm.hidden = true;
       showSignupButton.hidden = true;
       signupFields.hidden = true;
@@ -7061,6 +7062,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       if (hasPaAccess) {
         loadPurchaseRecords();
       }
+
+      loadLuckyDrawPanel({ silent: true });
 
       closeSiteAuth();
 
