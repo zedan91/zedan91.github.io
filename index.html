@@ -3867,6 +3867,51 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     </div>
   </div>
 
+  <div class="section lucky-draw-section" id="luckyDraw">
+    <div class="lucky-draw-card">
+      <div>
+        <span class="lucky-draw-kicker">Monthly Lucky Draw</span>
+        <h2>Lucky Draw User Bertuah</h2>
+        <p>
+          Join sekali setiap bulan menggunakan akaun yang sah. Sistem akan semak akaun, peranti dan alamat IP supaya peluang lebih adil untuk semua user.
+        </p>
+        <ul class="lucky-draw-rules">
+          <li>1 akaun hanya boleh join 1 kali untuk bulan semasa.</li>
+          <li>Peranti yang sama tidak boleh digunakan untuk akaun lain pada bulan yang sama.</li>
+          <li>Alamat IP yang sama juga dikunci untuk elak penyertaan berganda.</li>
+        </ul>
+        <div class="lucky-draw-actions">
+          <button class="btn" id="joinLuckyDrawButton" type="button">Join Lucky Draw</button>
+          <button class="btn blue" id="luckyDrawLoginButton" type="button">Login / Signup</button>
+        </div>
+        <div class="lucky-draw-status" id="luckyDrawStatus"></div>
+        <div class="lucky-draw-admin" id="luckyDrawAdminPanel">
+          <div class="purchase-record-actions">
+            <button class="btn blue" id="refreshLuckyDrawButton" type="button">Refresh Lucky Draw</button>
+            <button class="btn orange" id="pickLuckyDrawWinnerButton" type="button">Pick Winner</button>
+          </div>
+          <div class="lucky-draw-admin-list" id="luckyDrawEntriesList">
+            <div class="lucky-draw-entry">No entries yet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="lucky-draw-side">
+        <div class="lucky-draw-month">
+          Bulan
+          <strong id="luckyDrawMonth">-</strong>
+        </div>
+        <div class="lucky-draw-count">
+          Penyertaan
+          <strong id="luckyDrawEntryCount">0</strong>
+        </div>
+        <div class="lucky-draw-winner">
+          Pemenang
+          <strong id="luckyDrawWinner">Belum dipilih</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="section" id="request">
     <h2>Request PA / Info Lot</h2>
 
