@@ -7178,6 +7178,19 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       event.preventDefault();
       await signUpSiteUser();
     });
+
+    joinLuckyDrawButton.addEventListener('click', joinLuckyDraw);
+
+    luckyDrawLoginButton.addEventListener('click', function () {
+      openSiteAuth('signin');
+    });
+
+    refreshLuckyDrawButton.addEventListener('click', function () {
+      loadLuckyDrawPanel();
+    });
+
+    pickLuckyDrawWinnerButton.addEventListener('click', pickLuckyDrawWinner);
+
     unlockSignupButton.addEventListener('click', async function () {
       if (!firebaseReady) {
         signupGateNotice.style.display = 'block';
@@ -7363,6 +7376,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       allRegisteredUsers = [];
       isLoggedIn = false;
       currentUser = null;
+      document.body.classList.remove('is-admin');
       updateVisitorPresence(true);
       sessionStorage.removeItem('azobssLoggedIn');
       clearCurrentUser();
@@ -7415,6 +7429,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       downloadResultActions.style.display = 'none';
       pendingDownload = null;
       restoreSignupAccess();
+      loadLuckyDrawPanel();
       showAccessToast('Logout successful.');
     });
 
@@ -7426,8 +7441,12 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     function clearRestoredSession() {
       authStateReady = true;
       clearCurrentUser();
+      isLoggedIn = false;
+      currentUser = null;
+      document.body.classList.remove('is-admin');
       sessionStorage.removeItem('azobssLoggedIn');
       restoreSignupAccess();
+      loadLuckyDrawPanel();
       startVisitorPresenceHeartbeat();
     }
 
@@ -7449,6 +7468,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       if (!savedUser || sessionStorage.getItem('azobssLoggedIn') !== '1') {
         authStateReady = true;
         restoreSignupAccess();
+        loadLuckyDrawPanel();
         startVisitorPresenceHeartbeat();
         return;
       }
