@@ -1103,6 +1103,104 @@
       text-align: left;
     }
 
+    .lucky-draw-card {
+      max-width: 900px;
+      margin: auto;
+      padding: 24px;
+      border: 1px solid rgba(250,204,21,0.35);
+      border-radius: 12px;
+      background: #1e293b;
+      box-shadow: 0 18px 36px rgba(2,6,23,0.2);
+      text-align: left;
+    }
+
+    .lucky-draw-top {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(220px,280px);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .lucky-draw-kicker {
+      display: inline-flex;
+      width: fit-content;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border: 1px solid rgba(250,204,21,0.45);
+      border-radius: 999px;
+      color: #fde68a;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .lucky-draw-card h2 {
+      margin: 0 0 10px;
+      text-align: left;
+    }
+
+    .lucky-draw-rules {
+      margin: 14px 0 0;
+      padding-left: 20px;
+      color: #cbd5e1;
+      line-height: 1.55;
+    }
+
+    .lucky-draw-side {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border: 1px solid rgba(148,163,184,0.22);
+      border-radius: 10px;
+      background: #0f172a;
+    }
+
+    .lucky-draw-side span {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .lucky-draw-side strong {
+      display: block;
+      margin-top: 4px;
+      color: #22c55e;
+      font-size: 18px;
+      word-break: break-word;
+    }
+
+    .lucky-draw-actions,
+    .lucky-draw-share {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .lucky-draw-share input {
+      flex: 1 1 260px;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .lucky-draw-status {
+      min-height: 20px;
+      margin-top: 12px;
+      color: #fde68a;
+      font-weight: bold;
+    }
+
+    @media (max-width: 760px) {
+      .lucky-draw-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .login-panel {
       display: grid;
       gap: 14px;
@@ -3261,6 +3359,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           Email
           <input id="siteSignupEmail" type="email" inputmode="email" placeholder="Example: name@email.com" required>
         </label>
+        <label for="siteSignupInviteCode">
+          Invite Code
+          <input id="siteSignupInviteCode" type="text" placeholder="Optional invite code">
+        </label>
         <p class="request-error" id="siteSignupError"></p>
         <button class="btn" type="submit">Sign up</button>
         <p class="auth-switch-note">Already have an account? <button id="switchToSiteSignin" type="button">Sign in</button></p>
@@ -3765,6 +3867,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             Email
             <input id="signupEmail" type="email" inputmode="email" placeholder="Example: name@email.com" required>
           </label>
+          <label for="signupInviteCode">
+            Invite Code
+            <input id="signupInviteCode" type="text" placeholder="Optional invite code">
+          </label>
 
           <p class="request-error" id="signupError"></p>
 
@@ -4026,6 +4132,49 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     </div>
   </div>
 
+  <div class="section" id="luckyDraw">
+    <div class="lucky-draw-card">
+      <div class="lucky-draw-top">
+        <div>
+          <span class="lucky-draw-kicker">Cabutan Bertuah</span>
+          <h2>Peraduan Cabutan Bertuah User</h2>
+          <p>
+            User yang login boleh join cabutan bertuah selepas share website AZOBSS menggunakan invite link masing-masing.
+            Invite code akan menjadi bukti jika user baru masuk melalui link/code tersebut.
+          </p>
+          <ul class="lucky-draw-rules">
+            <li>Login dahulu sebelum join cabutan bertuah.</li>
+            <li>Share website menggunakan invite link khas anda.</li>
+            <li>User baru yang signup melalui invite code akan direkod sebagai bukti invite.</li>
+          </ul>
+          <div class="lucky-draw-share">
+            <input id="luckyDrawInviteLink" type="text" readonly value="Login untuk dapatkan invite link">
+            <button class="btn blue" id="copyLuckyDrawInviteButton" type="button">Copy Invite Link</button>
+            <button class="btn orange" id="shareLuckyDrawButton" type="button">Share Website</button>
+          </div>
+          <div class="lucky-draw-actions">
+            <button class="btn" id="joinLuckyDrawButton" type="button">Join Cabutan Bertuah</button>
+          </div>
+          <div class="lucky-draw-status" id="luckyDrawStatus">Login dahulu untuk aktifkan cabutan bertuah.</div>
+        </div>
+        <div class="lucky-draw-side">
+          <div>
+            <span>Invite Code Anda</span>
+            <strong id="luckyDrawInviteCode">-</strong>
+          </div>
+          <div>
+            <span>Status Share</span>
+            <strong id="luckyDrawShareStatus">Belum share</strong>
+          </div>
+          <div>
+            <span>Status Join</span>
+            <strong id="luckyDrawJoinStatus">Belum join</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="section member-login-section">
     <div class="card member-login-card">
       <h3>🔐 Member Login</h3>
@@ -4138,6 +4287,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const siteSignupCountryButton = document.getElementById('siteSignupCountryButton');
     const siteSignupPhonePrefix = document.getElementById('siteSignupPhonePrefix');
     const siteSignupEmail = document.getElementById('siteSignupEmail');
+    const siteSignupInviteCode = document.getElementById('siteSignupInviteCode');
     const siteSignupError = document.getElementById('siteSignupError');
     const memberUpgradeWrap = document.getElementById('memberUpgradeWrap');
     const memberUpgradeCode = document.getElementById('memberUpgradeCode');
@@ -4154,6 +4304,15 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const downloadResultActions = document.getElementById('downloadResultActions');
     const confirmDownloadButton = document.getElementById('confirmDownloadButton');
     const failedDownloadButton = document.getElementById('failedDownloadButton');
+    const signupInviteCode = document.getElementById('signupInviteCode');
+    const luckyDrawInviteLink = document.getElementById('luckyDrawInviteLink');
+    const copyLuckyDrawInviteButton = document.getElementById('copyLuckyDrawInviteButton');
+    const shareLuckyDrawButton = document.getElementById('shareLuckyDrawButton');
+    const joinLuckyDrawButton = document.getElementById('joinLuckyDrawButton');
+    const luckyDrawStatus = document.getElementById('luckyDrawStatus');
+    const luckyDrawInviteCode = document.getElementById('luckyDrawInviteCode');
+    const luckyDrawShareStatus = document.getElementById('luckyDrawShareStatus');
+    const luckyDrawJoinStatus = document.getElementById('luckyDrawJoinStatus');
     const adminPurchasePanel = document.getElementById('adminPurchasePanel');
     const refreshPurchaseButton = document.getElementById('refreshPurchaseButton');
     const togglePurchaseRecordsButton = document.getElementById('togglePurchaseRecordsButton');
@@ -4289,6 +4448,44 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return `${usernameKey}@azobss.local`;
     }
 
+    function cleanInviteCode(value) {
+      return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+    }
+
+    function buildInviteCode(usernameKey) {
+      const cleanName = normalizeUsername(usernameKey || 'user').toUpperCase();
+      return `AZ${cleanName.slice(0, 10)}${String(cleanName.length + 91).slice(-2)}`;
+    }
+
+    function getInitialInviteCode() {
+      try {
+        return cleanInviteCode(new URLSearchParams(window.location.search).get('invite') || '');
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function buildInviteUrl(user) {
+      const code = cleanInviteCode(user && user.inviteCode ? user.inviteCode : buildInviteCode(user && user.usernameKey ? user.usernameKey : ''));
+      const url = new URL(window.location.href);
+      url.hash = '';
+      url.searchParams.set('invite', code);
+      return url.toString();
+    }
+
+    function getLuckyDrawMonthKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function getLuckyDrawShareKey(usernameKey = currentUser && currentUser.usernameKey) {
+      return `azobssLuckyShare_${getLuckyDrawMonthKey()}_${usernameKey || 'guest'}`;
+    }
+
+    function getLuckyDrawJoinKey(usernameKey = currentUser && currentUser.usernameKey) {
+      return `azobssLuckyJoin_${getLuckyDrawMonthKey()}_${usernameKey || 'guest'}`;
+    }
+
     function getSavedUser() {
       const savedUser = sessionStorage.getItem('azobssCurrentUser');
       return savedUser ? JSON.parse(savedUser) : null;
@@ -4351,6 +4548,78 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const payerText = username ? `Saya ${username}` : 'Saya';
       const message = `${payerText} sudah buat bayaran untuk PA. Saya akan share resit pembayaran di sini.`;
       receiptWhatsappButton.href = `https://wa.me/601135600723?text=${encodeURIComponent(message)}`;
+    }
+
+    function updateLuckyDrawPanel() {
+      if (!luckyDrawInviteLink || !luckyDrawInviteCode || !luckyDrawShareStatus || !luckyDrawJoinStatus || !luckyDrawStatus) return;
+
+      if (!currentUser || !currentUser.usernameKey) {
+        luckyDrawInviteLink.value = 'Login untuk dapatkan invite link';
+        luckyDrawInviteCode.textContent = '-';
+        luckyDrawShareStatus.textContent = 'Belum share';
+        luckyDrawJoinStatus.textContent = 'Belum join';
+        luckyDrawStatus.textContent = 'Login dahulu untuk aktifkan cabutan bertuah.';
+        if (joinLuckyDrawButton) joinLuckyDrawButton.disabled = false;
+        return;
+      }
+
+      const inviteCode = currentUser.inviteCode || buildInviteCode(currentUser.usernameKey);
+      const inviteUrl = buildInviteUrl({ ...currentUser, inviteCode });
+      const hasShared = localStorage.getItem(getLuckyDrawShareKey(currentUser.usernameKey)) === '1';
+      const hasJoined = localStorage.getItem(getLuckyDrawJoinKey(currentUser.usernameKey)) === '1';
+
+      luckyDrawInviteLink.value = inviteUrl;
+      luckyDrawInviteCode.textContent = inviteCode;
+      luckyDrawShareStatus.textContent = hasShared ? 'Sudah share' : 'Belum share';
+      luckyDrawJoinStatus.textContent = hasJoined ? 'Sudah join' : 'Belum join';
+      luckyDrawStatus.textContent = hasJoined
+        ? 'Anda sudah join cabutan bertuah bulan ini.'
+        : hasShared
+        ? 'Share sudah direkod. Anda boleh join cabutan bertuah.'
+        : 'Share website dahulu sebelum join cabutan bertuah.';
+      if (joinLuckyDrawButton) joinLuckyDrawButton.disabled = hasJoined;
+    }
+
+    async function resolveInviterByCode(inviteCode, newUsernameKey) {
+      const code = cleanInviteCode(inviteCode);
+      if (!code || !firebaseReady || !db) return null;
+      try {
+        const inviteQuery = query(collection(db, 'users'), where('inviteCode', '==', code));
+        const snapshot = await getDocs(inviteQuery);
+        let inviter = null;
+        snapshot.forEach(function (item) {
+          const data = item.data();
+          if (!inviter && data.usernameKey && data.usernameKey !== newUsernameKey && !data.deleted) inviter = data;
+        });
+        return inviter;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    async function recordInviteProof(inviter, invitedUser, inviteCode) {
+      if (!inviter || !inviter.usernameKey || !invitedUser || !invitedUser.usernameKey || !firebaseReady || !db) return;
+      try {
+        await setDoc(doc(db, 'inviteRecords', `${inviter.usernameKey}_${invitedUser.usernameKey}`), {
+          inviteCode: cleanInviteCode(inviteCode),
+          inviterUsernameKey: inviter.usernameKey,
+          invitedUsernameKey: invitedUser.usernameKey,
+          invitedName: invitedUser.name || invitedUser.usernameKey,
+          invitedContactEmail: invitedUser.contactEmail || '',
+          createdAt: serverTimestamp(),
+          createdAtMs: Date.now()
+        }, { merge: true });
+        await setDoc(doc(db, 'users', inviter.usernameKey), {
+          inviteCount: increment(1),
+          lastInviteAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        try {
+          const records = JSON.parse(localStorage.getItem('azobssInviteRecords') || '[]');
+          records.push({ inviteCode: cleanInviteCode(inviteCode), inviterUsernameKey: inviter.usernameKey, invitedUsernameKey: invitedUser.usernameKey, createdAtMs: Date.now() });
+          localStorage.setItem('azobssInviteRecords', JSON.stringify(records.slice(-100)));
+        } catch (storageError) {}
+      }
     }
 
     function isAdminUser(user) {
@@ -6103,6 +6372,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         closeCountryMenus();
       }
     });
+
+    if (siteSignupInviteCode) siteSignupInviteCode.value = getInitialInviteCode();
+    if (signupInviteCode) signupInviteCode.value = getInitialInviteCode();
+    updateLuckyDrawPanel();
+
     function isValidEmail(value) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
@@ -6114,6 +6388,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       siteSignupError.textContent = '';
       memberUpgradeStatus.textContent = '';
       memberUpgradeCode.value = '';
+      if (siteSignupInviteCode) siteSignupInviteCode.value = getInitialInviteCode();
       setCountryValue(siteSignupCountrySearch, siteSignupCountryButton, siteSignupPhonePrefix, 'Malaysia +60');
       closeCountryMenus();
     }
@@ -6188,7 +6463,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           phone: '',
           email: credential.user.email,
           contactEmail: '',
-          paAccess: true
+          paAccess: true,
+          inviteCode: buildInviteCode(usernameKey),
+          invitedByCode: '',
+          invitedByUsernameKey: ''
         };
 
         if (profile.deleted) {
@@ -6204,7 +6482,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           phone: profile.phone || '',
           email: profile.email || credential.user.email,
           contactEmail: profile.contactEmail || '',
-          paAccess: profile.paAccess !== false
+          paAccess: profile.paAccess !== false,
+          inviteCode: profile.inviteCode || buildInviteCode(profile.usernameKey || usernameKey),
+          invitedByCode: profile.invitedByCode || '',
+          invitedByUsernameKey: profile.invitedByUsernameKey || ''
         };
 
         saveCurrentUser(user);
@@ -6303,6 +6584,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         isReactivation = true;
       }
 
+      const cleanInvitedByCode = cleanInviteCode(options.inviteCode);
+      const inviter = await resolveInviterByCode(cleanInvitedByCode, options.usernameKey);
+      const userInviteCode = existingData && existingData.inviteCode ? existingData.inviteCode : buildInviteCode(options.usernameKey);
       const user = {
         uid: credential.user.uid,
         name: options.name,
@@ -6310,7 +6594,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         phone: options.phone,
         email,
         contactEmail: options.contactEmail,
-        paAccess: options.paAccess
+        paAccess: options.paAccess,
+        inviteCode: userInviteCode,
+        invitedByCode: cleanInvitedByCode,
+        invitedByUsernameKey: inviter ? inviter.usernameKey : ''
       };
 
       const profileData = {
@@ -6321,6 +6608,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         email: user.email,
         contactEmail: user.contactEmail,
         paAccess: user.paAccess,
+        inviteCode: user.inviteCode,
+        invitedByCode: user.invitedByCode,
+        invitedByUsernameKey: user.invitedByUsernameKey,
         deleted: false,
         deletedAt: null,
         deletedBy: null,
@@ -6336,6 +6626,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       try {
         await setDoc(userRef, profileData, { merge: true });
+        await recordInviteProof(inviter, user, cleanInvitedByCode);
       } catch (error) {
         if (isNewAuthUser && credential && credential.user) {
           try {
@@ -6357,6 +6648,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const password = siteSignupPassword.value.trim();
       const phone = buildFullPhone(siteSignupCountrySearch.value, siteSignupPhone.value);
       const contactEmail = siteSignupEmail.value.trim();
+      const inviteCode = cleanInviteCode(siteSignupInviteCode ? siteSignupInviteCode.value : getInitialInviteCode());
       const usernameKey = normalizeUsername(name);
 
       if (!name || !password || !phone || !contactEmail) {
@@ -6390,6 +6682,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           usernameKey,
           phone,
           contactEmail,
+          inviteCode,
           password,
           paAccess: false
         });
@@ -6446,6 +6739,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       showSignedInUser(user);
       updateReceiptWhatsappLink(user);
+      updateLuckyDrawPanel();
       authStateReady = true;
       startPresenceHeartbeat();
       startVisitorPresenceHeartbeat();
@@ -6623,6 +6917,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const name = signupName.value.trim();
       const phone = buildFullPhone(signupCountrySearch.value, signupPhone.value);
       const contactEmail = signupEmail.value.trim();
+      const inviteCode = cleanInviteCode(signupInviteCode ? signupInviteCode.value : getInitialInviteCode());
       const password = signupPassword.value.trim();
       const usernameKey = normalizeUsername(name);
 
@@ -6672,6 +6967,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           usernameKey,
           phone,
           contactEmail,
+          inviteCode,
           password,
           paAccess: true
         });
@@ -6734,7 +7030,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           phone: '',
           email: credential.user.email,
           contactEmail: '',
-          paAccess: true
+          paAccess: true,
+          inviteCode: buildInviteCode(usernameKey),
+          invitedByCode: '',
+          invitedByUsernameKey: ''
         };
 
         if (profile.deleted) {
@@ -6750,7 +7049,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           phone: profile.phone || '',
           email: profile.email || credential.user.email,
           contactEmail: profile.contactEmail || '',
-          paAccess: profile.paAccess !== false
+          paAccess: profile.paAccess !== false,
+          inviteCode: profile.inviteCode || buildInviteCode(profile.usernameKey || usernameKey),
+          invitedByCode: profile.invitedByCode || '',
+          invitedByUsernameKey: profile.invitedByUsernameKey || ''
         };
 
         saveCurrentUser(user);
@@ -6790,6 +7092,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       userUpgradeButton.hidden = true;
       siteAuthActions.style.display = 'flex';
       updateReceiptWhatsappLink(null);
+      updateLuckyDrawPanel();
       heroRequestButton.classList.remove('is-visible');
       signupForm.hidden = false;
       loginForm.hidden = false;
@@ -6914,7 +7217,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             phone: profile.phone || '',
             email: profile.email || firebaseUser.email || '',
             contactEmail: profile.contactEmail || '',
-            paAccess: profile.paAccess !== false
+            paAccess: profile.paAccess !== false,
+            inviteCode: profile.inviteCode || buildInviteCode(profile.usernameKey || savedUser.usernameKey),
+            invitedByCode: profile.invitedByCode || '',
+            invitedByUsernameKey: profile.invitedByUsernameKey || ''
           };
 
           saveCurrentUser(restoredUser);
@@ -7096,6 +7402,84 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         deleteRegisteredUser(deleteButton.dataset.deleteUser);
       }
     });
+
+    async function copyLuckyDrawInviteLink() {
+      if (!currentUser || !currentUser.usernameKey) {
+        openSiteAuth('signin');
+        return;
+      }
+
+      const link = buildInviteUrl(currentUser);
+      try {
+        await navigator.clipboard.writeText(link);
+        luckyDrawStatus.textContent = 'Invite link berjaya disalin. Share link ini untuk bukti invite.';
+      } catch (error) {
+        luckyDrawStatus.textContent = 'Copy gagal. Sila salin invite link secara manual.';
+      }
+    }
+
+    function shareLuckyDrawWebsite() {
+      if (!currentUser || !currentUser.usernameKey) {
+        openSiteAuth('signin');
+        return;
+      }
+
+      const inviteUrl = buildInviteUrl(currentUser);
+      const inviteCode = currentUser.inviteCode || buildInviteCode(currentUser.usernameKey);
+      const message = `Jom join website AZOBSS. Guna invite code saya: ${inviteCode} ${inviteUrl}`;
+      localStorage.setItem(getLuckyDrawShareKey(currentUser.usernameKey), '1');
+      updateLuckyDrawPanel();
+
+      if (navigator.share) {
+        navigator.share({ title: 'AZOBSS', text: message, url: inviteUrl }).catch(function () {});
+      } else {
+        window.open('https://wa.me/?text=' + encodeURIComponent(message), '_blank', 'noopener');
+      }
+    }
+
+    async function joinLuckyDrawContest() {
+      if (!currentUser || !currentUser.usernameKey) {
+        openSiteAuth('signin');
+        return;
+      }
+
+      if (localStorage.getItem(getLuckyDrawShareKey(currentUser.usernameKey)) !== '1') {
+        luckyDrawStatus.textContent = 'Sila share website dahulu sebelum join cabutan bertuah.';
+        return;
+      }
+
+      const monthKey = getLuckyDrawMonthKey();
+      const entryId = `${monthKey}_${currentUser.usernameKey}`;
+      const entryData = {
+        monthKey,
+        usernameKey: currentUser.usernameKey,
+        uid: currentUser.uid || '',
+        name: currentUser.name || currentUser.usernameKey,
+        phone: currentUser.phone || '',
+        contactEmail: currentUser.contactEmail || '',
+        inviteCode: currentUser.inviteCode || buildInviteCode(currentUser.usernameKey),
+        inviteUrl: buildInviteUrl(currentUser),
+        sharedAtMs: Date.now(),
+        joinedAtMs: Date.now(),
+        joinedAt: serverTimestamp()
+      };
+
+      try {
+        await setDoc(doc(db, 'luckyDrawEntries', entryId), entryData, { merge: true });
+      } catch (error) {
+        const localEntries = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]');
+        localEntries.push({ ...entryData, joinedAt: Date.now() });
+        localStorage.setItem('azobssLuckyDrawEntries', JSON.stringify(localEntries.slice(-100)));
+      }
+
+      localStorage.setItem(getLuckyDrawJoinKey(currentUser.usernameKey), '1');
+      updateLuckyDrawPanel();
+      luckyDrawStatus.textContent = 'Anda berjaya join cabutan bertuah bulan ini. Semoga berjaya!';
+    }
+
+    copyLuckyDrawInviteButton.addEventListener('click', copyLuckyDrawInviteLink);
+    shareLuckyDrawButton.addEventListener('click', shareLuckyDrawWebsite);
+    joinLuckyDrawButton.addEventListener('click', joinLuckyDrawContest);
 
     copyAccountButton.addEventListener('click', async function () {
       try {
