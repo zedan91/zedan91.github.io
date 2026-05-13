@@ -17,6 +17,7 @@ const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
 const LUCKY_DRAW_JSON = path.join(ROOT, "lucky-draw-entries.json");
+const USER_EMAIL_MAP_JSON = path.join(ROOT, "user-login-emails.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 const DOWNLOAD_TOKENS = new Map();
 const ADMIN_USERNAME = "zedan91";
@@ -154,6 +155,37 @@ function cleanHash(value) {
     .slice(0, 120);
 }
 
+function cleanEmail(value) {
+
+  const email = String(value || "")
+    .trim()
+    .toLowerCase()
+    .slice(0, 160);
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
+}
+
+function readJsonObject(filePath, fallback) {
+
+  if (!fs.existsSync(filePath)) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    return parsed && typeof parsed === "object" ? parsed : fallback;
+  } catch (err) {
+    return fallback;
+  }
+}
+
+function saveJsonObject(filePath, data) {
+
+  const tempPath = filePath + ".tmp";
+  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), "utf8");
+  fs.renameSync(tempPath, filePath);
+}
+
 function clientIp(req) {
 
   const forwarded =
@@ -175,7 +207,8 @@ function readLuckyDrawStore() {
   if (!fs.existsSync(LUCKY_DRAW_JSON)) {
     return {
       entries: [],
-      results: []
+      results: [],
+      settings: {}
     };
   }
 
@@ -185,12 +218,14 @@ function readLuckyDrawStore() {
 
     return {
       entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-      results: Array.isArray(parsed.results) ? parsed.results : []
+      results: Array.isArray(parsed.results) ? parsed.results : [],
+      settings: parsed.settings && typeof parsed.settings === "object" ? parsed.settings : {}
     };
   } catch (err) {
     return {
       entries: [],
-      results: []
+      results: [],
+      settings: {}
     };
   }
 }
@@ -323,6 +358,52 @@ async function handler(req, res) {
     // LUCKY DRAW FALLBACK
     // =========================
 
+    if (pathname === "/api/user-login-email" && req.method === "GET") {
+      const usernameKey = cleanUsernameKey(parsed.query.usernameKey);
+      const emailMap = readJsonObject(USER_EMAIL_MAP_JSON, {});
+      return send(res, 200, JSON.stringify({ ok: true, email: usernameKey ? cleanEmail(emailMap[usernameKey]) : "" }), "application/json");
+    }
+
+    if (pathname === "/api/signup-map" && req.method === "POST") {
+      let data;
+      try { data = JSON.parse(await readBody(req)); } catch (err) {
+        return send(res, 400, JSON.stringify({ ok: false, code: "invalid-json" }), "application/json");
+      }
+      const usernameKey = cleanUsernameKey(data.usernameKey);
+      const email = cleanEmail(data.email);
+      if (!usernameKey || !email) {
+        return send(res, 400, JSON.stringify({ ok: false, code: "missing-fields" }), "application/json");
+      }
+      const emailMap = readJsonObject(USER_EMAIL_MAP_JSON, {});
+      emailMap[usernameKey] = email;
+      saveJsonObject(USER_EMAIL_MAP_JSON, emailMap);
+      return send(res, 200, JSON.stringify({ ok: true }), "application/json");
+    }
+
+    if (pathname === "/api/lucky-draw/settings" && req.method === "GET") {
+      const monthKey = cleanLuckyDrawMonth(parsed.query.monthKey);
+      const store = readLuckyDrawStore();
+      const settings = store.settings || {};
+      return send(res, 200, JSON.stringify({ ok: true, monthKey, open: settings.open === true && (!settings.monthKey || settings.monthKey === monthKey) }), "application/json");
+    }
+
+    if (pathname === "/api/lucky-draw/settings" && req.method === "POST") {
+      let data;
+      try { data = JSON.parse(await readBody(req)); } catch (err) {
+        return send(res, 400, JSON.stringify({ ok: false, code: "invalid-json" }), "application/json");
+      }
+      const adminKey = cleanUsernameKey(data.adminKey);
+      const monthKey = cleanLuckyDrawMonth(data.monthKey);
+      if (adminKey !== ADMIN_USERNAME || !monthKey) {
+        return send(res, 403, JSON.stringify({ ok: false, code: "admin-only" }), "application/json");
+      }
+      const store = readLuckyDrawStore();
+      store.settings = { open: data.open === true, monthKey, updatedBy: adminKey, updatedAtMs: Date.now() };
+      saveLuckyDrawStore(store);
+      return send(res, 200, JSON.stringify({ ok: true, open: store.settings.open }), "application/json");
+    }
+
+
     if (
       pathname === "/api/lucky-draw" &&
       req.method === "GET"
@@ -371,6 +452,7 @@ async function handler(req, res) {
           winnerPicked: Boolean(result),
           winnerName: result ? result.winnerName : "",
           winnerUsernameKey: result ? result.winnerUsernameKey : "",
+          open: store.settings && store.settings.open === true && (!store.settings.monthKey || store.settings.monthKey === monthKey),
           entries: usernameKey === ADMIN_USERNAME
             ? entries.map(entry => ({
               id: entry.id,
@@ -378,6 +460,14 @@ async function handler(req, res) {
               usernameKey: entry.usernameKey,
               name: entry.name,
               phone: entry.phone,
+              contactEmail: entry.contactEmail || "",
+              deviceHash: entry.deviceHash || "",
+              ipAddress: entry.ipAddress || "",
+              inviteCode: entry.inviteCode || "",
+              inviteUrl: entry.inviteUrl || "",
+              shareFacebookAtMs: entry.shareFacebookAtMs || 0,
+              shareThreadsAtMs: entry.shareThreadsAtMs || 0,
+              adminNote: entry.adminNote || "",
               createdAtMs: entry.createdAtMs
             }))
             : []
@@ -437,6 +527,18 @@ async function handler(req, res) {
       const monthEntries =
         store.entries.filter(entry => entry.monthKey === monthKey);
 
+      if (!store.settings || store.settings.open !== true || (store.settings.monthKey && store.settings.monthKey !== monthKey)) {
+        return send(
+          res,
+          409,
+          JSON.stringify({
+            ok: false,
+            code: "draw-not-open"
+          }),
+          "application/json"
+        );
+      }
+
       if (store.results.some(item => item.monthKey === monthKey)) {
         return send(
           res,
@@ -492,6 +594,11 @@ async function handler(req, res) {
         name: String(data.name || usernameKey).trim().slice(0, 100),
         phone: String(data.phone || "").trim().slice(0, 40),
         contactEmail: String(data.contactEmail || "").trim().slice(0, 120),
+        emailVerified: data.emailVerified === true,
+        inviteCode: cleanHash(data.inviteCode),
+        inviteUrl: String(data.inviteUrl || "").trim().slice(0, 300),
+        shareFacebookAtMs: Number(data.shareFacebookAtMs || 0),
+        shareThreadsAtMs: Number(data.shareThreadsAtMs || 0),
         deviceHash,
         ipAddress,
         createdAtMs: Date.now()
@@ -510,6 +617,32 @@ async function handler(req, res) {
         }),
         "application/json"
       );
+    }
+
+    if (pathname === "/api/lucky-draw/entry" && req.method === "POST") {
+      let data;
+      try { data = JSON.parse(await readBody(req)); } catch (err) {
+        return send(res, 400, JSON.stringify({ ok: false, code: "invalid-json" }), "application/json");
+      }
+      const adminKey = cleanUsernameKey(data.adminKey);
+      const monthKey = cleanLuckyDrawMonth(data.monthKey);
+      const entryId = String(data.entryId || "").trim().slice(0, 140);
+      if (adminKey !== ADMIN_USERNAME || !monthKey || !entryId) {
+        return send(res, 403, JSON.stringify({ ok: false, code: "admin-only" }), "application/json");
+      }
+      const store = readLuckyDrawStore();
+      const entry = store.entries.find(item => item.monthKey === monthKey && item.id === entryId);
+      if (!entry) {
+        return send(res, 404, JSON.stringify({ ok: false, code: "entry-not-found" }), "application/json");
+      }
+      entry.name = String(data.name || entry.name || "").trim().slice(0, 100);
+      entry.phone = String(data.phone || entry.phone || "").trim().slice(0, 40);
+      entry.contactEmail = String(data.contactEmail || entry.contactEmail || "").trim().slice(0, 120);
+      entry.adminNote = String(data.adminNote || "").trim().slice(0, 500);
+      entry.updatedBy = adminKey;
+      entry.updatedAtMs = Date.now();
+      saveLuckyDrawStore(store);
+      return send(res, 200, JSON.stringify({ ok: true, entry }), "application/json");
     }
 
     if (
