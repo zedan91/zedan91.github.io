@@ -5248,6 +5248,20 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       luckyDrawStatus.style.color = type === 'error' ? '#fca5a5' : type === 'success' ? '#bbf7d0' : '#fde68a';
     }
 
+    function getLuckyDrawErrorText(error, fallbackText) {
+      const code = error && (error.code || error.message) ? String(error.code || error.message) : '';
+
+      if (code === 'resource-exhausted') {
+        return `${fallbackText}: quota Firestore/limit sementara penuh. Cuba semula sebentar lagi.`;
+      }
+
+      if (code === 'permission-denied') {
+        return `${fallbackText}: permission-denied. Semak Firestore rules untuk collection Lucky Draw.`;
+      }
+
+      return `${fallbackText}: ${code || 'unknown error'}`;
+    }
+
     function renderLuckyDrawEntries(entries) {
       if (!luckyDrawEntriesList) {
         return;
@@ -5316,24 +5330,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       }
 
       try {
-        const entriesQuery = query(
-          collection(db, 'luckyDrawEntries'),
-          where('monthKey', '==', monthKey)
-        );
-        const entriesSnapshot = await getDocs(entriesQuery);
-        const entries = [];
-
-        entriesSnapshot.forEach(function (item) {
-          entries.push({
-            id: item.id,
-            ...item.data()
-          });
-        });
-
-        allLuckyDrawEntries = entries;
-        luckyDrawEntryCount.textContent = String(entries.length);
-        renderLuckyDrawEntries(entries);
-
         const resultSnapshot = await getDoc(doc(db, 'luckyDrawResults', monthKey));
         const winnerPicked = resultSnapshot.exists();
         if (resultSnapshot.exists()) {
@@ -5346,6 +5342,31 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         const userEntryId = `${monthKey}_${currentUser.usernameKey}`;
         const userEntrySnapshot = await getDoc(doc(db, 'luckyDrawEntries', userEntryId));
         const alreadyJoined = userEntrySnapshot.exists();
+
+        if (isAdminUser(currentUser)) {
+          const entriesQuery = query(
+            collection(db, 'luckyDrawEntries'),
+            where('monthKey', '==', monthKey)
+          );
+          const entriesSnapshot = await getDocs(entriesQuery);
+          const entries = [];
+
+          entriesSnapshot.forEach(function (item) {
+            entries.push({
+              id: item.id,
+              ...item.data()
+            });
+          });
+
+          allLuckyDrawEntries = entries;
+          luckyDrawEntryCount.textContent = String(entries.length);
+          renderLuckyDrawEntries(entries);
+        } else {
+          allLuckyDrawEntries = [];
+          luckyDrawEntryCount.textContent = alreadyJoined ? '1' : '0';
+          renderLuckyDrawEntries([]);
+        }
+
         joinLuckyDrawButton.textContent = winnerPicked ? 'Draw Closed' : alreadyJoined ? 'Already Joined' : 'Join Lucky Draw';
         joinLuckyDrawButton.disabled = winnerPicked || alreadyJoined;
 
@@ -5357,7 +5378,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             : 'Anda boleh join Lucky Draw bulan ini.');
         }
       } catch (error) {
-        setLuckyDrawStatus(`Lucky Draw gagal dibaca: ${error.code || error.message}`, 'error');
+        setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Lucky Draw gagal dibaca'), 'error');
       }
     }
 
@@ -5446,8 +5467,14 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           });
         });
 
+        joinLuckyDrawButton.textContent = 'Already Joined';
+        joinLuckyDrawButton.disabled = true;
+        luckyDrawEntryCount.textContent = '1';
         setLuckyDrawStatus('Berjaya join Lucky Draw bulan ini. Semoga bertuah!', 'success');
-        await loadLuckyDrawPanel({ silent: true });
+
+        if (isAdminUser(currentUser)) {
+          await loadLuckyDrawPanel({ silent: true });
+        }
       } catch (error) {
         joinLuckyDrawButton.disabled = false;
 
@@ -5460,7 +5487,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         } else if (error.message === 'ip-used') {
           setLuckyDrawStatus('Alamat IP ini sudah digunakan untuk Lucky Draw bulan semasa.', 'error');
         } else {
-          setLuckyDrawStatus(`Gagal join Lucky Draw: ${error.code || error.message}`, 'error');
+          setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Gagal join Lucky Draw'), 'error');
         }
       }
     }
