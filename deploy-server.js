@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const url = require("url");
+const crypto = require("crypto");
 
 const sharp = require("sharp");
 const PDFDocument = require("pdfkit");
@@ -15,8 +16,10 @@ const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
+const LUCKY_DRAW_JSON = path.join(ROOT, "lucky-draw-entries.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 const DOWNLOAD_TOKENS = new Map();
+const ADMIN_USERNAME = "zedan91";
 
 // AUTO DELETE FILE > 30 DAYS
 const FILE_EXPIRE_MS =
@@ -123,6 +126,87 @@ function cleanState(negeri) {
   v = v.replace(/[^A-Z0-9 _-]/g, "");
 
   return v;
+}
+
+function cleanUsernameKey(value) {
+
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "");
+}
+
+function cleanLuckyDrawMonth(value) {
+
+  const monthKey =
+    String(value || "").trim();
+
+  return /^\d{4}-\d{2}$/.test(monthKey)
+    ? monthKey
+    : "";
+}
+
+function cleanHash(value) {
+
+  return String(value || "")
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .slice(0, 120);
+}
+
+function clientIp(req) {
+
+  const forwarded =
+    req.headers["x-forwarded-for"];
+
+  const raw =
+    Array.isArray(forwarded)
+      ? forwarded[0]
+      : forwarded || req.headers["cf-connecting-ip"] || req.socket.remoteAddress || "";
+
+  return String(raw)
+    .split(",")[0]
+    .trim()
+    .replace(/^::ffff:/, "");
+}
+
+function readLuckyDrawStore() {
+
+  if (!fs.existsSync(LUCKY_DRAW_JSON)) {
+    return {
+      entries: [],
+      results: []
+    };
+  }
+
+  try {
+    const parsed =
+      JSON.parse(fs.readFileSync(LUCKY_DRAW_JSON, "utf8"));
+
+    return {
+      entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+      results: Array.isArray(parsed.results) ? parsed.results : []
+    };
+  } catch (err) {
+    return {
+      entries: [],
+      results: []
+    };
+  }
+}
+
+function saveLuckyDrawStore(store) {
+
+  const tempPath =
+    `${LUCKY_DRAW_JSON}.tmp`;
+
+  fs.writeFileSync(
+    tempPath,
+    JSON.stringify(store, null, 2),
+    "utf8"
+  );
+
+  fs.renameSync(tempPath, LUCKY_DRAW_JSON);
 }
 
 async function fetchJupem(jupemUrl) {
