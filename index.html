@@ -3871,14 +3871,14 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     <div class="lucky-draw-card">
       <div>
         <span class="lucky-draw-kicker">Monthly Lucky Draw</span>
-        <h2>Lucky Draw User Bertuah</h2>
+        <h2>Lucky Draw for Lucky Users</h2>
         <p>
-          Join sekali setiap bulan menggunakan akaun yang sah. Sistem akan semak akaun, peranti dan alamat IP supaya peluang lebih adil untuk semua user.
+          Join once each month with a valid account. The system checks your account, device, and IP address so every user gets a fair chance.
         </p>
         <ul class="lucky-draw-rules">
-          <li>1 akaun hanya boleh join 1 kali untuk bulan semasa.</li>
-          <li>Peranti yang sama tidak boleh digunakan untuk akaun lain pada bulan yang sama.</li>
-          <li>Alamat IP yang sama juga dikunci untuk elak penyertaan berganda.</li>
+          <li>Each account can join only once for the current month.</li>
+          <li>The same device cannot be used by another account in the same month.</li>
+          <li>The same IP address is also locked to prevent duplicate entries.</li>
         </ul>
         <div class="lucky-draw-actions">
           <button class="btn" id="joinLuckyDrawButton" type="button">Join Lucky Draw</button>
@@ -3897,16 +3897,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       </div>
       <div class="lucky-draw-side">
         <div class="lucky-draw-month">
-          Bulan
+          Month
           <strong id="luckyDrawMonth">-</strong>
         </div>
         <div class="lucky-draw-count">
-          Penyertaan
+          Entries
           <strong id="luckyDrawEntryCount">0</strong>
         </div>
         <div class="lucky-draw-winner">
-          Pemenang
-          <strong id="luckyDrawWinner">Belum dipilih</strong>
+          Winner
+          <strong id="luckyDrawWinner">Not selected yet</strong>
         </div>
       </div>
     </div>
@@ -5255,11 +5255,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const code = error && (error.code || error.message) ? String(error.code || error.message) : '';
 
       if (code === 'resource-exhausted') {
-        return `${fallbackText}: quota Firestore/limit sementara penuh. Cuba semula sebentar lagi.`;
+        return `${fallbackText}: Firestore quota/temporary limit is full. Please try again shortly.`;
       }
 
       if (code === 'permission-denied') {
-        return `${fallbackText}: permission-denied. Semak Firestore rules untuk collection Lucky Draw.`;
+        return `${fallbackText}: permission-denied. Check the Firestore rules for the Lucky Draw collections.`;
       }
 
       return `${fallbackText}: ${code || 'unknown error'}`;
@@ -5313,7 +5313,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         toggleLuckyDrawVisibilityButton.textContent = luckyDrawOpen ? 'Close Lucky Draw' : 'Open Lucky Draw';
       }
       if (luckyDrawVisibilityStatus) {
-        luckyDrawVisibilityStatus.textContent = luckyDrawOpen ? 'Lucky Draw sedang dibuka kepada user.' : 'Lucky Draw sedang ditutup daripada user.';
+        luckyDrawVisibilityStatus.textContent = luckyDrawOpen ? 'Lucky Draw is open to users.' : 'Lucky Draw is hidden from users.';
         luckyDrawVisibilityStatus.style.color = luckyDrawOpen ? '#bbf7d0' : '#fde68a';
       }
     }
@@ -5342,7 +5342,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         await requestLuckyDrawBackend('/api/lucky-draw/settings', { method: 'POST', body: JSON.stringify({ adminKey: currentUser.usernameKey, monthKey, open: open === true }) });
       }
       applyLuckyDrawVisibility(open === true);
-      setLuckyDrawStatus(open ? 'Lucky Draw sudah dibuka kepada user.' : 'Lucky Draw sudah ditutup daripada user.', 'success');
+      setLuckyDrawStatus(open ? 'Lucky Draw is now open to users.' : 'Lucky Draw is now hidden from users.', 'success');
     }
 
     function updateLuckyDrawSharePanel(monthKey) {
@@ -5353,7 +5353,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const inviteUrl = buildInviteUrl(currentUser);
       luckyDrawInviteLink.value = inviteUrl;
       luckyDrawSharePanel.classList.add('is-visible');
-      luckyDrawShareStatus.textContent = hasLuckyDrawShareProof(monthKey) ? 'Share Facebook dan Threads sudah direkod untuk bulan ini.' : 'Tekan kedua-dua butang share sebelum join Lucky Draw.';
+      luckyDrawShareStatus.textContent = hasLuckyDrawShareProof(monthKey) ? 'Facebook and Threads shares have been recorded for this month.' : 'Press both share buttons before joining the Lucky Draw.';
       luckyDrawShareStatus.style.color = hasLuckyDrawShareProof(monthKey) ? '#bbf7d0' : '#fde68a';
     }
 
@@ -5364,7 +5364,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const entries = Array.isArray(data.entries) ? data.entries : [];
 
       luckyDrawEntryCount.textContent = String(data.entryCount || 0);
-      luckyDrawWinner.textContent = data.winnerName || data.winnerUsernameKey || 'Belum dipilih';
+      luckyDrawWinner.textContent = data.winnerName || data.winnerUsernameKey || 'Not selected yet';
       allLuckyDrawEntries = entries;
       renderLuckyDrawEntries(entries);
       updateLuckyDrawSharePanel(data.monthKey || getLuckyDrawMonthKey());
@@ -5373,10 +5373,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       if (!options.silent) {
         setLuckyDrawStatus(winnerPicked
-          ? 'Lucky Draw bulan ini sudah selesai.'
+          ? 'This month\'s Lucky Draw is already closed.'
           : alreadyJoined
-          ? 'Akaun ini sudah join Lucky Draw untuk bulan semasa.'
-          : 'Anda boleh join Lucky Draw bulan ini.');
+          ? 'This account has already joined the Lucky Draw for the current month.'
+          : 'You can join this month\'s Lucky Draw.');
       }
     }
 
@@ -5412,7 +5412,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       joinLuckyDrawButton.textContent = 'Already Joined';
       joinLuckyDrawButton.disabled = true;
       luckyDrawEntryCount.textContent = String(data.entryCount || 1);
-      setLuckyDrawStatus('Berjaya join Lucky Draw bulan ini melalui backup server. Semoga bertuah!', 'success');
+      setLuckyDrawStatus('You have successfully joined this month\'s Lucky Draw through the backup server. Good luck!', 'success');
     }
 
     async function pickLuckyDrawWinnerViaBackend(monthKey) {
@@ -5425,8 +5425,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       });
       const result = data.result || {};
 
-      luckyDrawWinner.textContent = result.winnerName || result.winnerUsernameKey || 'Pemenang dipilih';
-      setLuckyDrawStatus(`Pemenang bulan ini: ${result.winnerName || result.winnerUsernameKey}.`, 'success');
+      luckyDrawWinner.textContent = result.winnerName || result.winnerUsernameKey || 'Winner selected';
+      setLuckyDrawStatus(`This month's winner: ${result.winnerName || result.winnerUsernameKey}.`, 'success');
       await loadLuckyDrawFromBackend(monthKey, { silent: true });
     }
 
@@ -5513,7 +5513,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const adminNote = itemElement.querySelector('[data-lucky-field="adminNote"]').value.trim();
 
       if (contactEmail && !isValidEmail(contactEmail)) {
-        setLuckyDrawStatus('Email peserta tidak sah.', 'error');
+        setLuckyDrawStatus('Participant email is not valid.', 'error');
         return;
       }
 
@@ -5531,7 +5531,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         });
       }
 
-      setLuckyDrawStatus('Details peserta Lucky Draw berjaya disimpan.', 'success');
+      setLuckyDrawStatus('Lucky Draw participant details saved successfully.', 'success');
       await loadLuckyDrawPanel({ silent: true });
     }
     async function loadLuckyDrawPanel(options = {}) {
@@ -5548,20 +5548,20 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       joinLuckyDrawButton.disabled = !firebaseReady;
 
       if (!firebaseReady) {
-        setLuckyDrawStatus('Firebase belum disambungkan untuk Lucky Draw.', 'error');
+        setLuckyDrawStatus('Firebase is not connected for Lucky Draw.', 'error');
         return;
       }
 
       if (!isLoggedIn || !currentUser) {
         allLuckyDrawEntries = [];
         luckyDrawEntryCount.textContent = '0';
-        luckyDrawWinner.textContent = 'Belum dipilih';
+        luckyDrawWinner.textContent = 'Not selected yet';
         joinLuckyDrawButton.textContent = 'Join Lucky Draw';
         joinLuckyDrawButton.disabled = false;
         renderLuckyDrawEntries([]);
 
         if (!options.silent) {
-          setLuckyDrawStatus('Login atau signup dahulu untuk join Lucky Draw bulan ini.');
+          setLuckyDrawStatus('Please log in or sign up first to join this month\'s Lucky Draw.');
         }
 
         return;
@@ -5570,11 +5570,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       if (!luckyDrawOpen && !isAdminUser(currentUser)) {
         allLuckyDrawEntries = [];
         luckyDrawEntryCount.textContent = '0';
-        luckyDrawWinner.textContent = 'Belum dipilih';
+        luckyDrawWinner.textContent = 'Not selected yet';
         joinLuckyDrawButton.textContent = 'Join Lucky Draw';
         joinLuckyDrawButton.disabled = true;
         renderLuckyDrawEntries([]);
-        setLuckyDrawStatus('Lucky Draw belum dibuka oleh admin.');
+        setLuckyDrawStatus('Lucky Draw has not been opened by admin yet.');
         return;
       }
 
@@ -5583,9 +5583,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         const winnerPicked = resultSnapshot.exists();
         if (resultSnapshot.exists()) {
           const result = resultSnapshot.data();
-          luckyDrawWinner.textContent = result.winnerName || result.winnerUsernameKey || 'Pemenang dipilih';
+          luckyDrawWinner.textContent = result.winnerName || result.winnerUsernameKey || 'Winner selected';
         } else {
-          luckyDrawWinner.textContent = 'Belum dipilih';
+          luckyDrawWinner.textContent = 'Not selected yet';
         }
 
         const userEntryId = `${monthKey}_${currentUser.usernameKey}`;
@@ -5621,10 +5621,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         if (!options.silent) {
           setLuckyDrawStatus(winnerPicked
-            ? 'Lucky Draw bulan ini sudah selesai.'
+            ? 'This month\'s Lucky Draw is already closed.'
             : alreadyJoined
-            ? 'Akaun ini sudah join Lucky Draw untuk bulan semasa.'
-            : 'Anda boleh join Lucky Draw bulan ini.');
+            ? 'This account has already joined the Lucky Draw for the current month.'
+            : 'You can join this month\'s Lucky Draw.');
         }
       } catch (error) {
         if (shouldUseLuckyDrawBackend(error)) {
@@ -5632,24 +5632,24 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             await loadLuckyDrawFromBackend(monthKey, options);
             return;
           } catch (backendError) {
-            setLuckyDrawStatus(getLuckyDrawErrorText(backendError, 'Backup Lucky Draw gagal dibaca'), 'error');
+            setLuckyDrawStatus(getLuckyDrawErrorText(backendError, 'Backup Lucky Draw could not be read'), 'error');
             return;
           }
         }
 
-        setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Lucky Draw gagal dibaca'), 'error');
+        setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Lucky Draw could not be read'), 'error');
       }
     }
 
     async function joinLuckyDraw() {
       if (!isLoggedIn || !currentUser) {
         openSiteAuth('signin');
-        setLuckyDrawStatus('Sila login dahulu sebelum join Lucky Draw.');
+        setLuckyDrawStatus('Please log in before joining the Lucky Draw.');
         return;
       }
 
       if (!firebaseReady || !auth.currentUser) {
-        setLuckyDrawStatus('Firebase belum bersedia untuk Lucky Draw.', 'error');
+        setLuckyDrawStatus('Firebase is not ready for Lucky Draw.', 'error');
         return;
       }
 
@@ -5657,7 +5657,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       await loadLuckyDrawVisibility(monthKey);
 
       if (!luckyDrawOpen) {
-        setLuckyDrawStatus('Lucky Draw belum dibuka oleh admin.', 'error');
+        setLuckyDrawStatus('Lucky Draw has not been opened by admin yet.', 'error');
         return;
       }
 
@@ -5667,13 +5667,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       if (!isAdminUser(currentUser) && auth.currentUser.emailVerified !== true) {
         await setDoc(doc(db, 'users', currentUser.usernameKey), { emailVerified: false, emailVerificationCheckedAt: serverTimestamp() }, { merge: true }).catch(function () {});
-        setLuckyDrawStatus('Sila verify email anda dahulu sebelum join Lucky Draw. Semak inbox email yang digunakan semasa signup.', 'error');
+        setLuckyDrawStatus('Please verify your email before joining the Lucky Draw. Check the inbox for the email used during signup.', 'error');
         return;
       }
 
       if (!hasLuckyDrawShareProof(monthKey)) {
         updateLuckyDrawSharePanel(monthKey);
-        setLuckyDrawStatus('Sila share invite link anda di Facebook dan Threads dahulu sebelum join.', 'error');
+        setLuckyDrawStatus('Please share your invite link on Facebook and Threads before joining.', 'error');
         return;
       }
 
@@ -5683,11 +5683,11 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       try {
         joinLuckyDrawButton.disabled = true;
-        setLuckyDrawStatus('Menyemak akaun, peranti dan IP...');
+        setLuckyDrawStatus('Checking account, device, and IP...');
 
         const ipAddress = await resolveVisitorIpAddress();
         if (!ipAddress) {
-          setLuckyDrawStatus('Tidak dapat sahkan alamat IP. Cuba semula selepas sambungan stabil.', 'error');
+          setLuckyDrawStatus('Unable to verify your IP address. Please try again after the connection is stable.', 'error');
           joinLuckyDrawButton.disabled = false;
           return;
         }
@@ -5767,7 +5767,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         joinLuckyDrawButton.textContent = 'Already Joined';
         joinLuckyDrawButton.disabled = true;
         luckyDrawEntryCount.textContent = '1';
-        setLuckyDrawStatus('Berjaya join Lucky Draw bulan ini. Semoga bertuah!', 'success');
+        setLuckyDrawStatus('You have successfully joined this month\'s Lucky Draw. Good luck!', 'success');
 
         if (isAdminUser(currentUser)) {
           await loadLuckyDrawPanel({ silent: true });
@@ -5789,17 +5789,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
 
         if (error.message === 'draw-not-open') {
-          setLuckyDrawStatus('Lucky Draw belum dibuka oleh admin.', 'error');
+          setLuckyDrawStatus('Lucky Draw has not been opened by admin yet.', 'error');
         } else if (error.message === 'already-joined') {
-          setLuckyDrawStatus('Akaun ini sudah join Lucky Draw bulan semasa.', 'error');
+          setLuckyDrawStatus('This account has already joined the Lucky Draw for the current month.', 'error');
         } else if (error.message === 'draw-closed') {
-          setLuckyDrawStatus('Lucky Draw bulan ini sudah selesai.', 'error');
+          setLuckyDrawStatus('This month\'s Lucky Draw is already closed.', 'error');
         } else if (error.message === 'device-used') {
-          setLuckyDrawStatus('Peranti ini sudah digunakan oleh akaun lain untuk Lucky Draw bulan semasa.', 'error');
+          setLuckyDrawStatus('This device has already been used by another account for this month\'s Lucky Draw.', 'error');
         } else if (error.message === 'ip-used') {
-          setLuckyDrawStatus('Alamat IP ini sudah digunakan untuk Lucky Draw bulan semasa.', 'error');
+          setLuckyDrawStatus('This IP address has already been used for this month\'s Lucky Draw.', 'error');
         } else {
-          setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Gagal join Lucky Draw'), 'error');
+          setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Failed to join Lucky Draw'), 'error');
         }
       }
     }
@@ -5827,7 +5827,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       try {
         pickLuckyDrawWinnerButton.disabled = true;
-        setLuckyDrawStatus('Memilih pemenang...');
+        setLuckyDrawStatus('Picking a winner...');
 
         if (!allLuckyDrawEntries.length) {
           await loadLuckyDrawPanel({ silent: true });
@@ -5835,7 +5835,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         const entries = allLuckyDrawEntries.slice();
         if (!entries.length) {
-          setLuckyDrawStatus('Belum ada penyertaan untuk bulan ini.', 'error');
+          setLuckyDrawStatus('There are no entries for this month yet.', 'error');
           return;
         }
 
@@ -5862,7 +5862,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           });
         });
 
-        setLuckyDrawStatus(`Pemenang bulan ini: ${winner.name || winner.usernameKey}.`, 'success');
+        setLuckyDrawStatus(`This month's winner: ${winner.name || winner.usernameKey}.`, 'success');
         await loadLuckyDrawPanel({ silent: true });
       } catch (error) {
         if (shouldUseLuckyDrawBackend(error)) {
@@ -5875,10 +5875,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
 
         if (error.message === 'winner-exists') {
-          setLuckyDrawStatus('Pemenang untuk bulan ini sudah dipilih.', 'error');
+          setLuckyDrawStatus('This month\'s winner has already been selected.', 'error');
           await loadLuckyDrawPanel({ silent: true });
         } else {
-          setLuckyDrawStatus(`Gagal pilih pemenang: ${error.code || error.message}`, 'error');
+          setLuckyDrawStatus(`Failed to pick winner: ${error.code || error.message}`, 'error');
         }
       } finally {
         pickLuckyDrawWinnerButton.disabled = false;
@@ -7645,7 +7645,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const inviteUrl = buildInviteUrl(currentUser);
       const code = currentUser ? (currentUser.inviteCode || buildInviteCode(currentUser.usernameKey)) : '';
       markLuckyDrawShared('threads');
-      window.open('https://www.threads.net/intent/post?text=' + encodeURIComponent('Join AZOBSS guna invite code saya: ' + code + ' ' + inviteUrl), '_blank', 'noopener');
+      window.open('https://www.threads.net/intent/post?text=' + encodeURIComponent('Join AZOBSS with my invite code: ' + code + ' ' + inviteUrl), '_blank', 'noopener');
     });
 
     luckyDrawLoginButton.addEventListener('click', function () {
