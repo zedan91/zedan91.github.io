@@ -6,6 +6,8 @@ const path = require("path");
 const http = require("http");
 const url = require("url");
 
+const sharp = require("sharp");
+const PDFDocument = require("pdfkit");
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -14,7 +16,12 @@ const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
 const TEMP_DIR = path.join(ROOT, "temp");
+const DOWNLOAD_TOKENS = new Map();
 
+// AUTO DELETE FILE > 30 DAYS
+const FILE_EXPIRE_MS =
+  30 * 24 * 60 * 60 * 1000;
+  
 function send(res, status, body, type = "text/plain; charset=utf-8") {
 
   res.writeHead(status, {
@@ -116,6 +123,17 @@ function cleanState(negeri) {
   v = v.replace(/[^A-Z0-9 _-]/g, "");
 
   return v;
+}
+
+async function fetchJupem(jupemUrl) {
+  return await fetch(jupemUrl, {
+    redirect: "follow",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+      "Accept": "image/tiff,image/*,*/*",
+      "Referer": "https://ebiz.jupem.gov.my/"
+    }
+  });
 }
 
 async function handler(req, res) {
@@ -275,7 +293,7 @@ async function handler(req, res) {
       );
 
       const response =
-        await fetch(jupemUrl);
+        await fetchJupem(jupemUrl);
 
       if (!response.ok) {
 
@@ -321,7 +339,7 @@ async function handler(req, res) {
       }
 
       const tempName =
-`${Date.now()}-${noPA}-${negeri}.tif`;
+`${noPA}.tif`;
 
       const tempPath =
         path.join(
@@ -340,6 +358,14 @@ async function handler(req, res) {
         tempName
       );
 
+      const token =
+        Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+      DOWNLOAD_TOKENS.set(token, {
+        file: tempName,
+        expires: Date.now() + 5 * 60 * 1000
+      });
+
       return send(
         res,
         200,
@@ -350,9 +376,232 @@ async function handler(req, res) {
           filename: tempName,
           size: buffer.length,
           download:
-            `/temp/${tempName}`
+            `/api/download-pa/${tempName}?token=${token}`
         }, null, 2),
         "application/json"
+      );
+    }
+
+// =========================
+// JUPEM PA PDF CONVERTER
+// =========================
+
+if (
+  pathname === "/api/pa-pdf" &&
+  req.method === "GET"
+) {
+
+  const noPA =
+    cleanPA(parsed.query.noPA);
+
+  const negeri =
+    cleanState(parsed.query.negeri);
+
+  if (!noPA) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Missing noPA"
+      }),
+      "application/json"
+    );
+  }
+
+  if (!negeri) {
+    return send(
+      res,
+      400,
+      JSON.stringify({
+        ok: false,
+        error: "Missing negeri"
+      }),
+      "application/json"
+    );
+  }
+
+  const fileName =
+    `${noPA}.TIF`;
+
+  const jupemUrl =
+`https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunPelanAkui?noPa=${encodeURIComponent(fileName)}&negeri=${encodeURIComponent(negeri)}`;
+
+  console.log(
+    "Fetching PDF:",
+    jupemUrl
+  );
+
+  const response =
+    await fetchJupem(jupemUrl);
+
+  if (!response.ok) {
+    return send(
+      res,
+      404,
+      JSON.stringify({
+        ok: false,
+        error: "PA not found"
+      }),
+      "application/json"
+    );
+  }
+
+  const tifBuffer =
+    Buffer.from(
+      await response.arrayBuffer()
+    );
+
+  const firstText =
+    tifBuffer
+      .slice(0, 120)
+      .toString("utf8")
+      .toLowerCase();
+
+  if (
+    !tifBuffer.length ||
+    firstText.includes("<html")
+  ) {
+    return send(
+      res,
+      404,
+      JSON.stringify({
+        ok: false,
+        error: "Invalid PA file"
+      }),
+      "application/json"
+    );
+  }
+
+  const pngBuffer =
+    await sharp(tifBuffer)
+      .png()
+      .toBuffer();
+
+  const meta =
+    await sharp(pngBuffer)
+      .metadata();
+
+  const doc =
+    new PDFDocument({
+      autoFirstPage: false,
+      margin: 0
+    });
+
+  const chunks = [];
+
+  doc.on("data", chunk => chunks.push(chunk));
+
+  doc.on("end", () => {
+    const pdfBuffer =
+      Buffer.concat(chunks);
+
+const safeName =
+      `${noPA}`.replace(/[^A-Z0-9_-]/gi, "");
+
+    res.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-Disposition":
+        `attachment; filename="${safeName}.pdf"`,
+      "Cache-Control": "no-store",
+      "Access-Control-Allow-Origin": "*"
+    });
+
+    res.end(pdfBuffer);
+  });
+
+  doc.addPage({
+    size: [meta.width, meta.height],
+    margin: 0
+  });
+
+  doc.image(
+    pngBuffer,
+    0,
+    0,
+    {
+      width: meta.width,
+      height: meta.height
+    }
+  );
+
+  doc.end();
+
+  return;
+}
+
+// =========================
+// SECURE PA DOWNLOAD
+// =========================
+
+if (
+  pathname.startsWith("/api/download-pa/") &&
+  req.method === "GET"
+) {
+
+  const fileName =
+    path.basename(pathname);
+
+  const token =
+    parsed.query.token;
+
+  const saved =
+    DOWNLOAD_TOKENS.get(token);
+
+  if (
+    !saved ||
+    saved.file !== fileName ||
+    saved.expires < Date.now()
+  ) {
+
+    return send(
+      res,
+      403,
+      "Unauthorized"
+    );
+  }
+
+  // DOWNLOAD_TOKENS.delete(token); // allow IDM/browser retry
+
+const filePath =
+    path.join(TEMP_DIR, fileName);
+
+  if (!fs.existsSync(filePath)) {
+
+    return send(
+      res,
+      404,
+      "File not found"
+    );
+  }
+
+  res.writeHead(200, {
+    "Content-Type": "image/tiff",
+    "Content-Disposition":
+      `attachment; filename="${fileName}"`,
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*"
+  });
+
+  fs.createReadStream(filePath)
+    .pipe(res);
+
+  return;
+}
+
+
+    // =========================
+    // BLOCK DIRECT TEMP ACCESS
+    // =========================
+
+    if (
+      pathname === "/temp" ||
+      pathname.startsWith("/temp/")
+    ) {
+      return send(
+        res,
+        403,
+        "Forbidden"
       );
     }
 
@@ -409,6 +658,75 @@ return send(
 );
   }
 }
+
+// =========================
+// AUTO CLEAN TEMP FILES
+// =========================
+
+function cleanupTempFiles() {
+
+  try {
+
+    if (!fs.existsSync(TEMP_DIR)) {
+      return;
+    }
+
+    const files =
+      fs.readdirSync(TEMP_DIR);
+
+    const now = Date.now();
+
+    for (const file of files) {
+
+      const fullPath =
+        path.join(TEMP_DIR, file);
+
+      try {
+
+        const stat =
+          fs.statSync(fullPath);
+
+        const age =
+          now - stat.mtimeMs;
+
+        // DELETE FILE > 30 DAYS
+        if (age > FILE_EXPIRE_MS) {
+
+          fs.unlinkSync(fullPath);
+
+          console.log(
+            "Deleted old file:",
+            file
+          );
+        }
+
+      } catch (err) {
+
+        console.error(
+          "Cleanup file error:",
+          file,
+          err.message
+        );
+      }
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Cleanup temp error:",
+      err.message
+    );
+  }
+}
+
+// RUN EVERY 12 HOURS
+setInterval(
+  cleanupTempFiles,
+  12 * 60 * 60 * 1000
+);
+
+// RUN ON STARTUP
+cleanupTempFiles();
 
 http.createServer(handler)
 .listen(PORT, "0.0.0.0", () => {
