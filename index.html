@@ -4514,6 +4514,29 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return normalizeUsername(name);
     }
 
+    async function getUserProfileForLogin(usernameKey, fallbackName, credential) {
+      try {
+        const userSnap = await getDoc(doc(db, 'users', usernameKey));
+        if (userSnap.exists()) return userSnap.data();
+      } catch (error) {
+        console.warn('AZOBSS profile read skipped after successful auth', error && (error.code || error.message));
+      }
+
+      return {
+        uid: credential.user.uid,
+        name: fallbackName || usernameKey,
+        usernameKey,
+        phone: '',
+        email: credential.user.email || buildUserEmail(usernameKey),
+        contactEmail: '',
+        paAccess: usernameKey === ADMIN_USERNAME ? true : false,
+        inviteCode: buildInviteCode(usernameKey),
+        invitedByCode: '',
+        invitedByUsernameKey: '',
+        emailVerified: credential.user.emailVerified === true
+      };
+    }
+
     function getSavedUser() {
       const savedUser = sessionStorage.getItem('azobssCurrentUser');
       return savedUser ? JSON.parse(savedUser) : null;
@@ -7117,21 +7140,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         await ensureAuthSessionPersistence();
         const credential = await signInWithUsernamePassword(usernameKey, password, name);
         authSignInStarted = true;
-        const userRef = doc(db, 'users', usernameKey);
-        const userSnap = await getDoc(userRef);
-        const profile = userSnap.exists() ? userSnap.data() : {
-          uid: credential.user.uid,
-          name,
-          usernameKey,
-          phone: '',
-          email: credential.user.email,
-          contactEmail: '',
-          paAccess: true,
-          inviteCode: buildInviteCode(usernameKey),
-          invitedByCode: '',
-          invitedByUsernameKey: '',
-          emailVerified: credential.user.emailVerified === true
-        };
+        const profile = await getUserProfileForLogin(usernameKey, name, credential);
 
         if (profile.deleted) {
           await signOut(auth);
@@ -7160,7 +7169,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         closeSiteAuth();
         setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
-        if (authSignInStarted) {
+        if (authSignInStarted && !(error && error.code === 'permission-denied')) {
           await cleanupPartialAuthSession();
         }
 
@@ -7853,17 +7862,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         await ensureAuthSessionPersistence();
         const credential = await signInWithUsernamePassword(usernameKey, password, name);
         authSignInStarted = true;
-        const userRef = doc(db, 'users', usernameKey);
-        const userSnap = await getDoc(userRef);
-        const profile = userSnap.exists() ? userSnap.data() : {
-          uid: credential.user.uid,
-          name,
-          usernameKey,
-          phone: '',
-          email: credential.user.email,
-          contactEmail: '',
-          paAccess: true
-        };
+        const profile = await getUserProfileForLogin(usernameKey, name, credential);
 
         if (profile.deleted) {
           await signOut(auth);
@@ -7891,7 +7890,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         await recordLoginHistory(user);
         setLoggedIn(user, `Login successful. Welcome, ${user.name}.`);
       } catch (error) {
-        if (authSignInStarted) {
+        if (authSignInStarted && !(error && error.code === 'permission-denied')) {
           await cleanupPartialAuthSession();
         }
 
@@ -8035,7 +8034,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           const userSnap = await getDoc(doc(db, 'users', savedUser.usernameKey));
 
           if (!userSnap.exists()) {
-            await rejectRestoredSession();
+            setLoggedIn({
+              ...savedUser,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || savedUser.email || '',
+              usernameKey: savedUser.usernameKey,
+              paAccess: savedUser.usernameKey === ADMIN_USERNAME ? true : savedUser.paAccess !== false
+            });
             return;
           }
 
@@ -8059,7 +8064,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           saveCurrentUser(restoredUser);
           setLoggedIn(restoredUser);
         } catch (error) {
-          await rejectRestoredSession();
+          setLoggedIn({
+            ...savedUser,
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || savedUser.email || '',
+            usernameKey: savedUser.usernameKey,
+            paAccess: savedUser.usernameKey === ADMIN_USERNAME ? true : savedUser.paAccess !== false
+          });
         }
       }, function () {
         stopAuthRestoreListener();
