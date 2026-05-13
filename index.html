@@ -5262,6 +5262,111 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return `${fallbackText}: ${code || 'unknown error'}`;
     }
 
+    function shouldUseLuckyDrawBackend(error) {
+      const code = error && (error.code || error.message) ? String(error.code || error.message) : '';
+      return code === 'resource-exhausted' || code === 'permission-denied';
+    }
+
+    function getLuckyDrawBackendBase() {
+      if (window.location.protocol.indexOf('http') === 0 && /^(127\.0\.0\.1|localhost)$/i.test(window.location.hostname)) {
+        return window.location.origin;
+      }
+
+      return 'https://azobss-backend.onrender.com';
+    }
+
+    async function requestLuckyDrawBackend(path, options = {}) {
+      const response = await fetch(`${getLuckyDrawBackendBase()}${path}`, {
+        cache: 'no-store',
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        }
+      });
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch (error) {
+        data = null;
+      }
+
+      if (!response.ok || !data || data.ok === false) {
+        const backendError = new Error((data && data.code) || `backend-${response.status}`);
+        backendError.code = (data && data.code) || `backend-${response.status}`;
+        throw backendError;
+      }
+
+      return data;
+    }
+
+    function applyLuckyDrawBackendData(data, options = {}) {
+      const winnerPicked = Boolean(data.winnerPicked);
+      const alreadyJoined = Boolean(data.alreadyJoined);
+      const entries = Array.isArray(data.entries) ? data.entries : [];
+
+      luckyDrawEntryCount.textContent = String(data.entryCount || 0);
+      luckyDrawWinner.textContent = data.winnerName || data.winnerUsernameKey || 'Belum dipilih';
+      allLuckyDrawEntries = entries;
+      renderLuckyDrawEntries(entries);
+      joinLuckyDrawButton.textContent = winnerPicked ? 'Draw Closed' : alreadyJoined ? 'Already Joined' : 'Join Lucky Draw';
+      joinLuckyDrawButton.disabled = winnerPicked || alreadyJoined;
+
+      if (!options.silent) {
+        setLuckyDrawStatus(winnerPicked
+          ? 'Lucky Draw bulan ini sudah selesai.'
+          : alreadyJoined
+          ? 'Akaun ini sudah join Lucky Draw untuk bulan semasa.'
+          : 'Anda boleh join Lucky Draw bulan ini.');
+      }
+    }
+
+    async function loadLuckyDrawFromBackend(monthKey, options = {}) {
+      if (!currentUser || !currentUser.usernameKey) {
+        return;
+      }
+
+      const data = await requestLuckyDrawBackend(
+        `/api/lucky-draw?monthKey=${encodeURIComponent(monthKey)}&usernameKey=${encodeURIComponent(currentUser.usernameKey)}`
+      );
+      applyLuckyDrawBackendData(data, options);
+    }
+
+    async function joinLuckyDrawViaBackend(monthKey, deviceHash) {
+      const data = await requestLuckyDrawBackend('/api/lucky-draw/join', {
+        method: 'POST',
+        body: JSON.stringify({
+          monthKey,
+          usernameKey: currentUser.usernameKey,
+          name: currentUser.name || currentUser.usernameKey,
+          phone: currentUser.phone || '',
+          contactEmail: currentUser.contactEmail || '',
+          deviceHash
+        })
+      });
+
+      joinLuckyDrawButton.textContent = 'Already Joined';
+      joinLuckyDrawButton.disabled = true;
+      luckyDrawEntryCount.textContent = String(data.entryCount || 1);
+      setLuckyDrawStatus('Berjaya join Lucky Draw bulan ini melalui backup server. Semoga bertuah!', 'success');
+    }
+
+    async function pickLuckyDrawWinnerViaBackend(monthKey) {
+      const data = await requestLuckyDrawBackend('/api/lucky-draw/pick', {
+        method: 'POST',
+        body: JSON.stringify({
+          monthKey,
+          pickedBy: currentUser.usernameKey
+        })
+      });
+      const result = data.result || {};
+
+      luckyDrawWinner.textContent = result.winnerName || result.winnerUsernameKey || 'Pemenang dipilih';
+      setLuckyDrawStatus(`Pemenang bulan ini: ${result.winnerName || result.winnerUsernameKey}.`, 'success');
+      await loadLuckyDrawFromBackend(monthKey, { silent: true });
+    }
+
     function renderLuckyDrawEntries(entries) {
       if (!luckyDrawEntriesList) {
         return;
@@ -5378,6 +5483,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             : 'Anda boleh join Lucky Draw bulan ini.');
         }
       } catch (error) {
+        if (shouldUseLuckyDrawBackend(error)) {
+          try {
+            await loadLuckyDrawFromBackend(monthKey, options);
+            return;
+          } catch (backendError) {
+            setLuckyDrawStatus(getLuckyDrawErrorText(backendError, 'Backup Lucky Draw gagal dibaca'), 'error');
+            return;
+          }
+        }
+
         setLuckyDrawStatus(getLuckyDrawErrorText(error, 'Lucky Draw gagal dibaca'), 'error');
       }
     }
@@ -5397,6 +5512,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const monthKey = getLuckyDrawMonthKey();
       const usernameKey = currentUser.usernameKey;
       const userEntryId = `${monthKey}_${usernameKey}`;
+      let deviceHash = '';
 
       try {
         joinLuckyDrawButton.disabled = true;
@@ -5409,7 +5525,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           return;
         }
 
-        const deviceHash = await getLuckyDrawDeviceHash();
+        deviceHash = await getLuckyDrawDeviceHash();
         const ipHash = await hashLuckyDrawValue(ipAddress);
         const userEntryRef = doc(db, 'luckyDrawEntries', userEntryId);
         const deviceClaimRef = doc(db, 'luckyDrawDeviceClaims', `${monthKey}_${deviceHash}`);
@@ -5477,6 +5593,19 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
       } catch (error) {
         joinLuckyDrawButton.disabled = false;
+
+        if (shouldUseLuckyDrawBackend(error)) {
+          try {
+            if (!deviceHash) {
+              deviceHash = await getLuckyDrawDeviceHash();
+            }
+
+            await joinLuckyDrawViaBackend(monthKey, deviceHash);
+            return;
+          } catch (backendError) {
+            error = backendError;
+          }
+        }
 
         if (error.message === 'already-joined') {
           setLuckyDrawStatus('Akaun ini sudah join Lucky Draw bulan semasa.', 'error');
@@ -5553,6 +5682,15 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         setLuckyDrawStatus(`Pemenang bulan ini: ${winner.name || winner.usernameKey}.`, 'success');
         await loadLuckyDrawPanel({ silent: true });
       } catch (error) {
+        if (shouldUseLuckyDrawBackend(error)) {
+          try {
+            await pickLuckyDrawWinnerViaBackend(monthKey);
+            return;
+          } catch (backendError) {
+            error = backendError;
+          }
+        }
+
         if (error.message === 'winner-exists') {
           setLuckyDrawStatus('Pemenang untuk bulan ini sudah dipilih.', 'error');
           await loadLuckyDrawPanel({ silent: true });

@@ -320,6 +320,296 @@ async function handler(req, res) {
     }
 
     // =========================
+    // LUCKY DRAW FALLBACK
+    // =========================
+
+    if (
+      pathname === "/api/lucky-draw" &&
+      req.method === "GET"
+    ) {
+
+      const monthKey =
+        cleanLuckyDrawMonth(parsed.query.monthKey);
+
+      const usernameKey =
+        cleanUsernameKey(parsed.query.usernameKey);
+
+      if (!monthKey) {
+        return send(
+          res,
+          400,
+          JSON.stringify({
+            ok: false,
+            code: "missing-month"
+          }),
+          "application/json"
+        );
+      }
+
+      const store =
+        readLuckyDrawStore();
+
+      const entries =
+        store.entries.filter(entry => entry.monthKey === monthKey);
+
+      const result =
+        store.results.find(item => item.monthKey === monthKey) || null;
+
+      const userEntry =
+        usernameKey
+          ? entries.find(entry => entry.usernameKey === usernameKey)
+          : null;
+
+      return send(
+        res,
+        200,
+        JSON.stringify({
+          ok: true,
+          monthKey,
+          entryCount: entries.length,
+          alreadyJoined: Boolean(userEntry),
+          winnerPicked: Boolean(result),
+          winnerName: result ? result.winnerName : "",
+          winnerUsernameKey: result ? result.winnerUsernameKey : "",
+          entries: usernameKey === ADMIN_USERNAME
+            ? entries.map(entry => ({
+              id: entry.id,
+              monthKey: entry.monthKey,
+              usernameKey: entry.usernameKey,
+              name: entry.name,
+              phone: entry.phone,
+              createdAtMs: entry.createdAtMs
+            }))
+            : []
+        }),
+        "application/json"
+      );
+    }
+
+    if (
+      pathname === "/api/lucky-draw/join" &&
+      req.method === "POST"
+    ) {
+
+      let data;
+
+      try {
+        data = JSON.parse(await readBody(req));
+      } catch (err) {
+        return send(
+          res,
+          400,
+          JSON.stringify({
+            ok: false,
+            code: "invalid-json"
+          }),
+          "application/json"
+        );
+      }
+
+      const monthKey =
+        cleanLuckyDrawMonth(data.monthKey);
+
+      const usernameKey =
+        cleanUsernameKey(data.usernameKey);
+
+      const deviceHash =
+        cleanHash(data.deviceHash);
+
+      const ipAddress =
+        clientIp(req);
+
+      if (!monthKey || !usernameKey || !deviceHash || !ipAddress) {
+        return send(
+          res,
+          400,
+          JSON.stringify({
+            ok: false,
+            code: "missing-fields"
+          }),
+          "application/json"
+        );
+      }
+
+      const store =
+        readLuckyDrawStore();
+
+      const monthEntries =
+        store.entries.filter(entry => entry.monthKey === monthKey);
+
+      if (store.results.some(item => item.monthKey === monthKey)) {
+        return send(
+          res,
+          409,
+          JSON.stringify({
+            ok: false,
+            code: "draw-closed"
+          }),
+          "application/json"
+        );
+      }
+
+      if (monthEntries.some(entry => entry.usernameKey === usernameKey)) {
+        return send(
+          res,
+          409,
+          JSON.stringify({
+            ok: false,
+            code: "already-joined"
+          }),
+          "application/json"
+        );
+      }
+
+      if (monthEntries.some(entry => entry.deviceHash === deviceHash)) {
+        return send(
+          res,
+          409,
+          JSON.stringify({
+            ok: false,
+            code: "device-used"
+          }),
+          "application/json"
+        );
+      }
+
+      if (monthEntries.some(entry => entry.ipAddress === ipAddress)) {
+        return send(
+          res,
+          409,
+          JSON.stringify({
+            ok: false,
+            code: "ip-used"
+          }),
+          "application/json"
+        );
+      }
+
+      const entry = {
+        id: `${monthKey}_${usernameKey}`,
+        monthKey,
+        usernameKey,
+        name: String(data.name || usernameKey).trim().slice(0, 100),
+        phone: String(data.phone || "").trim().slice(0, 40),
+        contactEmail: String(data.contactEmail || "").trim().slice(0, 120),
+        deviceHash,
+        ipAddress,
+        createdAtMs: Date.now()
+      };
+
+      store.entries.push(entry);
+      saveLuckyDrawStore(store);
+
+      return send(
+        res,
+        200,
+        JSON.stringify({
+          ok: true,
+          entry,
+          entryCount: monthEntries.length + 1
+        }),
+        "application/json"
+      );
+    }
+
+    if (
+      pathname === "/api/lucky-draw/pick" &&
+      req.method === "POST"
+    ) {
+
+      let data;
+
+      try {
+        data = JSON.parse(await readBody(req));
+      } catch (err) {
+        return send(
+          res,
+          400,
+          JSON.stringify({
+            ok: false,
+            code: "invalid-json"
+          }),
+          "application/json"
+        );
+      }
+
+      const monthKey =
+        cleanLuckyDrawMonth(data.monthKey);
+
+      const pickedBy =
+        cleanUsernameKey(data.pickedBy);
+
+      if (!monthKey || pickedBy !== ADMIN_USERNAME) {
+        return send(
+          res,
+          403,
+          JSON.stringify({
+            ok: false,
+            code: "admin-only"
+          }),
+          "application/json"
+        );
+      }
+
+      const store =
+        readLuckyDrawStore();
+
+      if (store.results.some(item => item.monthKey === monthKey)) {
+        return send(
+          res,
+          409,
+          JSON.stringify({
+            ok: false,
+            code: "winner-exists"
+          }),
+          "application/json"
+        );
+      }
+
+      const entries =
+        store.entries.filter(entry => entry.monthKey === monthKey);
+
+      if (!entries.length) {
+        return send(
+          res,
+          400,
+          JSON.stringify({
+            ok: false,
+            code: "no-entries"
+          }),
+          "application/json"
+        );
+      }
+
+      const winner =
+        entries[crypto.randomInt(entries.length)];
+
+      const result = {
+        monthKey,
+        winnerEntryId: winner.id,
+        winnerUsernameKey: winner.usernameKey,
+        winnerName: winner.name,
+        winnerPhone: winner.phone,
+        entryCount: entries.length,
+        pickedBy,
+        pickedAtMs: Date.now()
+      };
+
+      store.results.push(result);
+      saveLuckyDrawStore(store);
+
+      return send(
+        res,
+        200,
+        JSON.stringify({
+          ok: true,
+          result
+        }),
+        "application/json"
+      );
+    }
+
+    // =========================
     // JUPEM PA HOLD SYSTEM
     // =========================
 
