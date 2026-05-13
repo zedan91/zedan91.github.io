@@ -4290,6 +4290,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const signupGateRef = firebaseReady ? doc(db, 'settings', 'signupGate') : null;
 
     const ADMIN_USERNAME = 'zedan91';
+    const ADMIN_LOGIN_EMAILS = ['zedan9107@gmail.com', 'zedan91@gmail.com'];
     const PURCHASE_PRICE = 5;
     const SIGNUP_GATE_DURATION_MS = 5 * 60 * 1000;
     sessionStorage.removeItem('azobssSignupOpenUntil');
@@ -4504,6 +4505,13 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     function buildUserEmail(usernameKey, contactEmail = '') {
       const email = String(contactEmail || '').trim().toLowerCase();
       return isValidEmail(email) ? email : `${usernameKey}@azobss.local`;
+    }
+
+    function getLoginUsernameKey(name) {
+      const cleanName = String(name || '').trim().toLowerCase();
+      if (ADMIN_LOGIN_EMAILS.includes(cleanName)) return ADMIN_USERNAME;
+      if (isValidEmail(cleanName)) return normalizeUsername(cleanName.split('@')[0]);
+      return normalizeUsername(name);
     }
 
     function getSavedUser() {
@@ -7086,7 +7094,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     }
 
     async function signInSiteUser(name, password, errorElement) {
-      const usernameKey = normalizeUsername(name);
+      const usernameKey = getLoginUsernameKey(name);
       let authSignInStarted = false;
 
       if (!name || !password) {
@@ -7107,7 +7115,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       try {
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
-        const credential = await signInWithUsernamePassword(usernameKey, password);
+        const credential = await signInWithUsernamePassword(usernameKey, password, name);
         authSignInStarted = true;
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
@@ -7136,7 +7144,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           name: profile.name,
           usernameKey: profile.usernameKey,
           phone: profile.phone || '',
-          email: profile.email || credential.user.email,
+          email: credential.user.email || profile.email,
           contactEmail: profile.contactEmail || '',
           paAccess: profile.paAccess !== false,
           inviteCode: profile.inviteCode || buildInviteCode(profile.usernameKey || usernameKey),
@@ -7217,25 +7225,44 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       if (!candidates.some(function (item) { return item.toLowerCase() === cleanEmail.toLowerCase(); })) candidates.push(cleanEmail);
     }
 
-    async function getLoginEmailCandidates(usernameKey) {
+    async function getMappedLoginEmail(usernameKey) {
+      const path = '/api/user-login-email?usernameKey=' + encodeURIComponent(usernameKey);
+      const bases = [getLuckyDrawBackendBase(), 'https://azobss-backend.onrender.com'];
+      for (const base of bases.filter(function (item, index, list) { return item && list.indexOf(item) === index; })) {
+        try {
+          const response = await fetch(base + path, { cache: 'no-store' });
+          if (!response.ok) continue;
+          const data = await response.json();
+          if (data && isValidEmail(data.email || '')) return data.email;
+        } catch (error) {}
+      }
+      return '';
+    }
+
+    async function getLoginEmailCandidates(usernameKey, loginName = '') {
       const candidates = [];
+      const cleanLoginName = String(loginName || '').trim().toLowerCase();
+      addUniqueLoginEmail(candidates, cleanLoginName);
       addUniqueLoginEmail(candidates, buildUserEmail(usernameKey));
+      if (usernameKey === ADMIN_USERNAME) {
+        ADMIN_LOGIN_EMAILS.forEach(function (email) { addUniqueLoginEmail(candidates, email); });
+      }
       try {
-        const data = await requestLuckyDrawBackend('/api/user-login-email?usernameKey=' + encodeURIComponent(usernameKey));
-        if (data && isValidEmail(data.email || '')) addUniqueLoginEmail(candidates, data.email);
+        addUniqueLoginEmail(candidates, await getMappedLoginEmail(usernameKey));
       } catch (error) {}
       try {
         const userSnap = await getDoc(doc(db, 'users', usernameKey));
         if (userSnap.exists()) {
           const profile = userSnap.data();
           if (isValidEmail(profile.email || '')) addUniqueLoginEmail(candidates, profile.email);
+          if (isValidEmail(profile.contactEmail || '')) addUniqueLoginEmail(candidates, profile.contactEmail);
         }
       } catch (error) {}
       return candidates;
     }
 
-    async function signInWithUsernamePassword(usernameKey, password) {
-      const candidates = await getLoginEmailCandidates(usernameKey);
+    async function signInWithUsernamePassword(usernameKey, password, loginName = '') {
+      const candidates = await getLoginEmailCandidates(usernameKey, loginName);
       let lastError = null;
       for (const email of candidates) {
         try {
@@ -7244,6 +7271,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           lastError = error;
         }
       }
+      console.warn('AZOBSS sign-in failed for username candidates', usernameKey, candidates.map(function (email) { return email.replace(/(^.).*(@.*$)/, '$1***$2'); }), lastError && (lastError.code || lastError.message));
       throw lastError || new Error('auth/invalid-credential');
     }
 
@@ -7281,8 +7309,12 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       stopAuthRestoreListener();
       await ensureAuthSessionPersistence();
 
-      const existingSnapshot = await getDoc(userRef);
-      existingData = existingSnapshot.exists() ? existingSnapshot.data() : null;
+      try {
+        const existingSnapshot = await getDoc(userRef);
+        existingData = existingSnapshot.exists() ? existingSnapshot.data() : null;
+      } catch (error) {
+        existingData = null;
+      }
 
       if (existingData && !existingData.deleted) {
         const activeError = new Error('username-active');
@@ -7801,7 +7833,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       const name = loginName.value.trim();
       const password = loginPassword.value.trim();
-      const usernameKey = normalizeUsername(name);
+      const usernameKey = getLoginUsernameKey(name);
       let authSignInStarted = false;
 
       if (!name || !password) {
@@ -7819,7 +7851,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       try {
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
-        const credential = await signInWithUsernamePassword(usernameKey, password);
+        const credential = await signInWithUsernamePassword(usernameKey, password, name);
         authSignInStarted = true;
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
@@ -7844,7 +7876,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           name: profile.name,
           usernameKey: profile.usernameKey,
           phone: profile.phone || '',
-          email: profile.email || credential.user.email,
+          email: credential.user.email || profile.email,
           contactEmail: profile.contactEmail || '',
           paAccess: profile.paAccess !== false,
           inviteCode: profile.inviteCode || buildInviteCode(profile.usernameKey || usernameKey),
