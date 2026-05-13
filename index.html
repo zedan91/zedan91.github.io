@@ -4396,6 +4396,15 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const adminOnlineSummary = document.getElementById('adminOnlineSummary');
     const onlineGuestCount = document.getElementById('onlineGuestCount');
     const onlineUserCount = document.getElementById('onlineUserCount');
+    const joinLuckyDrawButton = document.getElementById('joinLuckyDrawButton');
+    const luckyDrawLoginButton = document.getElementById('luckyDrawLoginButton');
+    const luckyDrawStatus = document.getElementById('luckyDrawStatus');
+    const luckyDrawMonth = document.getElementById('luckyDrawMonth');
+    const luckyDrawEntryCount = document.getElementById('luckyDrawEntryCount');
+    const luckyDrawWinner = document.getElementById('luckyDrawWinner');
+    const luckyDrawEntriesList = document.getElementById('luckyDrawEntriesList');
+    const refreshLuckyDrawButton = document.getElementById('refreshLuckyDrawButton');
+    const pickLuckyDrawWinnerButton = document.getElementById('pickLuckyDrawWinnerButton');
     const copyAccountButton = document.getElementById('copyAccountButton');
     const qrCopyStatus = document.getElementById('qrCopyStatus');
     const receiptWhatsappButton = document.getElementById('receiptWhatsappButton');
@@ -4421,6 +4430,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     let loginHistoryPage = 1;
     let allGuestHistory = [];
     let guestHistoryPage = 1;
+    let allLuckyDrawEntries = [];
     const HISTORY_PAGE_SIZE = 3;
     const PURCHASE_RECORDS_PAGE_SIZE = 10;
     const USER_PA_PURCHASE_PAGE_SIZE = 5;
@@ -5161,6 +5171,370 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    function getLuckyDrawMonthKey(date = new Date()) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatLuckyDrawMonth(monthKey) {
+      const parts = String(monthKey || '').split('-');
+      const year = Number(parts[0]);
+      const monthIndex = Number(parts[1]) - 1;
+
+      if (!year || monthIndex < 0) {
+        return '-';
+      }
+
+      return new Date(year, monthIndex, 1).toLocaleDateString('en-MY', {
+        month: 'long',
+        year: 'numeric'
+      });
+    }
+
+    function getLuckyDrawEntryMs(entry) {
+      return getFirestoreTimestampMs(entry.createdAt) || entry.createdAtMs || 0;
+    }
+
+    function getBrowserDeviceText() {
+      const screenData = window.screen ? [
+        window.screen.width,
+        window.screen.height,
+        window.screen.colorDepth,
+        window.devicePixelRatio || 1
+      ].join('x') : 'screen-unknown';
+
+      return [
+        navigator.userAgent || '',
+        navigator.platform || '',
+        Array.isArray(navigator.languages) ? navigator.languages.join(',') : navigator.language || '',
+        Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        screenData,
+        navigator.hardwareConcurrency || '',
+        navigator.deviceMemory || ''
+      ].join('|');
+    }
+
+    async function hashLuckyDrawValue(value) {
+      const text = String(value || '');
+
+      if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+        const bytes = new TextEncoder().encode(text);
+        const digest = await window.crypto.subtle.digest('SHA-256', bytes);
+        return Array.from(new Uint8Array(digest)).map(function (byte) {
+          return byte.toString(16).padStart(2, '0');
+        }).join('');
+      }
+
+      let hash = 0;
+      for (let i = 0; i < text.length; i += 1) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+      }
+
+      return `fallback-${Math.abs(hash)}`;
+    }
+
+    async function getLuckyDrawDeviceHash() {
+      return hashLuckyDrawValue(getBrowserDeviceText());
+    }
+
+    function setLuckyDrawStatus(message, type = 'info') {
+      if (!luckyDrawStatus) {
+        return;
+      }
+
+      luckyDrawStatus.textContent = message || '';
+      luckyDrawStatus.style.color = type === 'error' ? '#fca5a5' : type === 'success' ? '#bbf7d0' : '#fde68a';
+    }
+
+    function renderLuckyDrawEntries(entries) {
+      if (!luckyDrawEntriesList) {
+        return;
+      }
+
+      if (!entries.length) {
+        luckyDrawEntriesList.innerHTML = '<div class="lucky-draw-entry">No entries yet.</div>';
+        return;
+      }
+
+      luckyDrawEntriesList.innerHTML = entries
+        .slice()
+        .sort(function (a, b) {
+          return getLuckyDrawEntryMs(b) - getLuckyDrawEntryMs(a);
+        })
+        .slice(0, 10)
+        .map(function (entry) {
+          const joinedAt = getLuckyDrawEntryMs(entry)
+            ? new Date(getLuckyDrawEntryMs(entry)).toLocaleString('en-MY', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+            : '-';
+
+          return `
+            <div class="lucky-draw-entry">
+              <span><strong>${escapeHtml(entry.name || entry.usernameKey || '-')}</strong><br>${escapeHtml(entry.phone || '-')}</span>
+              <span>${escapeHtml(joinedAt)}</span>
+            </div>
+          `;
+        }).join('');
+    }
+
+    async function loadLuckyDrawPanel(options = {}) {
+      if (!luckyDrawMonth || !luckyDrawEntryCount || !luckyDrawWinner) {
+        return;
+      }
+
+      const monthKey = getLuckyDrawMonthKey();
+      luckyDrawMonth.textContent = formatLuckyDrawMonth(monthKey);
+      luckyDrawLoginButton.hidden = isLoggedIn;
+      luckyDrawLoginButton.style.display = isLoggedIn ? 'none' : 'inline-block';
+      joinLuckyDrawButton.disabled = !firebaseReady;
+
+      if (!firebaseReady) {
+        setLuckyDrawStatus('Firebase belum disambungkan untuk Lucky Draw.', 'error');
+        return;
+      }
+
+      if (!isLoggedIn || !currentUser) {
+        allLuckyDrawEntries = [];
+        luckyDrawEntryCount.textContent = '0';
+        luckyDrawWinner.textContent = 'Belum dipilih';
+        joinLuckyDrawButton.textContent = 'Join Lucky Draw';
+        joinLuckyDrawButton.disabled = false;
+        renderLuckyDrawEntries([]);
+
+        if (!options.silent) {
+          setLuckyDrawStatus('Login atau signup dahulu untuk join Lucky Draw bulan ini.');
+        }
+
+        return;
+      }
+
+      try {
+        const entriesQuery = query(
+          collection(db, 'luckyDrawEntries'),
+          where('monthKey', '==', monthKey)
+        );
+        const entriesSnapshot = await getDocs(entriesQuery);
+        const entries = [];
+
+        entriesSnapshot.forEach(function (item) {
+          entries.push({
+            id: item.id,
+            ...item.data()
+          });
+        });
+
+        allLuckyDrawEntries = entries;
+        luckyDrawEntryCount.textContent = String(entries.length);
+        renderLuckyDrawEntries(entries);
+
+        const resultSnapshot = await getDoc(doc(db, 'luckyDrawResults', monthKey));
+        const winnerPicked = resultSnapshot.exists();
+        if (resultSnapshot.exists()) {
+          const result = resultSnapshot.data();
+          luckyDrawWinner.textContent = result.winnerName || result.winnerUsernameKey || 'Pemenang dipilih';
+        } else {
+          luckyDrawWinner.textContent = 'Belum dipilih';
+        }
+
+        const userEntryId = `${monthKey}_${currentUser.usernameKey}`;
+        const userEntrySnapshot = await getDoc(doc(db, 'luckyDrawEntries', userEntryId));
+        const alreadyJoined = userEntrySnapshot.exists();
+        joinLuckyDrawButton.textContent = winnerPicked ? 'Draw Closed' : alreadyJoined ? 'Already Joined' : 'Join Lucky Draw';
+        joinLuckyDrawButton.disabled = winnerPicked || alreadyJoined;
+
+        if (!options.silent) {
+          setLuckyDrawStatus(winnerPicked
+            ? 'Lucky Draw bulan ini sudah selesai.'
+            : alreadyJoined
+            ? 'Akaun ini sudah join Lucky Draw untuk bulan semasa.'
+            : 'Anda boleh join Lucky Draw bulan ini.');
+        }
+      } catch (error) {
+        setLuckyDrawStatus(`Lucky Draw gagal dibaca: ${error.code || error.message}`, 'error');
+      }
+    }
+
+    async function joinLuckyDraw() {
+      if (!isLoggedIn || !currentUser) {
+        openSiteAuth('signin');
+        setLuckyDrawStatus('Sila login dahulu sebelum join Lucky Draw.');
+        return;
+      }
+
+      if (!firebaseReady || !auth.currentUser) {
+        setLuckyDrawStatus('Firebase belum bersedia untuk Lucky Draw.', 'error');
+        return;
+      }
+
+      const monthKey = getLuckyDrawMonthKey();
+      const usernameKey = currentUser.usernameKey;
+      const userEntryId = `${monthKey}_${usernameKey}`;
+
+      try {
+        joinLuckyDrawButton.disabled = true;
+        setLuckyDrawStatus('Menyemak akaun, peranti dan IP...');
+
+        const ipAddress = await resolveVisitorIpAddress();
+        if (!ipAddress) {
+          setLuckyDrawStatus('Tidak dapat sahkan alamat IP. Cuba semula selepas sambungan stabil.', 'error');
+          joinLuckyDrawButton.disabled = false;
+          return;
+        }
+
+        const deviceHash = await getLuckyDrawDeviceHash();
+        const ipHash = await hashLuckyDrawValue(ipAddress);
+        const userEntryRef = doc(db, 'luckyDrawEntries', userEntryId);
+        const deviceClaimRef = doc(db, 'luckyDrawDeviceClaims', `${monthKey}_${deviceHash}`);
+        const ipClaimRef = doc(db, 'luckyDrawIpClaims', `${monthKey}_${ipHash}`);
+        const resultRef = doc(db, 'luckyDrawResults', monthKey);
+
+        await runTransaction(db, async function (transaction) {
+          const resultSnapshot = await transaction.get(resultRef);
+          const userEntrySnapshot = await transaction.get(userEntryRef);
+          const deviceClaimSnapshot = await transaction.get(deviceClaimRef);
+          const ipClaimSnapshot = await transaction.get(ipClaimRef);
+
+          if (resultSnapshot.exists()) {
+            throw new Error('draw-closed');
+          }
+
+          if (userEntrySnapshot.exists()) {
+            throw new Error('already-joined');
+          }
+
+          if (deviceClaimSnapshot.exists()) {
+            throw new Error('device-used');
+          }
+
+          if (ipClaimSnapshot.exists()) {
+            throw new Error('ip-used');
+          }
+
+          const entryData = {
+            monthKey,
+            uid: currentUser.uid || auth.currentUser.uid,
+            usernameKey,
+            name: currentUser.name || usernameKey,
+            phone: currentUser.phone || '',
+            contactEmail: currentUser.contactEmail || '',
+            deviceHash,
+            ipHash,
+            ipAddress,
+            createdAtMs: Date.now(),
+            createdAt: serverTimestamp()
+          };
+
+          transaction.set(userEntryRef, entryData);
+          transaction.set(deviceClaimRef, {
+            monthKey,
+            usernameKey,
+            uid: currentUser.uid || auth.currentUser.uid,
+            createdAt: serverTimestamp()
+          });
+          transaction.set(ipClaimRef, {
+            monthKey,
+            usernameKey,
+            uid: currentUser.uid || auth.currentUser.uid,
+            createdAt: serverTimestamp()
+          });
+        });
+
+        setLuckyDrawStatus('Berjaya join Lucky Draw bulan ini. Semoga bertuah!', 'success');
+        await loadLuckyDrawPanel({ silent: true });
+      } catch (error) {
+        joinLuckyDrawButton.disabled = false;
+
+        if (error.message === 'already-joined') {
+          setLuckyDrawStatus('Akaun ini sudah join Lucky Draw bulan semasa.', 'error');
+        } else if (error.message === 'draw-closed') {
+          setLuckyDrawStatus('Lucky Draw bulan ini sudah selesai.', 'error');
+        } else if (error.message === 'device-used') {
+          setLuckyDrawStatus('Peranti ini sudah digunakan oleh akaun lain untuk Lucky Draw bulan semasa.', 'error');
+        } else if (error.message === 'ip-used') {
+          setLuckyDrawStatus('Alamat IP ini sudah digunakan untuk Lucky Draw bulan semasa.', 'error');
+        } else {
+          setLuckyDrawStatus(`Gagal join Lucky Draw: ${error.code || error.message}`, 'error');
+        }
+      }
+    }
+
+    function getRandomLuckyDrawEntry(entries) {
+      if (!entries.length) {
+        return null;
+      }
+
+      if (window.crypto && window.crypto.getRandomValues) {
+        const values = new Uint32Array(1);
+        window.crypto.getRandomValues(values);
+        return entries[values[0] % entries.length];
+      }
+
+      return entries[Math.floor(Math.random() * entries.length)];
+    }
+
+    async function pickLuckyDrawWinner() {
+      if (!isAdminUser(currentUser)) {
+        return;
+      }
+
+      const monthKey = getLuckyDrawMonthKey();
+
+      try {
+        pickLuckyDrawWinnerButton.disabled = true;
+        setLuckyDrawStatus('Memilih pemenang...');
+
+        if (!allLuckyDrawEntries.length) {
+          await loadLuckyDrawPanel({ silent: true });
+        }
+
+        const entries = allLuckyDrawEntries.slice();
+        if (!entries.length) {
+          setLuckyDrawStatus('Belum ada penyertaan untuk bulan ini.', 'error');
+          return;
+        }
+
+        const winner = getRandomLuckyDrawEntry(entries);
+        const resultRef = doc(db, 'luckyDrawResults', monthKey);
+
+        await runTransaction(db, async function (transaction) {
+          const resultSnapshot = await transaction.get(resultRef);
+
+          if (resultSnapshot.exists()) {
+            throw new Error('winner-exists');
+          }
+
+          transaction.set(resultRef, {
+            monthKey,
+            winnerEntryId: winner.id,
+            winnerUid: winner.uid || '',
+            winnerUsernameKey: winner.usernameKey || '',
+            winnerName: winner.name || winner.usernameKey || '',
+            winnerPhone: winner.phone || '',
+            entryCount: entries.length,
+            pickedBy: currentUser.usernameKey,
+            pickedAt: serverTimestamp()
+          });
+        });
+
+        setLuckyDrawStatus(`Pemenang bulan ini: ${winner.name || winner.usernameKey}.`, 'success');
+        await loadLuckyDrawPanel({ silent: true });
+      } catch (error) {
+        if (error.message === 'winner-exists') {
+          setLuckyDrawStatus('Pemenang untuk bulan ini sudah dipilih.', 'error');
+          await loadLuckyDrawPanel({ silent: true });
+        } else {
+          setLuckyDrawStatus(`Gagal pilih pemenang: ${error.code || error.message}`, 'error');
+        }
+      } finally {
+        pickLuckyDrawWinnerButton.disabled = false;
+      }
     }
 
     function getUserCreatedMs(user) {
