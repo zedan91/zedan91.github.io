@@ -7107,7 +7107,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       try {
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
-        const credential = await signInWithEmailAndPassword(auth, await resolveLoginEmail(usernameKey), password);
+        const credential = await signInWithUsernamePassword(usernameKey, password);
         authSignInStarted = true;
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
@@ -7211,19 +7211,40 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       }
     }
 
-    async function resolveLoginEmail(usernameKey) {
+    function addUniqueLoginEmail(candidates, email) {
+      if (!isValidEmail(email || '')) return;
+      const cleanEmail = String(email).trim();
+      if (!candidates.some(function (item) { return item.toLowerCase() === cleanEmail.toLowerCase(); })) candidates.push(cleanEmail);
+    }
+
+    async function getLoginEmailCandidates(usernameKey) {
+      const candidates = [];
+      addUniqueLoginEmail(candidates, buildUserEmail(usernameKey));
       try {
         const data = await requestLuckyDrawBackend('/api/user-login-email?usernameKey=' + encodeURIComponent(usernameKey));
-        if (data && isValidEmail(data.email || '')) return data.email;
+        if (data && isValidEmail(data.email || '')) addUniqueLoginEmail(candidates, data.email);
       } catch (error) {}
       try {
         const userSnap = await getDoc(doc(db, 'users', usernameKey));
         if (userSnap.exists()) {
           const profile = userSnap.data();
-          if (isValidEmail(profile.email || '')) return profile.email;
+          if (isValidEmail(profile.email || '')) addUniqueLoginEmail(candidates, profile.email);
         }
       } catch (error) {}
-      return buildUserEmail(usernameKey);
+      return candidates;
+    }
+
+    async function signInWithUsernamePassword(usernameKey, password) {
+      const candidates = await getLoginEmailCandidates(usernameKey);
+      let lastError = null;
+      for (const email of candidates) {
+        try {
+          return await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError || new Error('auth/invalid-credential');
     }
 
     async function saveLoginEmailMap(usernameKey, email) {
@@ -7260,6 +7281,15 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       stopAuthRestoreListener();
       await ensureAuthSessionPersistence();
 
+      const existingSnapshot = await getDoc(userRef);
+      existingData = existingSnapshot.exists() ? existingSnapshot.data() : null;
+
+      if (existingData && !existingData.deleted) {
+        const activeError = new Error('username-active');
+        activeError.code = 'username-active';
+        throw activeError;
+      }
+
       try {
         credential = await createUserWithEmailAndPassword(auth, email, options.password);
         isNewAuthUser = true;
@@ -7274,16 +7304,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         }
 
         credential = await signInWithEmailAndPassword(auth, email, options.password);
-
-        const existingSnapshot = await getDoc(userRef);
-        existingData = existingSnapshot.exists() ? existingSnapshot.data() : null;
-
-        if (existingData && !existingData.deleted) {
-          await signOut(auth);
-          const activeError = new Error('username-active');
-          activeError.code = 'username-active';
-          throw activeError;
-        }
 
         if (!existingData) {
           await signOut(auth);
@@ -7799,7 +7819,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       try {
         stopAuthRestoreListener();
         await ensureAuthSessionPersistence();
-        const credential = await signInWithEmailAndPassword(auth, await resolveLoginEmail(usernameKey), password);
+        const credential = await signInWithUsernamePassword(usernameKey, password);
         authSignInStarted = true;
         const userRef = doc(db, 'users', usernameKey);
         const userSnap = await getDoc(userRef);
