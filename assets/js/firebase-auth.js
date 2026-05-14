@@ -3357,7 +3357,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
       event.preventDefault();
 
       if (!isAdminUser(currentUser) && currentUser && currentUser.paAccess === false) {
-        paError.textContent = 'Standard accounts do not have PA / BM / Lot Kadaster Berdigit access.';
+        paError.textContent = 'Standard accounts do not have Request PA / Info Lot access.';
         return;
       }
 
