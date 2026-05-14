@@ -8787,9 +8787,7 @@ display:none !important;
     resultsBody.innerHTML = visibleRows.map(function(row, index){
       const jenis = String(row.jenis || (row.product === 'SBM' ? '2' : '1'));
       const productId = row.productId || row.id || '';
-      const downloadUrl =
-        row.downloadUrl ||
-        (productId ? buildBenchmarkDownloadUrl(productId, jenis) : '');
+      const downloadUrl = productId ? buildBenchmarkDownloadUrl(productId, jenis) : ''; // always use backend link
 
       const downloadButton = downloadUrl
         ? `<a href="${esc(downloadUrl)}" target="_blank" rel="noopener" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl })}" class="btn blue bm-record-download" style="padding:6px 12px;font-size:12px;margin:0;display:inline-block;white-space:nowrap;text-decoration:none;border-radius:8px;">⬇ Download</a>`
@@ -8898,7 +8896,7 @@ display:none !important;
       huraian: item.huraian || '',
       harga: item.harga || 'RM3',
       locationUrl: item.locationUrl || '',
-      downloadUrl: item.downloadUrl || (productId ? buildBenchmarkDownloadUrl(productId, jenis) : '')
+      downloadUrl: productId ? buildBenchmarkDownloadUrl(productId, jenis) : ''
     };
   }
 

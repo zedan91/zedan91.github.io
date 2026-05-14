@@ -117,7 +117,7 @@
       const locationLink = row.locationUrl ? `<a class="btn blue" style="margin:0;padding:7px 9px;font-size:12px;" href="${esc(row.locationUrl)}" target="_blank" rel="noopener">Lokasi</a>` : '';
       const bmId = row.productId || row.id || '';
       const bmJenis = row.jenis || (row.product === 'SBM' ? '2' : '1');
-      const bmDownloadUrl = row.downloadUrl || (bmId ? buildBenchmarkDownloadUrl(bmId, bmJenis) : '');
+      const bmDownloadUrl = bmId ? buildBenchmarkDownloadUrl(bmId, bmJenis) : ''; // always use backend link
       const downloadButton = bmDownloadUrl
         ? `<a class="small-action-btn blue bm-download-btn bm-record-download" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl: bmDownloadUrl })}" style="text-decoration:none;display:inline-block;padding:6px 10px;font-size:12px;white-space:nowrap;" href="${esc(bmDownloadUrl)}" target="_blank" rel="noopener">Download</a>`
         : '<span style="color:#94a3b8;">-</span>';
@@ -186,7 +186,7 @@
       huraian: item.huraian || '',
       harga: item.harga || 'RM3',
       locationUrl: item.locationUrl || '',
-      downloadUrl: item.downloadUrl || (productId ? buildBenchmarkDownloadUrl(productId, jenis) : '')
+      downloadUrl: productId ? buildBenchmarkDownloadUrl(productId, jenis) : ''
     };
   }
 
