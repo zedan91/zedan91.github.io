@@ -127,155 +127,6 @@ function cleanState(negeri) {
 
 
 
-
-function decodeHtmlEntities(value) {
-  return String(value || '')
-    .replace(/&amp;/gi, '&')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function pickMeta(html, names) {
-  for (const name of names) {
-    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const patterns = [
-      new RegExp(`<meta[^>]+(?:property|name)=["']${esc}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
-      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${esc}["'][^>]*>`, 'i')
-    ];
-    for (const pattern of patterns) {
-      const match = html.match(pattern);
-      if (match && match[1]) return decodeHtmlEntities(match[1]);
-    }
-  }
-  return '';
-}
-
-function cleanProductTitle(title) {
-  return decodeHtmlEntities(title)
-    .replace(/\s*\|\s*Shopee.*$/i, '')
-    .replace(/\s*-\s*Shopee.*$/i, '')
-    .replace(/\s*\|\s*Malaysia.*$/i, '')
-    .replace(/^Buy\s+/i, '')
-    .trim()
-    .slice(0, 120);
-}
-
-function analyzeAffiliateProduct(title, description, productUrl) {
-  const text = `${title} ${description} ${productUrl}`.toLowerCase();
-
-  const rules = [
-    {match:['ssd','nvme','hard disk','hard drive','pcie','ram','router','wifi','keyboard','mouse','monitor','laptop','desktop','cpu','gpu','computer','usb'], category:'computer', badge:'Computer & Accessories', icon:'💻', meta:'Best for PC setup'},
-    {match:['phone','case','charger','powerbank','power bank','cable','earphone','iphone','android'], category:'mobile', badge:'Mobile & Accessories', icon:'📱', meta:'Best for phone accessories'},
-    {match:['vacuum','cleaner','mop','organizer','rack','lamp','chair','table','kitchen','meat grinder','blender','storage box'], category:'home-living', badge:'Useful Gadget', icon:'🧹', meta:'Best for home use'},
-    {match:['air fryer','rice cooker','oven','kettle','fan','washing machine','refrigerator','appliance'], category:'home-appliances', badge:'Home Appliance', icon:'🏠', meta:'Best for daily home appliance'},
-    {match:['dashcam','car','motor','automotive','tyre','tire','vehicle','helmet'], category:'automotive', badge:'Car Gadget', icon:'🚗', meta:'Best for car use'},
-    {match:['camera','drone','gimbal','tripod','lens','dji','cctv'], category:'camera', badge:'Camera & Drones', icon:'📷', meta:'Best for content/photo setup'},
-    {match:['game','gaming','console','ps5','controller','nintendo','xbox'], category:'gaming', badge:'Gaming Gear', icon:'🎮', meta:'Best for gaming setup'},
-    {match:['watch','smartwatch','g-shock','casio'], category:'watches', badge:'Watch', icon:'⌚', meta:'Best for daily wear'},
-    {match:['baby','toy','toys','kids','children'], category:'baby', badge:'Baby & Toys', icon:'🧸', meta:'Best for kids/family'},
-    {match:['beauty','skincare','skin care','makeup','health','shampoo','serum'], category:'health', badge:'Health & Beauty', icon:'✨', meta:'Best for personal care'},
-    {match:['shoe','sneaker','sandal'], category:'men-shoes', badge:'Shoes', icon:'👟', meta:'Best for daily wear'},
-    {match:['bag','wallet','handbag'], category:'mens-bags', badge:'Bags & Wallets', icon:'👜', meta:'Best for travel/daily carry'},
-    {match:['dress','shirt','clothes','baju','tshirt','t-shirt'], category:'men-clothes', badge:'Clothes', icon:'👕', meta:'Best for daily outfit'},
-    {match:['book','hobby','lego','comic'], category:'books', badge:'Hobby', icon:'📚', meta:'Best for hobby'},
-    {match:['travel','luggage','suitcase'], category:'travel', badge:'Travel Gear', icon:'🧳', meta:'Best for travel'},
-    {match:['food','snack','chocolate','coffee','grocery','groceries','pet','cat','dog'], category:'groceries', badge:'Groceries & Pets', icon:'🛒', meta:'Best for daily use'}
-  ];
-
-  let found = {category:'others', badge:'Useful Item', icon:'🛒', meta:'Best for useful daily item'};
-  for (const rule of rules) {
-    if (rule.match.some(k => text.includes(k))) { found = rule; break; }
-  }
-
-  let desc = description || '';
-  desc = desc.replace(/\s+/g, ' ').trim();
-  if (!desc || desc.length < 30) {
-    desc = `${title || 'Produk ini'} sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.`;
-  }
-  if (desc.length > 180) desc = desc.slice(0, 177).trim() + '...';
-
-  return {
-    icon: found.icon,
-    badge: found.badge,
-    category: found.category,
-    meta: found.meta,
-    description: desc
-  };
-}
-
-async function detectAffiliateFromUrl(productUrl) {
-  const cleanUrl = String(productUrl || '').trim();
-  if (!/^https?:\/\//i.test(cleanUrl)) {
-    throw new Error('Invalid URL');
-  }
-
-  let html = '';
-  let finalUrl = cleanUrl;
-  let source = 'fallback';
-  let title = '';
-  let description = '';
-  let image = '';
-
-  try {
-    const response = await fetch(cleanUrl, {
-      redirect: 'follow',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9,ms;q=0.8'
-      }
-    });
-
-    finalUrl = response.url || cleanUrl;
-    html = await response.text();
-
-    title = pickMeta(html, ['og:title','twitter:title']) || decodeHtmlEntities((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [,''])[1]);
-    description = pickMeta(html, ['og:description','description','twitter:description']);
-    image = pickMeta(html, ['og:image','twitter:image']);
-    source = title ? 'page-meta' : 'fallback';
-  } catch (err) {
-    source = 'fallback';
-  }
-
-  if (!title) {
-    try {
-      const u = new URL(finalUrl || cleanUrl);
-      const slug = decodeURIComponent(u.pathname.split('/').filter(Boolean)[0] || '')
-        .replace(/-i\.\d+\.\d+.*$/i, '')
-        .replace(/[-_]+/g, ' ')
-        .trim();
-      title = slug || 'Shopee Affiliate Product';
-    } catch (e) {
-      title = 'Shopee Affiliate Product';
-    }
-  }
-
-  title = cleanProductTitle(title);
-  const analysed = analyzeAffiliateProduct(title, description, finalUrl || cleanUrl);
-
-  return {
-    ok: true,
-    source,
-    finalUrl,
-    product: {
-      title,
-      description: analysed.description,
-      category: analysed.category,
-      badge: analysed.badge,
-      icon: analysed.icon,
-      meta: analysed.meta,
-      image,
-      link: cleanUrl
-    }
-  };
-}
-
-
 function cleanBenchmarkProduct(value) {
   const v = String(value || '').trim().toUpperCase();
   return v === 'SBM' ? 'SBM' : 'BM';
@@ -352,6 +203,197 @@ async function fetchJupem(jupemUrl) {
   });
 }
 
+
+
+function normalizeAffiliateUrl(rawUrl) {
+  const value = String(rawUrl || '').trim();
+  if (!value) return '';
+  if (!/^https?:\/\//i.test(value)) return 'https://' + value;
+  return value;
+}
+
+function decodeHtmlEntities(value) {
+  return String(value || '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#x2F;/gi, '/')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function pickMeta(html, property) {
+  const patterns = [
+    new RegExp(`<meta[^>]+property=["']${property}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${property}["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+name=["']${property}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${property}["'][^>]*>`, 'i')
+  ];
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) return decodeHtmlEntities(match[1]);
+  }
+  return '';
+}
+
+function pickTitleFromHtml(html) {
+  return decodeHtmlEntities(
+    pickMeta(html, 'og:title') ||
+    pickMeta(html, 'twitter:title') ||
+    ((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || '')
+  ).replace(/\s*\|\s*Shopee.*$/i, '').replace(/\s*-\s*Shopee.*$/i, '').trim();
+}
+
+function shortenDescription(text, fallbackTitle) {
+  const clean = decodeHtmlEntities(text || '').replace(/\s+/g, ' ').trim();
+  if (clean && !/^Shopee/i.test(clean)) return clean.slice(0, 260);
+  return `${fallbackTitle || 'Produk ini'} sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.`;
+}
+
+function titleToIcon(title) {
+  const t = String(title || '').toLowerCase();
+  if (/ssd|nvme|hard disk|hdd|ram|router|wifi|pc|laptop|keyboard|mouse|monitor|usb|type-c|charger/.test(t)) return /ssd|nvme/.test(t) ? 'SSD' : 'PC';
+  if (/vacuum|mop|clean|penyapu|habuk/.test(t)) return '🧹';
+  if (/car|kereta|dashcam|tyre|tayar|automotive|motor/.test(t)) return '🚗';
+  if (/camera|drone|cctv|webcam/.test(t)) return 'CAM';
+  if (/bag|wallet|beg/.test(t)) return '👜';
+  if (/shoe|kasut|sandal/.test(t)) return '👟';
+  if (/baju|shirt|dress|clothes|tudung|hijab/.test(t)) return '👕';
+  if (/watch|jam tangan/.test(t)) return '⌚';
+  if (/baby|toy|mainan/.test(t)) return '🧸';
+  if (/food|coklat|chocolate|snack|kopi|coffee|grocery/.test(t)) return '🍫';
+  if (/sport|outdoor|camp|gym/.test(t)) return '🏕️';
+  if (/book|game|hobby/.test(t)) return '🎮';
+  return '🛒';
+}
+
+function titleToCategory(title) {
+  const t = String(title || '').toLowerCase();
+  if (/ssd|nvme|hard disk|hdd|ram|router|wifi|pc|laptop|keyboard|mouse|monitor|usb|type-c|charger|printer/.test(t)) return 'computer';
+  if (/phone|iphone|android|case|screen protector|powerbank/.test(t)) return 'mobile';
+  if (/vacuum|mop|organizer|rack|lamp|sofa|home|rumah|clean/.test(t)) return 'home-living';
+  if (/air fryer|blender|kettle|rice cooker|appliance/.test(t)) return 'home-appliances';
+  if (/car|kereta|dashcam|tyre|tayar|automotive|motor/.test(t)) return 'automotive';
+  if (/camera|drone|cctv|webcam/.test(t)) return 'camera';
+  if (/watch|jam tangan/.test(t)) return 'watches';
+  if (/bag|handbag|tote|purse/.test(t)) return 'womens-bags';
+  if (/wallet|men bag|sling bag/.test(t)) return 'mens-bags';
+  if (/dress|women clothes|baju perempuan/.test(t)) return 'women-clothes';
+  if (/shirt|tshirt|men clothes|baju lelaki/.test(t)) return 'men-clothes';
+  if (/shoe|kasut|sneaker|sandal/.test(t)) return 'men-shoes';
+  if (/tudung|hijab|muslim/.test(t)) return 'muslim';
+  if (/beauty|skin|makeup|health|serum/.test(t)) return 'health';
+  if (/baby|toy|mainan/.test(t)) return 'baby';
+  if (/food|coklat|chocolate|snack|kopi|coffee|grocery|pet/.test(t)) return 'groceries';
+  if (/sport|outdoor|camp|gym/.test(t)) return 'sports';
+  if (/game|console|controller/.test(t)) return 'gaming';
+  if (/book|hobby/.test(t)) return 'books';
+  if (/travel|luggage|bagasi/.test(t)) return 'travel';
+  return 'others';
+}
+
+function titleToBadge(title, category) {
+  const t = String(title || '').toLowerCase();
+  if (/ssd|nvme|storage/.test(t)) return 'Fast Storage';
+  if (/router|wifi|5g/.test(t)) return 'Networking';
+  if (/vacuum|mop|clean/.test(t)) return 'Cleaning Gadget';
+  if (/car|kereta|dashcam/.test(t)) return 'Car Gadget';
+  if (/chocolate|coklat|snack/.test(t)) return 'Chocolate';
+  if (category === 'computer') return 'Computer & Accessories';
+  if (category === 'home-living') return 'Home Useful Item';
+  return 'Useful Item';
+}
+
+function titleToMeta(title, category) {
+  const t = String(title || '').toLowerCase();
+  if (/ssd|nvme/.test(t)) return 'Best for Windows and game loading';
+  if (/router|wifi/.test(t)) return 'Best for stronger home internet setup';
+  if (/vacuum|mop|clean/.test(t)) return 'Best for car and home cleaning';
+  if (/car|kereta|dashcam/.test(t)) return 'Best for daily car use';
+  if (/chocolate|coklat|snack/.test(t)) return 'Best for snack and gift idea';
+  if (category === 'computer') return 'Best for PC setup and daily use';
+  return 'Best for useful daily item';
+}
+
+function cleanShopeeTitle(title) {
+  return decodeHtmlEntities(String(title || ''))
+    .replace(/^Shopee\s+/i, '')
+    .replace(/\s*\|\s*Shopee.*$/i, '')
+    .replace(/\s*-\s*Shopee.*$/i, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function detectAffiliateProduct(rawUrl) {
+  const targetUrl = normalizeAffiliateUrl(rawUrl);
+  if (!targetUrl) throw new Error('Missing URL');
+
+  const response = await fetch(targetUrl, {
+    redirect: 'follow',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9,ms;q=0.8',
+      'Cache-Control': 'no-cache',
+      'Referer': 'https://shopee.com.my/'
+    }
+  });
+
+  const finalUrl = response.url || targetUrl;
+  const html = await response.text();
+  let title = cleanShopeeTitle(pickTitleFromHtml(html));
+  let description = shortenDescription(pickMeta(html, 'og:description') || pickMeta(html, 'description'), title);
+  let image = pickMeta(html, 'og:image') || pickMeta(html, 'twitter:image');
+  let source = title ? 'meta' : 'fallback';
+
+  const ldMatches = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+  for (const m of ldMatches) {
+    try {
+      const json = JSON.parse(m[1]);
+      const arr = Array.isArray(json) ? json : [json];
+      for (const obj of arr) {
+        if (obj && obj.name && (!title || title.toLowerCase() === 'shopee')) {
+          title = cleanShopeeTitle(obj.name);
+          source = 'jsonld';
+        }
+        if (obj && obj.description && (!description || description.includes('Semak detail'))) {
+          description = shortenDescription(obj.description, title);
+        }
+        if (obj && obj.image && !image) image = Array.isArray(obj.image) ? obj.image[0] : obj.image;
+      }
+    } catch(e) {}
+  }
+
+  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title)) {
+    const parts = decodeURIComponent(finalUrl).split('/').filter(Boolean);
+    const maybe = parts.find(p => p.includes('-i.') || p.length > 20) || parts[parts.length - 1] || 'Affiliate Product';
+    title = cleanShopeeTitle(maybe.replace(/-i\..*$/i, '').replace(/[-_]+/g, ' '));
+    source = 'url-fallback';
+  }
+
+  const category = titleToCategory(title);
+  return {
+    ok: true,
+    url: targetUrl,
+    finalUrl,
+    source,
+    title,
+    description,
+    category,
+    badge: titleToBadge(title, category),
+    icon: titleToIcon(title),
+    meta: titleToMeta(title, category),
+    image: image || '',
+    note: source === 'url-fallback'
+      ? 'Shopee tidak bagi metadata lengkap. Sistem guna URL/keyword fallback. Sila semak sebelum Save.'
+      : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
+  };
+}
+
 async function handler(req, res) {
 
   try {
@@ -379,6 +421,37 @@ async function handler(req, res) {
         }, null, 2),
         "application/json"
       );
+    }
+
+
+    // =========================
+    // AFFILIATE PRODUCT AUTO DETECT
+    // =========================
+
+    if (
+      pathname === "/api/detect-product" &&
+      (req.method === "GET" || req.method === "POST")
+    ) {
+      let productUrl = parsed.query.url || parsed.query.link || "";
+
+      if (req.method === "POST") {
+        try {
+          const body = await readBody(req);
+          const data = JSON.parse(body || "{}");
+          productUrl = data.url || data.link || productUrl;
+        } catch (e) {}
+      }
+
+      try {
+        const detected = await detectAffiliateProduct(productUrl);
+        return send(res, 200, JSON.stringify(detected, null, 2), "application/json");
+      } catch (err) {
+        return send(res, 502, JSON.stringify({
+          ok: false,
+          error: err.message || "Auto detect failed",
+          note: "Shopee mungkin block request. Paste product title atau isi manual jika gagal."
+        }, null, 2), "application/json");
+      }
     }
 
     // =========================
@@ -451,30 +524,6 @@ async function handler(req, res) {
       );
     }
 
-
-
-    // =========================
-    // AUTO DETECT AFFILIATE PRODUCT LINK
-    // =========================
-
-    if (
-      pathname === "/api/detect-affiliate-product" &&
-      req.method === "POST"
-    ) {
-      try {
-        const body = await readBody(req);
-        const data = JSON.parse(body || "{}");
-        const result = await detectAffiliateFromUrl(data.url);
-        return send(res, 200, JSON.stringify(result, null, 2), "application/json");
-      } catch (err) {
-        return send(
-          res,
-          400,
-          JSON.stringify({ ok: false, error: err.message || "Auto detect failed" }, null, 2),
-          "application/json"
-        );
-      }
-    }
 
     // =========================
     // JUPEM STESEN TANDA ARAS SEARCH
