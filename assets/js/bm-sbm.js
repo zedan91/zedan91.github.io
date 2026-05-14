@@ -31,6 +31,58 @@
     });
   }
 
+  function benchmarkSafeFilename(value){
+    return String(value || '')
+      .trim()
+      .replace(/[\\/:*?"<>|]+/g, '-')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  function benchmarkDownloadFilename(item){
+    const productType = item.product || (String(item.jenis || '1') === '2' ? 'SBM' : 'BM');
+    const code = item.stationNo || item.stesen || item.itemCode || item.productId || item.id || 'download';
+    const baseName = benchmarkSafeFilename(`${productType}-${code}`) || 'BM-SBM-download';
+    return baseName.toLowerCase().endsWith('.pdf') ? baseName : `${baseName}.pdf`;
+  }
+
+  async function triggerBenchmarkDownload(anchor){
+    const url = anchor.getAttribute('href');
+    const filename = anchor.dataset.benchmarkFilename || 'BM-SBM-download.pdf';
+    if (!url) return;
+
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = `Downloading ${filename}...`;
+    }
+
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(objectUrl); }, 1000);
+      if (statusEl) statusEl.textContent = `Downloaded as ${filename}`;
+    } catch (error) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      if (statusEl) statusEl.textContent = `Download opened. If browser still shows ID name, backend must allow file rename/CORS.`;
+    }
+  }
+
   function benchmarkRecordPayload(item){
     return encodeURIComponent(JSON.stringify({
       productType: item.product || (String(item.jenis || '1') === '2' ? 'SBM' : 'BM'),
@@ -83,7 +135,7 @@
           <div><strong>${esc(item.stationNo || '-')}</strong><br>${esc(item.product || '')}</div>
           <div>${esc(item.negeri || '-')}<br>${esc(item.daerah || '')}</div>
           <div>${esc(item.harga || 'RM3')}</div>
-          <div>${item.downloadUrl ? `<a class="small-action-btn blue bm-record-download" data-benchmark-record="${benchmarkRecordPayload(item)}" style="text-decoration:none;" href="${esc(item.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : ''}</div>
+          <div>${item.downloadUrl ? `<a class="small-action-btn blue bm-record-download" data-benchmark-record="${benchmarkRecordPayload(item)}" data-benchmark-filename="${esc(benchmarkDownloadFilename(item))}" download="${esc(benchmarkDownloadFilename(item))}" style="text-decoration:none;" href="${esc(item.downloadUrl)}">Download</a>` : ''}</div>
           <button class="small-action-btn" type="button" data-remove-benchmark-cart="${index}">Remove</button>
         </div>`;
     }).join('');
@@ -119,7 +171,7 @@
       const bmJenis = row.jenis || (row.product === 'SBM' ? '2' : '1');
       const bmDownloadUrl = bmId ? buildBenchmarkDownloadUrl(bmId, bmJenis) : ''; // always use backend link
       const downloadButton = bmDownloadUrl
-        ? `<a class="small-action-btn blue bm-download-btn bm-record-download" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl: bmDownloadUrl })}" style="text-decoration:none;display:inline-block;padding:6px 10px;font-size:12px;white-space:nowrap;" href="${esc(bmDownloadUrl)}" target="_blank" rel="noopener">Download</a>`
+        ? `<a class="small-action-btn blue bm-download-btn bm-record-download" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl: bmDownloadUrl })}" data-benchmark-filename="${esc(benchmarkDownloadFilename(row))}" download="${esc(benchmarkDownloadFilename(row))}" style="text-decoration:none;display:inline-block;padding:6px 10px;font-size:12px;white-space:nowrap;" href="${esc(bmDownloadUrl)}">Download</a>`
         : '<span style="color:#94a3b8;">-</span>';
       return `
         <tr>
@@ -260,16 +312,21 @@
 
   document.addEventListener('click', function(event){
     const benchmarkDownload = event.target.closest('[data-benchmark-record]');
-    if (benchmarkDownload && typeof window.azobssRecordPurchase === 'function') {
-      try {
-        const payload = JSON.parse(decodeURIComponent(benchmarkDownload.dataset.benchmarkRecord || '{}'));
-        window.azobssRecordPurchase(payload).catch(function(error){
-          if (statusEl) {
-            statusEl.style.display = 'block';
-            statusEl.textContent = error.message || 'Failed to save BM/SBM purchase record.';
-          }
-        });
-      } catch (error) {}
+    if (benchmarkDownload) {
+      event.preventDefault();
+      if (typeof window.azobssRecordPurchase === 'function') {
+        try {
+          const payload = JSON.parse(decodeURIComponent(benchmarkDownload.dataset.benchmarkRecord || '{}'));
+          window.azobssRecordPurchase(payload).catch(function(error){
+            if (statusEl) {
+              statusEl.style.display = 'block';
+              statusEl.textContent = error.message || 'Failed to save BM/SBM purchase record.';
+            }
+          });
+        } catch (error) {}
+      }
+      triggerBenchmarkDownload(benchmarkDownload);
+      return;
     }
     const addButton = event.target.closest('[data-add-benchmark]');
     if (addButton) {
