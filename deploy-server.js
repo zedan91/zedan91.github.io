@@ -137,27 +137,47 @@ function getBenchmarkJenis(produk) {
 }
 
 function cleanBenchmarkId(value) {
-  const match = String(value || '').match(/\d{1,12}/);
-  return match ? match[0] : '';
+  const text = String(value || '').trim();
+  const patterns = [
+    /ProductID\s*=\s*(\d{1,12})/i,
+    /MuatTurunStesenTandaAras\/(\d{1,12})/i,
+    /GeodetikTroliTandaAras\?[^\s'\"]*ProductID=(\d{1,12})/i,
+    /(?:^|\D)(\d{2,12})(?:\D|$)/
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) return match[1].replace(/^0+(?=\d)/, '');
+  }
+  return '';
 }
 
-function buildBenchmarkDownloadUrl(id, produk) {
+function extractBenchmarkJenis(value, fallbackProduk) {
+  const text = String(value || '');
+  const match = text.match(/jenis\s*=\s*([12])/i);
+  if (match) return Number(match[1]);
+  return getBenchmarkJenis(fallbackProduk);
+}
+
+function buildBenchmarkDownloadUrl(id, produk, jenisOverride) {
   const cleanId = cleanBenchmarkId(id);
   if (!cleanId) return '';
-  return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(cleanId)}?jenis=${getBenchmarkJenis(produk)}`;
+  const jenis = jenisOverride === 2 || String(jenisOverride) === '2' ? 2 : getBenchmarkJenis(produk);
+  return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(cleanId)}?jenis=${jenis}`;
 }
 
 function extractBenchmarkId(rowHtml) {
   const text = String(rowHtml || '');
   const patterns = [
-    /MuatTurunStesenTandaAras\/(\d+)/i,
-    /TambahKeTroli\/(\d+)/i,
-    /data[-_](?:id|item|produk)=['"]?(\d+)/i,
-    /value=['"]?(\d{2,12})['"]?/i
+    /GeodetikTroliTandaAras\?[^'\"]*ProductID=(\d{1,12})/i,
+    /ProductID\s*=\s*(\d{1,12})/i,
+    /MuatTurunStesenTandaAras\/(\d{1,12})/i,
+    /TambahKeTroli\/(\d{1,12})/i,
+    /data[-_](?:id|item|produk)=['\"]?(\d{1,12})/i,
+    /value=['\"]?(\d{2,12})['\"]?/i
   ];
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match && match[1]) return match[1];
+    if (match && match[1]) return match[1].replace(/^0+(?=\d)/, '');
   }
   return '';
 }
@@ -205,13 +225,15 @@ function parseBenchmarkRows(html, produkFallback, negeriFallback) {
 
     const linkMatch = rowHtml.match(/href=["']([^"']*(?:Lokasi|Peta|Map|Koordinat|location)[^"']*)["']/i) || rowHtml.match(/href=["']([^"']*)["']/i);
     const itemId = extractBenchmarkId(rowHtml);
+    const itemJenis = extractBenchmarkJenis(rowHtml, produkFallback);
+    const itemProduct = itemJenis === 2 ? 'SBM' : 'BM';
     const stationNo = cells[1] || cells[0] || itemId || '';
     if (!stationNo || /^no\.?$/i.test(stationNo)) continue;
 
     rows.push({
       id: itemId,
-      jenis: getBenchmarkJenis(produkFallback),
-      product: produkFallback,
+      jenis: itemJenis,
+      product: itemProduct,
       stationNo,
       negeri: cells[2] || negeriFallback,
       daerah: cells[3] || '',
@@ -219,7 +241,7 @@ function parseBenchmarkRows(html, produkFallback, negeriFallback) {
       huraian: cells[5] || '',
       harga: cells[6] || '',
       locationUrl: linkMatch ? absolutizeJupemUrl(linkMatch[1]) : '',
-      downloadUrl: itemId ? buildBenchmarkDownloadUrl(itemId, produkFallback) : '',
+      downloadUrl: itemId ? buildBenchmarkDownloadUrl(itemId, itemProduct, itemJenis) : '',
       raw: cells
     });
   }
@@ -361,9 +383,12 @@ async function handler(req, res) {
       const sourceUrl =
         `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`;
 
+      const jenisValue = getBenchmarkJenis(produk);
       const candidates = [
         sourceUrl,
-        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(jenisValue)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?Jenis=${encodeURIComponent(jenisValue)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?produk=${encodeURIComponent(jenisValue)}&negeri=${encodeURIComponent(negeri)}&search=${encodeURIComponent(q)}`,
         `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?product=${encodeURIComponent(produk)}&state=${encodeURIComponent(negeri)}&search=${encodeURIComponent(q)}`,
         `https://ebiz.jupem.gov.my/Produk/StesenTandaAras`
       ];
@@ -391,19 +416,21 @@ async function handler(req, res) {
           let results = parseBenchmarkRows(html, produk, negeri);
 
           const queryAsId = cleanBenchmarkId(q);
+          const queryJenis = extractBenchmarkJenis(q, produk);
+          const queryProduct = queryJenis === 2 ? 'SBM' : produk;
           if (!results.length && queryAsId) {
             results = [{
               id: queryAsId,
-              jenis: getBenchmarkJenis(produk),
-              product: produk,
+              jenis: queryJenis,
+              product: queryProduct,
               stationNo: q || queryAsId,
               negeri,
               daerah: '',
               bandar: '',
-              huraian: `${produk} ID ${queryAsId}`,
+              huraian: 'Direct eBiz ProductID lookup. You may paste ProductID=636 or the full cart onclick/link here.',
               harga: '',
               locationUrl: '',
-              downloadUrl: buildBenchmarkDownloadUrl(queryAsId, produk),
+              downloadUrl: buildBenchmarkDownloadUrl(queryAsId, queryProduct, queryJenis),
               raw: []
             }];
           }
@@ -429,10 +456,51 @@ async function handler(req, res) {
         }
       }
 
+      const fallbackId = cleanBenchmarkId(q);
+      if (fallbackId) {
+        const fallbackJenis = extractBenchmarkJenis(q, produk);
+        const fallbackProduct = fallbackJenis === 2 ? 'SBM' : produk;
+        return send(
+          res,
+          200,
+          JSON.stringify({
+            ok: true,
+            produk: fallbackProduct,
+            negeri,
+            q,
+            sourceUrl,
+            results: [{
+              id: fallbackId,
+              jenis: fallbackJenis,
+              product: fallbackProduct,
+              stationNo: q || fallbackId,
+              negeri,
+              daerah: '',
+              bandar: '',
+              huraian: 'Direct eBiz ProductID lookup',
+              harga: '',
+              locationUrl: '',
+              downloadUrl: buildBenchmarkDownloadUrl(fallbackId, fallbackProduct, fallbackJenis),
+              raw: []
+            }],
+            note: 'Search page could not be parsed, but a ProductID was detected and direct download link was generated.'
+          }, null, 2),
+          "application/json"
+        );
+      }
+
       return send(
         res,
-        502,
-        JSON.stringify({ ok: false, error: lastError || "Benchmark search failed", sourceUrl }),
+        200,
+        JSON.stringify({
+          ok: true,
+          produk,
+          negeri,
+          q,
+          sourceUrl,
+          results: [],
+          note: lastError ? `Search not parsed: ${lastError}. Open sourceUrl in eBiz JUPEM and inspect cart ProductID if needed.` : 'No parsable result returned.'
+        }, null, 2),
         "application/json"
       );
     }

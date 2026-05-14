@@ -4078,7 +4078,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       <div class="benchmark-panel" id="benchmarkPanel">
         <h3>📍 Request BM / SBM - Stesen Tanda Aras</h3>
         <p class="request-note">
-          Cari produk geodetik JUPEM seperti BM dan SBM. Result boleh tambah ke cart sementara sebelum semak/pembelian di eBiz JUPEM.
+          Cari BM/SBM. Jika search biasa tidak keluar, paste ProductID dari butang troli eBiz atau paste link/onclick cart — sistem akan auto jana link download.
         </p>
 
         <form class="benchmark-form" id="benchmarkForm">
@@ -4115,7 +4115,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
           <label for="benchmarkSearch">
             Carian
-            <input id="benchmarkSearch" type="search" placeholder="No stesen / daerah / bandar">
+            <input id="benchmarkSearch" type="search" placeholder="No stesen / ProductID / paste onclick cart">
           </label>
 
           <button class="btn blue" id="benchmarkSearchButton" type="submit">Search BM / SBM</button>
@@ -4149,7 +4149,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         <h4 style="margin:14px 0 0;color:#e2e8f0;">BM / SBM Cart</h4>
         <div class="benchmark-cart-list" id="benchmarkCartList">
-          <div class="benchmark-cart-item">No benchmark item in cart yet.</div>
+          <div class="benchmark-cart-item">No BM/SBM item in cart yet.</div>
         </div>
       </div>
 
@@ -8569,7 +8569,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const items = readCart();
     if (!cartList) return;
     if (!items.length) {
-      cartList.innerHTML = '<div class="benchmark-cart-item">No benchmark item in cart yet.</div>';
+      cartList.innerHTML = '<div class="benchmark-cart-item">No BM/SBM item in cart yet.</div>';
       return;
     }
     cartList.innerHTML = items.map(function(item, index){
@@ -8632,7 +8632,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     if (errorEl) errorEl.textContent = '';
     if (statusEl) {
       statusEl.style.display = 'block';
-      statusEl.textContent = 'Searching benchmark data...';
+      statusEl.textContent = 'Searching BM/SBM data...';
     }
     if (searchBtn) searchBtn.disabled = true;
     try {
@@ -8649,14 +8649,14 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       renderResults(Array.isArray(data.results) ? data.results : []);
       if (statusEl) {
         statusEl.textContent = data.results && data.results.length
-          ? `${data.results.length} BM/SBM record found. If search value is an eBiz ID, direct download link is generated automatically.`
-          : 'No benchmark record returned from backend. Use Open in eBiz JUPEM to continue direct search.';
+          ? `${data.results.length} BM/SBM record found. ProductID/cart link will generate direct download automatically.`
+          : 'No BM/SBM record parsed. Open eBiz, inspect cart ProductID, then paste it here.';
       }
       if (data.sourceUrl && openEbizBtn) openEbizBtn.href = data.sourceUrl;
     } catch (error) {
       renderResults([]);
-      if (errorEl) errorEl.textContent = error.message || 'Benchmark search failed.';
-      if (statusEl) statusEl.textContent = 'Use Open in eBiz JUPEM as fallback.';
+      if (errorEl) errorEl.textContent = error.message || 'BM/SBM search failed.';
+      if (statusEl) statusEl.textContent = 'Use Open in eBiz JUPEM, inspect cart ProductID, then paste it here.';
     } finally {
       if (searchBtn) searchBtn.disabled = false;
     }
