@@ -1201,6 +1201,129 @@
       }
     }
 
+
+
+    /* BM / SBM BENCHMARK SEARCH PANEL */
+    .benchmark-panel {
+      margin: 22px 0 0;
+      padding: 18px;
+      border: 1px solid rgba(34,197,94,0.26);
+      border-radius: 14px;
+      background: rgba(15,23,42,0.62);
+      box-shadow: 0 14px 32px rgba(2,6,23,0.18);
+      text-align: left;
+    }
+
+    .benchmark-panel h3 {
+      margin: 0 0 8px;
+      color: #e2e8f0;
+      text-align: left;
+    }
+
+    .benchmark-form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+      margin-top: 14px;
+    }
+
+    .benchmark-form label {
+      color: #e2e8f0;
+      font-weight: bold;
+    }
+
+    .benchmark-form input,
+    .benchmark-form select {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 7px;
+      padding: 12px 13px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: #0f172a;
+      color: white;
+      outline: none;
+    }
+
+    .benchmark-form input:focus,
+    .benchmark-form select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.16);
+    }
+
+    .benchmark-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .benchmark-actions .btn,
+    .benchmark-form .btn {
+      margin: 0;
+    }
+
+    .benchmark-result-wrap {
+      margin-top: 12px;
+      overflow-x: auto;
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 10px;
+    }
+
+    .benchmark-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+
+    .benchmark-table th,
+    .benchmark-table td {
+      padding: 10px 9px;
+      border-bottom: 1px solid rgba(148,163,184,0.16);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .benchmark-table th {
+      background: rgba(2,6,23,0.62);
+      color: #93c5fd;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .benchmark-cart-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .benchmark-cart-item {
+      display: grid;
+      grid-template-columns: minmax(120px,1fr) minmax(120px,1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 10px;
+      background: rgba(30,41,59,0.78);
+      color: #e2e8f0;
+      font-size: 13px;
+    }
+
+    .benchmark-cart-item strong {
+      color: #22c55e;
+    }
+
+    @media (max-width: 760px) {
+      .benchmark-form,
+      .benchmark-cart-item {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .login-panel {
       display: grid;
       gap: 14px;
@@ -3953,9 +4076,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       </form>
 
       <div class="benchmark-panel" id="benchmarkPanel">
-        <h3>📍 Carian Stesen Tanda Aras (BM/SBM)</h3>
+        <h3>📍 Request BM / SBM - Stesen Tanda Aras</h3>
         <p class="request-note">
-          Search produk geodetik JUPEM seperti Stesen Tanda Aras (BM) dan Stesen Tanda Aras Piawai (SBM). Result boleh tambah ke cart sementara sebelum semak/pembelian di eBiz JUPEM.
+          Cari produk geodetik JUPEM seperti BM dan SBM. Result boleh tambah ke cart sementara sebelum semak/pembelian di eBiz JUPEM.
         </p>
 
         <form class="benchmark-form" id="benchmarkForm">
@@ -3995,7 +4118,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             <input id="benchmarkSearch" type="search" placeholder="No stesen / daerah / bandar">
           </label>
 
-          <button class="btn blue" id="benchmarkSearchButton" type="submit">Search</button>
+          <button class="btn blue" id="benchmarkSearchButton" type="submit">Search BM / SBM</button>
         </form>
 
         <p class="request-error" id="benchmarkError"></p>
@@ -4024,7 +4147,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           </table>
         </div>
 
-        <h4 style="margin:14px 0 0;color:#e2e8f0;">Benchmark Cart</h4>
+        <h4 style="margin:14px 0 0;color:#e2e8f0;">BM / SBM Cart</h4>
         <div class="benchmark-cart-list" id="benchmarkCartList">
           <div class="benchmark-cart-item">No benchmark item in cart yet.</div>
         </div>
