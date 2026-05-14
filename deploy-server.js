@@ -127,6 +127,155 @@ function cleanState(negeri) {
 
 
 
+
+function decodeHtmlEntities(value) {
+  return String(value || '')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function pickMeta(html, names) {
+  for (const name of names) {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const patterns = [
+      new RegExp(`<meta[^>]+(?:property|name)=["']${esc}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
+      new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${esc}["'][^>]*>`, 'i')
+    ];
+    for (const pattern of patterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) return decodeHtmlEntities(match[1]);
+    }
+  }
+  return '';
+}
+
+function cleanProductTitle(title) {
+  return decodeHtmlEntities(title)
+    .replace(/\s*\|\s*Shopee.*$/i, '')
+    .replace(/\s*-\s*Shopee.*$/i, '')
+    .replace(/\s*\|\s*Malaysia.*$/i, '')
+    .replace(/^Buy\s+/i, '')
+    .trim()
+    .slice(0, 120);
+}
+
+function analyzeAffiliateProduct(title, description, productUrl) {
+  const text = `${title} ${description} ${productUrl}`.toLowerCase();
+
+  const rules = [
+    {match:['ssd','nvme','hard disk','hard drive','pcie','ram','router','wifi','keyboard','mouse','monitor','laptop','desktop','cpu','gpu','computer','usb'], category:'computer', badge:'Computer & Accessories', icon:'💻', meta:'Best for PC setup'},
+    {match:['phone','case','charger','powerbank','power bank','cable','earphone','iphone','android'], category:'mobile', badge:'Mobile & Accessories', icon:'📱', meta:'Best for phone accessories'},
+    {match:['vacuum','cleaner','mop','organizer','rack','lamp','chair','table','kitchen','meat grinder','blender','storage box'], category:'home-living', badge:'Useful Gadget', icon:'🧹', meta:'Best for home use'},
+    {match:['air fryer','rice cooker','oven','kettle','fan','washing machine','refrigerator','appliance'], category:'home-appliances', badge:'Home Appliance', icon:'🏠', meta:'Best for daily home appliance'},
+    {match:['dashcam','car','motor','automotive','tyre','tire','vehicle','helmet'], category:'automotive', badge:'Car Gadget', icon:'🚗', meta:'Best for car use'},
+    {match:['camera','drone','gimbal','tripod','lens','dji','cctv'], category:'camera', badge:'Camera & Drones', icon:'📷', meta:'Best for content/photo setup'},
+    {match:['game','gaming','console','ps5','controller','nintendo','xbox'], category:'gaming', badge:'Gaming Gear', icon:'🎮', meta:'Best for gaming setup'},
+    {match:['watch','smartwatch','g-shock','casio'], category:'watches', badge:'Watch', icon:'⌚', meta:'Best for daily wear'},
+    {match:['baby','toy','toys','kids','children'], category:'baby', badge:'Baby & Toys', icon:'🧸', meta:'Best for kids/family'},
+    {match:['beauty','skincare','skin care','makeup','health','shampoo','serum'], category:'health', badge:'Health & Beauty', icon:'✨', meta:'Best for personal care'},
+    {match:['shoe','sneaker','sandal'], category:'men-shoes', badge:'Shoes', icon:'👟', meta:'Best for daily wear'},
+    {match:['bag','wallet','handbag'], category:'mens-bags', badge:'Bags & Wallets', icon:'👜', meta:'Best for travel/daily carry'},
+    {match:['dress','shirt','clothes','baju','tshirt','t-shirt'], category:'men-clothes', badge:'Clothes', icon:'👕', meta:'Best for daily outfit'},
+    {match:['book','hobby','lego','comic'], category:'books', badge:'Hobby', icon:'📚', meta:'Best for hobby'},
+    {match:['travel','luggage','suitcase'], category:'travel', badge:'Travel Gear', icon:'🧳', meta:'Best for travel'},
+    {match:['food','snack','chocolate','coffee','grocery','groceries','pet','cat','dog'], category:'groceries', badge:'Groceries & Pets', icon:'🛒', meta:'Best for daily use'}
+  ];
+
+  let found = {category:'others', badge:'Useful Item', icon:'🛒', meta:'Best for useful daily item'};
+  for (const rule of rules) {
+    if (rule.match.some(k => text.includes(k))) { found = rule; break; }
+  }
+
+  let desc = description || '';
+  desc = desc.replace(/\s+/g, ' ').trim();
+  if (!desc || desc.length < 30) {
+    desc = `${title || 'Produk ini'} sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.`;
+  }
+  if (desc.length > 180) desc = desc.slice(0, 177).trim() + '...';
+
+  return {
+    icon: found.icon,
+    badge: found.badge,
+    category: found.category,
+    meta: found.meta,
+    description: desc
+  };
+}
+
+async function detectAffiliateFromUrl(productUrl) {
+  const cleanUrl = String(productUrl || '').trim();
+  if (!/^https?:\/\//i.test(cleanUrl)) {
+    throw new Error('Invalid URL');
+  }
+
+  let html = '';
+  let finalUrl = cleanUrl;
+  let source = 'fallback';
+  let title = '';
+  let description = '';
+  let image = '';
+
+  try {
+    const response = await fetch(cleanUrl, {
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,ms;q=0.8'
+      }
+    });
+
+    finalUrl = response.url || cleanUrl;
+    html = await response.text();
+
+    title = pickMeta(html, ['og:title','twitter:title']) || decodeHtmlEntities((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [,''])[1]);
+    description = pickMeta(html, ['og:description','description','twitter:description']);
+    image = pickMeta(html, ['og:image','twitter:image']);
+    source = title ? 'page-meta' : 'fallback';
+  } catch (err) {
+    source = 'fallback';
+  }
+
+  if (!title) {
+    try {
+      const u = new URL(finalUrl || cleanUrl);
+      const slug = decodeURIComponent(u.pathname.split('/').filter(Boolean)[0] || '')
+        .replace(/-i\.\d+\.\d+.*$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .trim();
+      title = slug || 'Shopee Affiliate Product';
+    } catch (e) {
+      title = 'Shopee Affiliate Product';
+    }
+  }
+
+  title = cleanProductTitle(title);
+  const analysed = analyzeAffiliateProduct(title, description, finalUrl || cleanUrl);
+
+  return {
+    ok: true,
+    source,
+    finalUrl,
+    product: {
+      title,
+      description: analysed.description,
+      category: analysed.category,
+      badge: analysed.badge,
+      icon: analysed.icon,
+      meta: analysed.meta,
+      image,
+      link: cleanUrl
+    }
+  };
+}
+
+
 function cleanBenchmarkProduct(value) {
   const v = String(value || '').trim().toUpperCase();
   return v === 'SBM' ? 'SBM' : 'BM';
@@ -302,6 +451,30 @@ async function handler(req, res) {
       );
     }
 
+
+
+    // =========================
+    // AUTO DETECT AFFILIATE PRODUCT LINK
+    // =========================
+
+    if (
+      pathname === "/api/detect-affiliate-product" &&
+      req.method === "POST"
+    ) {
+      try {
+        const body = await readBody(req);
+        const data = JSON.parse(body || "{}");
+        const result = await detectAffiliateFromUrl(data.url);
+        return send(res, 200, JSON.stringify(result, null, 2), "application/json");
+      } catch (err) {
+        return send(
+          res,
+          400,
+          JSON.stringify({ ok: false, error: err.message || "Auto detect failed" }, null, 2),
+          "application/json"
+        );
+      }
+    }
 
     // =========================
     // JUPEM STESEN TANDA ARAS SEARCH

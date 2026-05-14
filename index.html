@@ -3982,6 +3982,15 @@ display:none !important;
         <input id="affiliateLinkInput" type="url" placeholder="https://s.shopee.com.my/..." required>
       </label>
 
+      <label>
+        Full Product Link / Auto Detect
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="affiliateDetectLinkInput" type="url" placeholder="Paste full Shopee product link untuk auto isi form" style="flex:1;min-width:0;">
+          <button class="affiliate-admin-btn" id="affiliateDetectButton" type="button" style="white-space:nowrap;background:#2563eb;border-color:#2563eb;color:#fff;padding:12px 14px;">🔍 Auto Detect</button>
+        </div>
+        <small id="affiliateDetectStatus" style="display:block;margin-top:6px;color:#94a3b8;font-size:12px;line-height:1.35;">Paste link penuh Shopee, kemudian tekan Auto Detect. Jika gagal, isi manual seperti biasa.</small>
+      </label>
+
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
     </form>
   </div>
@@ -8200,11 +8209,87 @@ display:none !important;
     qs('#affiliateCategoryInput').value = product ? product.category : 'computer';
     qs('#affiliateMetaInput').value = product ? product.meta : '';
     qs('#affiliateLinkInput').value = product ? product.link : '';
+    if(qs('#affiliateDetectLinkInput')) qs('#affiliateDetectLinkInput').value = '';
+    if(qs('#affiliateDetectStatus')){ qs('#affiliateDetectStatus').textContent = 'Paste link penuh Shopee, kemudian tekan Auto Detect. Jika gagal, isi manual seperti biasa.'; qs('#affiliateDetectStatus').style.color = '#94a3b8'; }
     qs('#affiliateAdminModal').classList.add('is-open');
   }
 
   function closeModal(){
     qs('#affiliateAdminModal')?.classList.remove('is-open');
+  }
+
+
+  async function autoDetectAffiliateProduct(){
+    if(!adminDetected()) return;
+
+    const detectInput = qs('#affiliateDetectLinkInput');
+    const affiliateInput = qs('#affiliateLinkInput');
+    const status = qs('#affiliateDetectStatus');
+    const btn = qs('#affiliateDetectButton');
+
+    const productUrl = (detectInput?.value || affiliateInput?.value || '').trim();
+    if(!productUrl){
+      alert('Paste full Shopee product link dahulu.');
+      return;
+    }
+
+    const oldText = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.textContent = '⏳ Detecting...'; }
+    if(status){ status.textContent = 'Sedang baca link produk...'; status.style.color = '#93c5fd'; }
+
+    const endpoints = [
+      '/api/detect-affiliate-product',
+      'https://azobss-backend.onrender.com/api/detect-affiliate-product',
+      'http://127.0.0.1:3000/api/detect-affiliate-product',
+      'http://127.0.0.1:7821/api/detect-affiliate-product'
+    ];
+
+    let data = null;
+    let lastError = '';
+
+    for(const endpoint of endpoints){
+      try{
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({url: productUrl}),
+          signal: AbortSignal.timeout(12000)
+        });
+        const json = await res.json().catch(() => null);
+        if(res.ok && json && json.ok){
+          data = json;
+          break;
+        }
+        lastError = (json && (json.error || json.message)) || ('HTTP ' + res.status);
+      }catch(err){
+        lastError = err.message || String(err);
+      }
+    }
+
+    if(btn){ btn.disabled = false; btn.textContent = oldText || '🔍 Auto Detect'; }
+
+    if(!data){
+      if(status){
+        status.textContent = 'Auto Detect gagal: ' + (lastError || 'link tidak dapat dibaca. Isi manual atau cuba link penuh produk.');
+        status.style.color = '#fca5a5';
+      }
+      return;
+    }
+
+    const p = data.product || data;
+    if(qs('#affiliateIcon') && p.icon) qs('#affiliateIcon').value = p.icon;
+    if(qs('#affiliateBadge') && p.badge) qs('#affiliateBadge').value = p.badge;
+    if(qs('#affiliateTitleInput') && p.title) qs('#affiliateTitleInput').value = p.title;
+    if(qs('#affiliateDescInput') && p.description) qs('#affiliateDescInput').value = p.description;
+    if(qs('#affiliateCategoryInput') && p.category) qs('#affiliateCategoryInput').value = p.category;
+    if(qs('#affiliateMetaInput') && p.meta) qs('#affiliateMetaInput').value = p.meta;
+
+    if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = productUrl;
+
+    if(status){
+      status.textContent = data.source === 'fallback' ? 'Auto filled guna keyword/link fallback. Sila semak sebelum Save.' : 'Auto Detect berjaya. Semak dan edit jika perlu sebelum Save.';
+      status.style.color = '#22c55e';
+    }
   }
 
   function bindAdmin(){
@@ -8214,6 +8299,8 @@ display:none !important;
     });
 
     qs('#affiliateAdminClose')?.addEventListener('click', closeModal);
+
+    qs('#affiliateDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
 
     qs('#affiliateAdminModal')?.addEventListener('click', e => {
       if(e.target.id === 'affiliateAdminModal') closeModal();
