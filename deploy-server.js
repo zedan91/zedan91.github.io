@@ -15,8 +15,97 @@ const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
+const BENCHMARK_JSON = path.join(ROOT, "stesen-tanda-aras-records.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 const DOWNLOAD_TOKENS = new Map();
+
+let benchmarkRecordsCache = null;
+let benchmarkRecordsCacheMtime = 0;
+
+function normalizeBenchmarkKey(value) {
+  return String(value || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function readBenchmarkRecords() {
+  try {
+    if (!fs.existsSync(BENCHMARK_JSON)) return [];
+    const stat = fs.statSync(BENCHMARK_JSON);
+    if (benchmarkRecordsCache && benchmarkRecordsCacheMtime === stat.mtimeMs) {
+      return benchmarkRecordsCache;
+    }
+    const parsed = JSON.parse(fs.readFileSync(BENCHMARK_JSON, "utf8"));
+    benchmarkRecordsCache = Array.isArray(parsed) ? parsed : [];
+    benchmarkRecordsCacheMtime = stat.mtimeMs;
+    return benchmarkRecordsCache;
+  } catch (error) {
+    console.error("Failed to read BM/SBM records:", error.message);
+    return [];
+  }
+}
+
+function normalizeBenchmarkRecord(row, produkFallback, negeriFallback) {
+  const id = String(row.productId || row.id || "").trim();
+  const jenis = Number(row.jenis || getBenchmarkJenis(produkFallback));
+  const product = jenis === 2 ? "SBM" : "BM";
+  return {
+    id,
+    jenis,
+    product,
+    stationNo: String(row.stesen || row.stationNo || row.noStesen || id || "").trim(),
+    negeri: String(row.negeri || negeriFallback || "").trim(),
+    daerah: String(row.daerah || "").trim(),
+    bandar: String(row.bandar || "").trim(),
+    huraian: String(row.huraian || "").trim(),
+    harga: String(row.harga || "5").trim(),
+    locationUrl: row.locationUrl || "",
+    downloadUrl: row.downloadUrl || (id ? buildBenchmarkDownloadUrl(id, product, jenis) : ""),
+    raw: row
+  };
+}
+
+function searchBenchmarkDatabase(produk, negeri, q) {
+  const records = readBenchmarkRecords();
+  if (!records.length) return [];
+
+  const jenisWanted = getBenchmarkJenis(produk);
+  const negeriKey = normalizeBenchmarkKey(negeri);
+  const raw = cleanSearch(q);
+  const normalized = normalizeBenchmarkSearch(raw);
+
+  const queryKeys = Array.from(new Set([
+    raw,
+    normalized,
+    normalized.replace(/^H\s+(.+)$/i, "H$1"),
+    raw.replace(/^([A-Z]+)\s*(\d+)$/i, "$1 $2")
+  ].map(normalizeBenchmarkKey).filter(Boolean)));
+
+  const directId = cleanBenchmarkId(raw);
+  const normalizedRows = records
+    .map(row => normalizeBenchmarkRecord(row, produk, negeri))
+    .filter(row => Number(row.jenis) === jenisWanted)
+    .filter(row => !negeriKey || normalizeBenchmarkKey(row.negeri) === negeriKey);
+
+  let matches = [];
+
+  if (directId) {
+    matches = normalizedRows.filter(row => String(row.id) === directId);
+  }
+
+  if (!matches.length && queryKeys.length) {
+    matches = normalizedRows.filter(row => queryKeys.includes(normalizeBenchmarkKey(row.stationNo)));
+  }
+
+  if (!matches.length && queryKeys.length) {
+    matches = normalizedRows.filter(row => {
+      const searchable = normalizeBenchmarkKey(`${row.stationNo} ${row.negeri} ${row.daerah} ${row.bandar} ${row.huraian}`);
+      return queryKeys.some(key => key.length >= 3 && searchable.includes(key));
+    });
+  }
+
+  return matches.slice(0, 50);
+}
 
 // AUTO DELETE FILE > 30 DAYS
 const FILE_EXPIRE_MS =
@@ -676,6 +765,24 @@ async function handler(req, res) {
               raw: []
             }],
             note: 'Direct ProductID detected and download link generated.'
+          }, null, 2),
+          "application/json"
+        );
+      }
+
+      const dbRows = searchBenchmarkDatabase(produk, negeri, q);
+      if (dbRows.length) {
+        return send(
+          res,
+          200,
+          JSON.stringify({
+            ok: true,
+            produk,
+            negeri,
+            q,
+            sourceUrl,
+            results: dbRows,
+            note: `Found ${dbRows.length} BM/SBM record(s) from AZOBSS local database.`
           }, null, 2),
           "application/json"
         );

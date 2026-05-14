@@ -8632,7 +8632,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     if (errorEl) errorEl.textContent = '';
     if (statusEl) {
       statusEl.style.display = 'block';
-      statusEl.textContent = 'Auto searching BM/SBM ProductID from eBiz JUPEM... contoh 0109 akan dicari sebagai H 0109.';
+      statusEl.textContent = 'Searching BM/SBM database... contoh 0109 akan dicari sebagai H 0109.';
     }
     if (searchBtn) searchBtn.disabled = true;
     try {
@@ -8649,14 +8649,14 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       renderResults(Array.isArray(data.results) ? data.results : []);
       if (statusEl) {
         statusEl.textContent = data.results && data.results.length
-          ? `${data.results.length} BM/SBM record found. ProductID detected and download link generated automatically.`
-          : 'No ProductID found automatically. Boleh buka eBiz dan paste ProductID/cart link sebagai fallback.';
+          ? `${data.results.length} BM/SBM record found. Download link generated automatically.`
+          : 'No BM/SBM record found. Boleh buka eBiz dan paste ProductID/cart link sebagai fallback.';
       }
       if (data.sourceUrl && openEbizBtn) openEbizBtn.href = data.sourceUrl;
     } catch (error) {
       renderResults([]);
       if (errorEl) errorEl.textContent = error.message || 'BM/SBM search failed.';
-      if (statusEl) statusEl.textContent = 'Auto search gagal. Boleh guna Open in eBiz JUPEM dan paste ProductID/cart link sebagai fallback.';
+      if (statusEl) statusEl.textContent = 'Search gagal. Boleh guna Open in eBiz JUPEM dan paste ProductID/cart link sebagai fallback.';
     } finally {
       if (searchBtn) searchBtn.disabled = false;
     }
