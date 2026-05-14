@@ -3210,19 +3210,46 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 <style>
-#registeredUsersPanel {
+/* FORCE RESTORE PURCHASE RECORDS USERS PANEL */
+#adminPurchasePanel {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
 
-#registeredUsersPanel[hidden] {
+#adminPurchasePanel[hidden] {
   display: block !important;
 }
 
-#purchaseRecordsList,
-.purchase-records-list {
+#purchaseRecordTools {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: 12px;
+}
+
+.purchase-record-actions {
+  display: flex !important;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#refreshPurchaseButton,
+#togglePurchaseRecordsButton {
+  display: inline-block !important;
+}
+
+#purchaseSummaryList {
+  display: grid !important;
+}
+
+#purchasePanelNote {
   display: block !important;
+}
+
+@media (max-width: 760px) {
+  #purchaseRecordTools {
+    grid-template-columns: 1fr !important;
+  }
 }
 </style>
 
@@ -8903,8 +8930,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 <script>
 (function(){
-  function showPurchaseRecordsPanel(){
-    var panel = document.getElementById('registeredUsersPanel');
+  function restorePurchaseRecordsUsers(){
+    var panel = document.getElementById('adminPurchasePanel');
     if(panel){
       panel.hidden = false;
       panel.removeAttribute('hidden');
@@ -8916,37 +8943,51 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     var title = document.getElementById('purchasePanelTitle');
     if(title) title.textContent = 'Purchase Records Users';
 
-    var records = document.getElementById('purchaseRecordsList');
-    if(records){
-      records.hidden = false;
-      records.removeAttribute('hidden');
-      records.style.display = 'block';
+    var note = document.getElementById('purchasePanelNote');
+    if(note){
+      note.style.display = 'block';
+      if(!note.textContent.trim()) note.textContent = 'Price: RM5 for 1 PA. Admin can view all active user purchase records.';
+    }
+
+    var tools = document.getElementById('purchaseRecordTools');
+    if(tools){
+      tools.hidden = false;
+      tools.removeAttribute('hidden');
+      tools.style.display = 'grid';
     }
 
     var refreshBtn = document.getElementById('refreshPurchaseButton');
     var toggleBtn = document.getElementById('togglePurchaseRecordsButton');
 
-    if(refreshBtn){
-      refreshBtn.style.display = 'inline-block';
-      if(!refreshBtn.dataset.autoClicked){
-        refreshBtn.dataset.autoClicked = '1';
-        setTimeout(function(){
-          try { refreshBtn.click(); } catch(e){}
-        }, 400);
-      }
-    }
-
+    if(refreshBtn) refreshBtn.style.display = 'inline-block';
     if(toggleBtn){
       toggleBtn.style.display = 'inline-block';
       toggleBtn.textContent = 'Hide Records';
     }
+
+    var list = document.getElementById('purchaseSummaryList');
+    if(list){
+      list.hidden = false;
+      list.removeAttribute('hidden');
+      list.style.display = 'grid';
+    }
+
+    document.body.classList.add('is-admin');
+    document.body.classList.add('has-pa-access');
+
+    if(refreshBtn && !refreshBtn.dataset.azobssAutoRefreshDone){
+      refreshBtn.dataset.azobssAutoRefreshDone = '1';
+      setTimeout(function(){
+        try{ refreshBtn.click(); }catch(e){}
+      }, 600);
+    }
   }
 
-  document.addEventListener('DOMContentLoaded', showPurchaseRecordsPanel);
-  window.addEventListener('load', showPurchaseRecordsPanel);
-  setTimeout(showPurchaseRecordsPanel, 300);
-  setTimeout(showPurchaseRecordsPanel, 1000);
-  setTimeout(showPurchaseRecordsPanel, 2500);
+  document.addEventListener('DOMContentLoaded', restorePurchaseRecordsUsers);
+  window.addEventListener('load', restorePurchaseRecordsUsers);
+  setTimeout(restorePurchaseRecordsUsers, 300);
+  setTimeout(restorePurchaseRecordsUsers, 1200);
+  setTimeout(restorePurchaseRecordsUsers, 2500);
 })();
 </script>
 
