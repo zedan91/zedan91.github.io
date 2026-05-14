@@ -8615,7 +8615,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       return `
         <tr>
           <td>${index + 1}</td>
-          <td><strong>${esc(row.stationNo || row.stesen || '-')}</strong>${row.id || row.productId ? '<br><small>ID: ' + esc(row.id || row.productId) + '</small>' : ''}</td>
+          <td><strong>${esc(row.stationNo || row.stesen || '-')}</strong></td>
           <td>${esc(row.negeri || '-')}</td>
           <td>${esc(row.daerah || '-')}</td>
           <td>${esc(row.bandar || '-')}</td>
@@ -8727,8 +8727,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     updateOpenEbizLink();
     if (errorEl) errorEl.textContent = '';
     if (statusEl) {
-      statusEl.style.display = 'block';
-      statusEl.textContent = 'Searching BM/SBM database...';
+      statusEl.style.display = 'none';
+      statusEl.textContent = '';
     }
     if (searchBtn) searchBtn.disabled = true;
     try {
@@ -8736,14 +8736,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const rows = searchBenchmarkDb(db);
       renderResults(rows);
       if (statusEl) {
-        statusEl.textContent = rows.length
-          ? `${rows.length} BM/SBM record found from local database. ProductID and download link ready.`
-          : 'No BM/SBM record found in local database.';
+        statusEl.style.display = 'none';
+        statusEl.textContent = '';
       }
     } catch (error) {
       renderResults([]);
       if (errorEl) errorEl.textContent = error.message || 'BM/SBM search failed.';
-      if (statusEl) statusEl.textContent = 'Search gagal. Pastikan stesen-tanda-aras-records.json ada dalam GitHub root.';
+      if (statusEl) {
+        statusEl.style.display = 'none';
+        statusEl.textContent = '';
+      }
     } finally {
       if (searchBtn) searchBtn.disabled = false;
     }
@@ -8774,8 +8776,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       saveCart([]);
       renderCart();
       if (statusEl) {
-        statusEl.style.display = 'block';
-        statusEl.textContent = 'Benchmark cart cleared.';
+        statusEl.style.display = 'none';
+        statusEl.textContent = '';
       }
     });
   }
