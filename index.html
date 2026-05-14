@@ -3952,6 +3952,85 @@ body:not(.is-admin) .affiliate-card-admin-actions{
         <p class="request-note" id="paLinkPreview" hidden></p>
       </form>
 
+      <div class="benchmark-panel" id="benchmarkPanel">
+        <h3>📍 Carian Stesen Tanda Aras (BM/SBM)</h3>
+        <p class="request-note">
+          Search produk geodetik JUPEM seperti Stesen Tanda Aras (BM) dan Stesen Tanda Aras Piawai (SBM). Result boleh tambah ke cart sementara sebelum semak/pembelian di eBiz JUPEM.
+        </p>
+
+        <form class="benchmark-form" id="benchmarkForm">
+          <label for="benchmarkProduct">
+            Produk
+            <select id="benchmarkProduct" required>
+              <option value="BM">Stesen Tanda Aras (BM)</option>
+              <option value="SBM">Stesen Tanda Aras Piawai (SBM)</option>
+            </select>
+          </label>
+
+          <label for="benchmarkState">
+            Negeri
+            <select id="benchmarkState" required>
+              <option value="">-- Select State --</option>
+              <option value="JOHOR">JOHOR</option>
+              <option value="KEDAH">KEDAH</option>
+              <option value="KELANTAN">KELANTAN</option>
+              <option value="MELAKA">MELAKA</option>
+              <option value="NEGERI SEMBILAN">NEGERI SEMBILAN</option>
+              <option value="PAHANG">PAHANG</option>
+              <option value="PERAK">PERAK</option>
+              <option value="PERLIS">PERLIS</option>
+              <option value="PULAU PINANG">PULAU PINANG</option>
+              <option value="SABAH">SABAH</option>
+              <option value="SARAWAK">SARAWAK</option>
+              <option value="SELANGOR">SELANGOR</option>
+              <option value="TERENGGANU">TERENGGANU</option>
+              <option value="WILAYAH PERSEKUTUAN KUALA LUMPUR">WILAYAH PERSEKUTUAN KUALA LUMPUR</option>
+              <option value="WILAYAH PERSEKUTUAN LABUAN">WILAYAH PERSEKUTUAN LABUAN</option>
+              <option value="WILAYAH PERSEKUTUAN PUTRAJAYA">WILAYAH PERSEKUTUAN PUTRAJAYA</option>
+            </select>
+          </label>
+
+          <label for="benchmarkSearch">
+            Carian
+            <input id="benchmarkSearch" type="search" placeholder="No stesen / daerah / bandar">
+          </label>
+
+          <button class="btn blue" id="benchmarkSearchButton" type="submit">Search</button>
+        </form>
+
+        <p class="request-error" id="benchmarkError"></p>
+        <p class="request-status" id="benchmarkStatus"></p>
+
+        <div class="benchmark-actions">
+          <a class="btn orange" id="benchmarkOpenEbizButton" href="https://ebiz.jupem.gov.my/Produk/StesenTandaAras" target="_blank" rel="noopener">Open in eBiz JUPEM</a>
+          <button class="btn" id="benchmarkClearCartButton" type="button">Clear Cart</button>
+        </div>
+
+        <div class="benchmark-result-wrap" id="benchmarkResultWrap" hidden>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>No. Stesen</th>
+                <th>Negeri</th>
+                <th>Daerah</th>
+                <th>Bandar</th>
+                <th>Huraian</th>
+                <th>Harga</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="benchmarkResultsBody"></tbody>
+          </table>
+        </div>
+
+        <h4 style="margin:14px 0 0;color:#e2e8f0;">Benchmark Cart</h4>
+        <div class="benchmark-cart-list" id="benchmarkCartList">
+          <div class="benchmark-cart-item">No benchmark item in cart yet.</div>
+        </div>
+      </div>
+
+
       <a class="btn blue login-only" href="https://alvo.chat/6nZ2" target="_blank" rel="noopener">
         WhatsApp For Help
       </a>
@@ -8309,6 +8388,194 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   });
 
   window.azobssRefreshAffiliateProducts = initAffiliateFinal;
+})();
+</script>
+
+
+<script>
+(function(){
+  const CART_KEY = 'azobss_benchmark_cart_v1';
+  const form = document.getElementById('benchmarkForm');
+  const productEl = document.getElementById('benchmarkProduct');
+  const stateEl = document.getElementById('benchmarkState');
+  const searchEl = document.getElementById('benchmarkSearch');
+  const searchBtn = document.getElementById('benchmarkSearchButton');
+  const statusEl = document.getElementById('benchmarkStatus');
+  const errorEl = document.getElementById('benchmarkError');
+  const resultsWrap = document.getElementById('benchmarkResultWrap');
+  const resultsBody = document.getElementById('benchmarkResultsBody');
+  const cartList = document.getElementById('benchmarkCartList');
+  const clearCartBtn = document.getElementById('benchmarkClearCartButton');
+  const openEbizBtn = document.getElementById('benchmarkOpenEbizButton');
+
+  if (!form) return;
+
+  function esc(value){
+    return String(value || '').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
+    });
+  }
+
+  function readCart(){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    }catch(error){
+      return [];
+    }
+  }
+
+  function saveCart(items){
+    localStorage.setItem(CART_KEY, JSON.stringify(items));
+  }
+
+  function getOpenEbizUrl(){
+    const params = new URLSearchParams();
+    if (productEl.value) params.set('produk', productEl.value);
+    if (stateEl.value) params.set('negeri', stateEl.value);
+    if (searchEl.value.trim()) params.set('carian', searchEl.value.trim());
+    const query = params.toString();
+    return 'https://ebiz.jupem.gov.my/Produk/StesenTandaAras' + (query ? '?' + query : '');
+  }
+
+  function updateOpenEbizLink(){
+    if (openEbizBtn) openEbizBtn.href = getOpenEbizUrl();
+  }
+
+  function renderCart(){
+    const items = readCart();
+    if (!cartList) return;
+    if (!items.length) {
+      cartList.innerHTML = '<div class="benchmark-cart-item">No benchmark item in cart yet.</div>';
+      return;
+    }
+    cartList.innerHTML = items.map(function(item, index){
+      return `
+        <div class="benchmark-cart-item">
+          <div><strong>${esc(item.stationNo || '-')}</strong><br>${esc(item.product || '')}</div>
+          <div>${esc(item.negeri || '-')}<br>${esc(item.daerah || '')}</div>
+          <div>${esc(item.harga || 'RM -')}</div>
+          <button class="small-action-btn" type="button" data-remove-benchmark-cart="${index}">Remove</button>
+        </div>`;
+    }).join('');
+  }
+
+  function addCart(item){
+    const items = readCart();
+    const key = [item.product, item.stationNo, item.negeri, item.daerah].join('|').toLowerCase();
+    const exists = items.some(function(existing){
+      return [existing.product, existing.stationNo, existing.negeri, existing.daerah].join('|').toLowerCase() === key;
+    });
+    if (!exists) {
+      items.push({ ...item, addedAtMs: Date.now() });
+      saveCart(items);
+    }
+    renderCart();
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = exists ? 'Item already in benchmark cart.' : 'Benchmark item added to cart.';
+    }
+  }
+
+  function renderResults(rows){
+    if (!resultsBody || !resultsWrap) return;
+    if (!rows.length) {
+      resultsWrap.hidden = true;
+      return;
+    }
+    resultsWrap.hidden = false;
+    resultsBody.innerHTML = rows.map(function(row, index){
+      const encoded = encodeURIComponent(JSON.stringify(row));
+      const locationLink = row.locationUrl ? `<a class="btn blue" style="margin:0;padding:7px 9px;font-size:12px;" href="${esc(row.locationUrl)}" target="_blank" rel="noopener">Lokasi</a>` : '';
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td><strong>${esc(row.stationNo || '-')}</strong></td>
+          <td>${esc(row.negeri || '-')}</td>
+          <td>${esc(row.daerah || '-')}</td>
+          <td>${esc(row.bandar || '-')}</td>
+          <td>${esc(row.huraian || '-')}${locationLink ? '<br>' + locationLink : ''}</td>
+          <td>${esc(row.harga || '-')}</td>
+          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  form.addEventListener('submit', async function(event){
+    event.preventDefault();
+    updateOpenEbizLink();
+    if (errorEl) errorEl.textContent = '';
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'Searching benchmark data...';
+    }
+    if (searchBtn) searchBtn.disabled = true;
+    try {
+      const params = new URLSearchParams({
+        produk: productEl.value,
+        negeri: stateEl.value,
+        q: searchEl.value.trim()
+      });
+      const response = await fetch('/api/stesen-tanda-aras?' + params.toString(), { cache: 'no-store' });
+      const data = await response.json().catch(function(){ return null; });
+      if (!response.ok || !data || data.ok === false) {
+        throw new Error((data && (data.error || data.code)) || 'Benchmark search failed');
+      }
+      renderResults(Array.isArray(data.results) ? data.results : []);
+      if (statusEl) {
+        statusEl.textContent = data.results && data.results.length
+          ? `${data.results.length} benchmark record found.`
+          : 'No benchmark record returned from backend. Use Open in eBiz JUPEM to continue direct search.';
+      }
+      if (data.sourceUrl && openEbizBtn) openEbizBtn.href = data.sourceUrl;
+    } catch (error) {
+      renderResults([]);
+      if (errorEl) errorEl.textContent = error.message || 'Benchmark search failed.';
+      if (statusEl) statusEl.textContent = 'Use Open in eBiz JUPEM as fallback.';
+    } finally {
+      if (searchBtn) searchBtn.disabled = false;
+    }
+  });
+
+  document.addEventListener('click', function(event){
+    const addButton = event.target.closest('[data-add-benchmark]');
+    if (addButton) {
+      try {
+        addCart(JSON.parse(decodeURIComponent(addButton.dataset.addBenchmark || '{}')));
+      } catch(error) {}
+      return;
+    }
+    const removeButton = event.target.closest('[data-remove-benchmark-cart]');
+    if (removeButton) {
+      const index = Number(removeButton.dataset.removeBenchmarkCart);
+      const items = readCart();
+      if (Number.isFinite(index)) {
+        items.splice(index, 1);
+        saveCart(items);
+        renderCart();
+      }
+    }
+  });
+
+  if (clearCartBtn) {
+    clearCartBtn.addEventListener('click', function(){
+      saveCart([]);
+      renderCart();
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.textContent = 'Benchmark cart cleared.';
+      }
+    });
+  }
+
+  ['change','input'].forEach(function(evt){
+    productEl.addEventListener(evt, updateOpenEbizLink);
+    stateEl.addEventListener(evt, updateOpenEbizLink);
+    searchEl.addEventListener(evt, updateOpenEbizLink);
+  });
+
+  updateOpenEbizLink();
+  renderCart();
 })();
 </script>
 

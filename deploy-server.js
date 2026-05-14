@@ -125,6 +125,73 @@ function cleanState(negeri) {
   return v;
 }
 
+
+
+function cleanBenchmarkProduct(value) {
+  const v = String(value || '').trim().toUpperCase();
+  return v === 'SBM' ? 'SBM' : 'BM';
+}
+
+function cleanSearch(value) {
+  return String(value || '')
+    .trim()
+    .replace(/[<>]/g, '')
+    .slice(0, 120);
+}
+
+function stripHtml(value) {
+  return String(value || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function absolutizeJupemUrl(rawUrl) {
+  if (!rawUrl) return '';
+  if (/^https?:\/\//i.test(rawUrl)) return rawUrl;
+  if (rawUrl.startsWith('/')) return 'https://ebiz.jupem.gov.my' + rawUrl;
+  return 'https://ebiz.jupem.gov.my/' + rawUrl.replace(/^\/+/, '');
+}
+
+function parseBenchmarkRows(html, produkFallback, negeriFallback) {
+  const rows = [];
+  const tableRowPattern = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  let rowMatch;
+  while ((rowMatch = tableRowPattern.exec(html))) {
+    const rowHtml = rowMatch[1];
+    const cellMatches = [...rowHtml.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)];
+    if (cellMatches.length < 5) continue;
+    const cells = cellMatches.map(item => stripHtml(item[1]));
+    const joined = cells.join(' ').toLowerCase();
+    if (joined.includes('no. stesen') || joined.includes('tambah ke troli')) continue;
+
+    const linkMatch = rowHtml.match(/href=["']([^"']*(?:Lokasi|Peta|Map|Koordinat|location)[^"']*)["']/i) || rowHtml.match(/href=["']([^"']*)["']/i);
+    const stationNo = cells[1] || cells[0] || '';
+    if (!stationNo || /^no\.?$/i.test(stationNo)) continue;
+
+    rows.push({
+      product: produkFallback,
+      stationNo,
+      negeri: cells[2] || negeriFallback,
+      daerah: cells[3] || '',
+      bandar: cells[4] || '',
+      huraian: cells[5] || '',
+      harga: cells[6] || '',
+      locationUrl: linkMatch ? absolutizeJupemUrl(linkMatch[1]) : '',
+      raw: cells
+    });
+  }
+  return rows.slice(0, 60);
+}
+
 async function fetchJupem(jupemUrl) {
   return await fetch(jupemUrl, {
     redirect: "follow",
@@ -231,6 +298,89 @@ async function handler(req, res) {
           ok: true,
           saved: data.length
         }),
+        "application/json"
+      );
+    }
+
+
+    // =========================
+    // JUPEM STESEN TANDA ARAS SEARCH
+    // =========================
+
+    if (
+      pathname === "/api/stesen-tanda-aras" &&
+      req.method === "GET"
+    ) {
+      const produk = cleanBenchmarkProduct(parsed.query.produk);
+      const negeri = cleanState(parsed.query.negeri);
+      const q = cleanSearch(parsed.query.q || parsed.query.carian);
+
+      if (!negeri) {
+        return send(
+          res,
+          400,
+          JSON.stringify({ ok: false, error: "Missing negeri" }),
+          "application/json"
+        );
+      }
+
+      const sourceUrl =
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`;
+
+      const candidates = [
+        sourceUrl,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?product=${encodeURIComponent(produk)}&state=${encodeURIComponent(negeri)}&search=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras`
+      ];
+
+      let lastError = "";
+
+      for (const targetUrl of candidates) {
+        try {
+          console.log("Benchmark search:", targetUrl);
+          const response = await fetch(targetUrl, {
+            redirect: "follow",
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Referer": "https://ebiz.jupem.gov.my/Produk/StesenTandaAras"
+            }
+          });
+
+          if (!response.ok) {
+            lastError = `HTTP ${response.status}`;
+            continue;
+          }
+
+          const html = await response.text();
+          const results = parseBenchmarkRows(html, produk, negeri);
+
+          if (results.length || targetUrl === candidates[candidates.length - 1]) {
+            return send(
+              res,
+              200,
+              JSON.stringify({
+                ok: true,
+                produk,
+                negeri,
+                q,
+                sourceUrl,
+                results,
+                note: results.length ? "Results parsed from JUPEM eBiz page." : "No parsable table returned. Open sourceUrl to continue in eBiz JUPEM."
+              }, null, 2),
+              "application/json"
+            );
+          }
+        } catch (err) {
+          lastError = err.message;
+        }
+      }
+
+      return send(
+        res,
+        502,
+        JSON.stringify({ ok: false, error: lastError || "Benchmark search failed", sourceUrl }),
         "application/json"
       );
     }
