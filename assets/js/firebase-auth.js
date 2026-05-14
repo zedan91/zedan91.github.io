@@ -41,6 +41,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
 
     const ADMIN_USERNAME = 'zedan91';
     const PURCHASE_PRICE = 5;
+    const BM_SBM_PURCHASE_PRICE = 3;
     const SIGNUP_GATE_DURATION_MS = 5 * 60 * 1000;
     sessionStorage.removeItem('azobssSignupOpenUntil');
 
@@ -478,6 +479,27 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
       `;
     }
 
+    function getPurchaseProductType(log) {
+      const type = String(log.productType || log.product || '').trim().toUpperCase();
+      return type === 'BM' || type === 'SBM' ? type : 'PA';
+    }
+
+    function getPurchaseAmount(log) {
+      const amount = Number(log && log.amount);
+      if (Number.isFinite(amount) && amount > 0) return amount;
+      return getPurchaseProductType(log) === 'PA' ? PURCHASE_PRICE : BM_SBM_PURCHASE_PRICE;
+    }
+
+    function getPurchaseItemText(log) {
+      const type = getPurchaseProductType(log || {});
+      if (type === 'PA') {
+        const pa = log && log.paNumber ? String(log.paNumber).replace(/^PA/i, '') : '';
+        return pa ? `PA${pa}` : '-';
+      }
+      const station = (log && (log.stationNo || log.itemCode || log.paNumber)) ? String(log.stationNo || log.itemCode || log.paNumber).replace(/^(BM|SBM)\s*/i, '') : '';
+      return station ? `${type} ${station}` : type;
+    }
+
     function renderPurchaseSummaries(summaries, requestedPage = purchaseRecordsPage) {
       if (!summaries.length) {
         purchaseRecordsPage = 1;
@@ -493,7 +515,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
       purchaseSummaryList.innerHTML = pageData.pageItems.map(function (summary) {
         const units = summary.totalUnits || 0;
         const amount = summary.totalAmount || 0;
-        const lastPa = summary.lastPa ? `PA${String(summary.lastPa).replace(/^PA/i, '')}` : '-';
+        const lastPa = summary.lastItemText || (summary.lastPa ? `PA${String(summary.lastPa).replace(/^PA/i, '')}` : '-');
         const summaryTime = cleanSummaryDateTimeText(formatPurchaseSummaryDate(summary));
         const usernameKey = summary.usernameKey || '';
 
@@ -517,12 +539,12 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
             ? `
               <div class="admin-purchase-user-details">
                 ${pagedLogs.length ? pagedLogs.map(function (log) {
-                  const paText = log.paNumber ? `PA${String(log.paNumber).replace(/^PA/i, '')}` : '-';
-                  const amountText = log.amount ? `RM${log.amount}` : `RM${PURCHASE_PRICE}`;
+                  const paText = getPurchaseItemText(log);
+                  const amountText = `RM${getPurchaseAmount(log)}`;
 
                   return `
                     <div class="admin-pa-detail-row">
-                      <span>PA: <strong>${escapeHtml(paText)}</strong></span>
+                      <span>Item: <strong>${escapeHtml(paText)}</strong></span>
                       <span>Negeri: <strong>${escapeHtml(log.negeri || '-')}</strong><br>Amount: <strong>${escapeHtml(amountText)}</strong></span>
                       <span>Date/Time:<br><strong>${escapeHtml(formatPurchaseLogDate(log))}</strong></span>
                     </div>
@@ -541,7 +563,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
                 <span>Total: <strong>RM${amount}</strong></span>
                 <span class="admin-lastpa-wrap">
                   <span class="admin-lastpa-wrap">
-              <span>Last PA: <strong>${escapeHtml(lastPa)}</strong></span>
+              <span>Last: <strong>${escapeHtml(lastPa)}</strong></span>
               ${summaryTime !== '-' ? `<span class="admin-lastpa-time">${escapeHtml(summaryTime)}</span>` : ''}
             </span>
                 <span>
@@ -559,7 +581,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
             <span><strong>${escapeHtml(summary.name || usernameKey || '-')}</strong><br>${escapeHtml(summary.phone || '-')}</span>
             <span>Unit: <strong>${units}</strong></span>
             <span>Total: <strong>RM${amount}</strong></span>
-            <span>Last PA: <strong>${escapeHtml(lastPa)}</strong></span>
+            <span>Last: <strong>${escapeHtml(lastPa)}</strong></span>
           </div>
         `;
       }).join('');
@@ -629,8 +651,14 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
       if (queryText) {
         logs = logs.filter(function (log) {
           const searchable = [
+            getPurchaseItemText(log),
+            log.productType || '',
             log.paNumber || '',
+            log.stationNo || '',
+            log.itemCode || '',
             log.negeri || '',
+            log.daerah || '',
+            log.bandar || '',
             log.amount || '',
             formatPurchaseLogDate(log)
           ].join(' ').toLowerCase();
@@ -645,11 +673,11 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
         }
 
         if (sortMode === 'paAsc') {
-          return String(a.paNumber || '').localeCompare(String(b.paNumber || ''));
+          return getPurchaseItemText(a).localeCompare(getPurchaseItemText(b));
         }
 
         if (sortMode === 'paDesc') {
-          return String(b.paNumber || '').localeCompare(String(a.paNumber || ''));
+          return getPurchaseItemText(b).localeCompare(getPurchaseItemText(a));
         }
 
         if (sortMode === 'state') {
@@ -679,12 +707,12 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
       userPaPurchasePage = pageData.page;
 
       userPaPurchaseList.innerHTML = pageData.pageItems.map(function (log) {
-        const paText = log.paNumber ? `PA${String(log.paNumber).replace(/^PA/i, '')}` : '-';
-        const amountText = log.amount ? `RM${log.amount}` : `RM${PURCHASE_PRICE}`;
+        const paText = getPurchaseItemText(log);
+        const amountText = `RM${getPurchaseAmount(log)}`;
 
         return `
           <div class="user-pa-item">
-            <span>PA: <strong>${escapeHtml(paText)}</strong></span>
+            <span>Item: <strong>${escapeHtml(paText)}</strong></span>
             <span>Negeri: <strong>${escapeHtml(log.negeri || '-')}</strong><br>Amount: <strong>${escapeHtml(amountText)}</strong></span>
             <span>Date/Time:<br><strong>${escapeHtml(formatPurchaseLogDate(log))}</strong></span>
           </div>
@@ -747,6 +775,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
             summary.name || '',
             summary.phone || '',
             summary.lastPa || '',
+            summary.lastItemText || '',
             summary.lastNegeri || ''
           ].join(' ').toLowerCase();
 
@@ -892,7 +921,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
           }
 
           purchasePanelTitle.textContent = 'Purchase Records Users';
-          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. Admin can view all active user purchase records.';
+          purchasePanelNote.textContent = 'Price: PA RM5/unit, BM/SBM RM3/unit. Admin can view all active user purchase records.';
 
           const activeUsersByKey = new Map();
           const usersSnapshot = await getDocs(collection(db, 'users'));
@@ -946,14 +975,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
                 return getPurchaseLogMs(b) - getPurchaseLogMs(a);
               })[0];
             const logTotalUnits = userLogs.length;
+            const logTotalAmount = userLogs.reduce(function(total, log) { return total + getPurchaseAmount(log); }, 0);
 
             summariesByKey.set(usernameKey, {
               ...activeUsersByKey.get(usernameKey),
               ...data,
               usernameKey,
               totalUnits: logTotalUnits || data.totalUnits || 0,
-              totalAmount: logTotalUnits ? logTotalUnits * PURCHASE_PRICE : data.totalAmount || 0,
-              lastPa: latestUserLog ? String(latestUserLog.paNumber || '').replace(/^PA/i, '') : data.lastPa || '',
+              totalAmount: logTotalUnits ? logTotalAmount : data.totalAmount || 0,
+              lastPa: latestUserLog ? String(latestUserLog.paNumber || latestUserLog.itemCode || latestUserLog.stationNo || '').replace(/^PA/i, '') : data.lastPa || '',
+              lastItemText: latestUserLog ? getPurchaseItemText(latestUserLog) : (data.lastItemText || ''),
               lastNegeri: latestUserLog ? latestUserLog.negeri : data.lastNegeri || '',
               updatedAt: latestUserLog ? latestUserLog.createdAt : data.updatedAt
             });
@@ -975,8 +1006,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
               name: user.name || usernameKey,
               phone: user.phone || '',
               totalUnits: fallbackLogs.length || 0,
-              totalAmount: (fallbackLogs.length || 0) * PURCHASE_PRICE,
-              lastPa: fallbackLatestLog ? String(fallbackLatestLog.paNumber || '').replace(/^PA/i, '') : '',
+              totalAmount: fallbackLogs.reduce(function(total, log) { return total + getPurchaseAmount(log); }, 0),
+              lastPa: fallbackLatestLog ? String(fallbackLatestLog.paNumber || fallbackLatestLog.itemCode || fallbackLatestLog.stationNo || '').replace(/^PA/i, '') : '',
+              lastItemText: fallbackLatestLog ? getPurchaseItemText(fallbackLatestLog) : '',
               lastNegeri: fallbackLatestLog ? fallbackLatestLog.negeri : '',
               updatedAt: fallbackLatestLog ? fallbackLatestLog.createdAt : null
             });
@@ -986,13 +1018,13 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
           adminPurchaseDetailsOpen.clear();
           adminPurchaseDetailsPage.clear();
           purchasePanelTitle.textContent = 'Purchase Records Saya';
-          purchasePanelNote.textContent = 'Price: RM5 for 1 PA. You can only view your own records.';
+          purchasePanelNote.textContent = 'Price: PA RM5/unit, BM/SBM RM3/unit. You can only view your own records.';
 
           await loadUserPaPurchaseLogs();
 
           const userLogs = allUserPaPurchases.slice();
           const totalUnits = userLogs.length;
-          const totalAmount = totalUnits * PURCHASE_PRICE;
+          const totalAmount = userLogs.reduce(function(total, log) { return total + getPurchaseAmount(log); }, 0);
           const latestLog = userLogs
             .slice()
             .sort(function (a, b) {
@@ -1007,7 +1039,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
               phone: currentUser.phone || '',
               totalUnits,
               totalAmount,
-              lastPa: latestLog ? String(latestLog.paNumber || '').replace(/^PA/i, '') : '',
+              lastPa: latestLog ? String(latestLog.paNumber || latestLog.itemCode || latestLog.stationNo || '').replace(/^PA/i, '') : '',
+              lastItemText: latestLog ? getPurchaseItemText(latestLog) : '',
               lastNegeri: latestLog ? latestLog.negeri : '',
               updatedAt: latestLog ? latestLog.createdAt : null
             });
@@ -1798,12 +1831,17 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
       setAdminOnlineSummaryVisible(false);
     }
 
-    async function recordPurchase(paValue, selectedNegeri, url) {
+    async function recordPurchaseItem(item) {
       if (!currentUser) {
-        return;
+        openSiteAuth('signin');
+        throw new Error('Please log in before downloading.');
       }
 
-      const purchaseId = `${Date.now()}-${currentUser.usernameKey}-${paValue}`;
+      const productType = String(item.productType || 'PA').toUpperCase();
+      const itemCode = String(item.itemCode || item.paNumber || item.stationNo || '').trim();
+      const selectedNegeri = item.negeri || item.selectedNegeri || '';
+      const amount = Number(item.amount || (productType === 'PA' ? PURCHASE_PRICE : BM_SBM_PURCHASE_PRICE));
+      const purchaseId = `${Date.now()}-${currentUser.usernameKey}-${productType}-${itemCode || 'item'}`;
       const summaryRef = doc(db, 'purchaseSummaries', currentUser.usernameKey);
       const logRef = doc(db, 'purchaseLogs', purchaseId);
       const purchaseLog = {
@@ -1812,10 +1850,15 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
         usernameKey: currentUser.usernameKey,
         name: currentUser.name,
         phone: currentUser.phone || '',
-        paNumber: paValue,
+        productType,
+        itemCode,
+        paNumber: productType === 'PA' ? itemCode : '',
+        stationNo: productType === 'BM' || productType === 'SBM' ? itemCode : '',
         negeri: selectedNegeri,
-        amount: PURCHASE_PRICE,
-        url,
+        daerah: item.daerah || '',
+        bandar: item.bandar || '',
+        amount,
+        url: item.url || item.downloadUrl || '',
         deleted: false,
         createdAt: serverTimestamp()
       };
@@ -1827,7 +1870,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
           const summarySnapshot = await transaction.get(summaryRef);
           const currentSummary = summarySnapshot.exists() ? summarySnapshot.data() : {};
           const totalUnits = Number(currentSummary.totalUnits || 0) + 1;
-          const totalAmount = totalUnits * PURCHASE_PRICE;
+          const totalAmount = Number(currentSummary.totalAmount || 0) + amount;
 
           transaction.set(summaryRef, {
             uid: currentUser.uid,
@@ -1836,7 +1879,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
             phone: currentUser.phone || '',
             totalUnits,
             totalAmount,
-            lastPa: paValue,
+            lastPa: productType === 'PA' ? itemCode : '',
+            lastItemText: getPurchaseItemText(purchaseLog),
             lastNegeri: selectedNegeri,
             deleted: false,
             deletedAt: null,
@@ -1850,6 +1894,12 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebas
 
       await loadPurchaseRecords();
     }
+
+    async function recordPurchase(paValue, selectedNegeri, url) {
+      return recordPurchaseItem({ productType: 'PA', itemCode: paValue, negeri: selectedNegeri, url, amount: PURCHASE_PRICE });
+    }
+
+    window.azobssRecordPurchase = recordPurchaseItem;
 
     function closeSignupAccess() {
       showSignupButton.hidden = true;

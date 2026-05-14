@@ -21,6 +21,19 @@
     });
   }
 
+  function benchmarkRecordPayload(item){
+    return encodeURIComponent(JSON.stringify({
+      productType: item.product || (String(item.jenis || '1') === '2' ? 'SBM' : 'BM'),
+      itemCode: item.stationNo || item.stesen || item.productId || item.id || '',
+      stationNo: item.stationNo || item.stesen || '',
+      negeri: item.negeri || '',
+      daerah: item.daerah || '',
+      bandar: item.bandar || '',
+      amount: 3,
+      url: item.downloadUrl || ''
+    }));
+  }
+
   function readCart(){
     try{
       const parsed = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
@@ -59,8 +72,8 @@
         <div class="benchmark-cart-item">
           <div><strong>${esc(item.stationNo || '-')}</strong><br>${esc(item.product || '')}</div>
           <div>${esc(item.negeri || '-')}<br>${esc(item.daerah || '')}</div>
-          <div>${esc(item.harga || 'RM -')}</div>
-          <div>${item.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;" href="${esc(item.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : ''}</div>
+          <div>${esc(item.harga || 'RM3')}</div>
+          <div>${item.downloadUrl ? `<a class="small-action-btn blue bm-record-download" data-benchmark-record="${benchmarkRecordPayload(item)}" style="text-decoration:none;" href="${esc(item.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : ''}</div>
           <button class="small-action-btn" type="button" data-remove-benchmark-cart="${index}">Remove</button>
         </div>`;
     }).join('');
@@ -96,7 +109,7 @@
       const bmJenis = row.jenis || (row.product === 'SBM' ? '2' : '1');
       const bmDownloadUrl = row.downloadUrl || (bmId ? `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(bmId)}?jenis=${encodeURIComponent(bmJenis)}` : '');
       const downloadButton = bmDownloadUrl
-        ? `<a class="small-action-btn blue bm-download-btn" style="text-decoration:none;display:inline-block;padding:6px 10px;font-size:12px;white-space:nowrap;" href="${esc(bmDownloadUrl)}" target="_blank" rel="noopener">Download</a>`
+        ? `<a class="small-action-btn blue bm-download-btn bm-record-download" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl: bmDownloadUrl })}" style="text-decoration:none;display:inline-block;padding:6px 10px;font-size:12px;white-space:nowrap;" href="${esc(bmDownloadUrl)}" target="_blank" rel="noopener">Download</a>`
         : '<span style="color:#94a3b8;">-</span>';
       return `
         <tr>
@@ -161,7 +174,7 @@
       daerah: item.daerah || '',
       bandar: item.bandar || '',
       huraian: item.huraian || '',
-      harga: item.harga || '5',
+      harga: item.harga || 'RM3',
       locationUrl: item.locationUrl || '',
       downloadUrl: item.downloadUrl || (productId ? `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(productId)}?jenis=${jenis}` : '')
     };
@@ -236,6 +249,18 @@
   });
 
   document.addEventListener('click', function(event){
+    const benchmarkDownload = event.target.closest('[data-benchmark-record]');
+    if (benchmarkDownload && typeof window.azobssRecordPurchase === 'function') {
+      try {
+        const payload = JSON.parse(decodeURIComponent(benchmarkDownload.dataset.benchmarkRecord || '{}'));
+        window.azobssRecordPurchase(payload).catch(function(error){
+          if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.textContent = error.message || 'Failed to save BM/SBM purchase record.';
+          }
+        });
+      } catch (error) {}
+    }
     const addButton = event.target.closest('[data-add-benchmark]');
     if (addButton) {
       try {
