@@ -6,98 +6,6 @@
   function qsa(s){return Array.from(document.querySelectorAll(s));}
   function clean(v){return String(v || '').trim().toLowerCase();}
 
-  const AFFILIATE_DETECT_API = 'https://azobss-backend.onrender.com/api/detect-product';
-
-  function categoryLabelToValue(label){
-    const text = clean(label).replace(/&/g, 'and');
-    const map = {
-      'computer and accessories': 'computer',
-      'cameras and drones': 'camera',
-      'mobile and accessories': 'mobile',
-      'health and beauty': 'health',
-      'baby and toys': 'baby',
-      'groceries and pets': 'groceries',
-      'home and living': 'home-living',
-      'home appliances': 'home-appliances',
-      'sports and outdoor': 'sports',
-      'gaming and consoles': 'gaming',
-      'tickets and vouchers': 'tickets'
-    };
-    return map[text] || label || 'others';
-  }
-
-  function setAffiliateStatus(message, type){
-    let el = qs('#affiliateDetectStatus');
-    if(!el){
-      el = document.createElement('div');
-      el.id = 'affiliateDetectStatus';
-      el.style.cssText = 'font-size:12px;font-weight:700;margin-top:7px;color:#22c55e;';
-      qs('#affiliateDetectButton')?.parentElement?.after(el);
-    }
-    el.textContent = message || '';
-    el.style.color = type === 'error' ? '#fb7185' : (type === 'warn' ? '#fbbf24' : '#22c55e');
-  }
-
-  async function autoDetectAffiliateProduct(){
-    if(!adminDetected()) return;
-
-    const linkInput = qs('#affiliateFullLinkInput') || qs('#affiliateLinkInput');
-    const link = (linkInput?.value || qs('#affiliateLinkInput')?.value || '').trim();
-    const btn = qs('#affiliateDetectButton');
-
-    if(!link){
-      setAffiliateStatus('Sila paste link produk Shopee dahulu.', 'error');
-      return;
-    }
-
-    const oldText = btn ? btn.textContent : '';
-    if(btn){
-      btn.disabled = true;
-      btn.textContent = '⏳ Detecting...';
-    }
-    setAffiliateStatus('Sedang baca link melalui backend Render...', 'warn');
-
-    try{
-      const res = await fetch(AFFILIATE_DETECT_API + '?url=' + encodeURIComponent(link));
-      const text = await res.text();
-      let data;
-      try{
-        data = JSON.parse(text);
-      }catch(parseErr){
-        throw new Error('Backend tidak pulangkan JSON. Pastikan Render sudah deploy versi terbaru.');
-      }
-
-      if(!res.ok || !data.ok){
-        throw new Error(data.error || 'Auto detect gagal.');
-      }
-
-      qs('#affiliateTitleInput').value = data.title || '';
-      qs('#affiliateDescInput').value = data.description || '';
-      qs('#affiliateBadge').value = data.badge || 'Useful Item';
-      qs('#affiliateIcon').value = data.icon || '🛒';
-      qs('#affiliateMetaInput').value = data.meta || '';
-      qs('#affiliateLinkInput').value = data.finalUrl || data.url || link;
-      if(qs('#affiliateFullLinkInput')) qs('#affiliateFullLinkInput').value = data.finalUrl || data.url || link;
-
-      const categoryValue = categoryLabelToValue(data.category || 'others');
-      const cat = qs('#affiliateCategoryInput');
-      if(cat && Array.from(cat.options).some(o => o.value === categoryValue)){
-        cat.value = categoryValue;
-      }else if(cat){
-        cat.value = 'others';
-      }
-
-      setAffiliateStatus((data.note || 'Auto filled. Sila semak sebelum Save.') + ' Source: ' + (data.source || 'detect'), data.source === 'fallback' ? 'warn' : 'ok');
-    }catch(err){
-      setAffiliateStatus('Auto detect gagal: ' + err.message, 'error');
-    }finally{
-      if(btn){
-        btn.disabled = false;
-        btn.textContent = oldText || '🔍 Auto Detect';
-      }
-    }
-  }
-
   function getCurrentUserObject(){
     const raw = sessionStorage.getItem('azobssCurrentUser');
     if(!raw) return null;
@@ -246,8 +154,73 @@
     qs('#affiliateMetaInput').value = product ? product.meta : '';
     qs('#affiliateLinkInput').value = product ? product.link : '';
     if(qs('#affiliateFullLinkInput')) qs('#affiliateFullLinkInput').value = product ? product.link : '';
-    setAffiliateStatus('', 'ok');
+    setDetectStatus('Paste full Shopee product link, then click Auto Detect.', false);
     qs('#affiliateAdminModal').classList.add('is-open');
+  }
+
+
+
+  function setDetectStatus(message, isError){
+    const status = qs('#affiliateDetectStatus');
+    if(!status) return;
+    status.textContent = message || '';
+    status.classList.toggle('is-error', !!isError);
+  }
+
+  function applyDetectedProduct(data){
+    if(!data || !data.ok) return;
+    if(data.icon) qs('#affiliateIcon').value = data.icon;
+    if(data.badge) qs('#affiliateBadge').value = data.badge;
+    if(data.title) qs('#affiliateTitleInput').value = data.title;
+    if(data.description) qs('#affiliateDescInput').value = data.description;
+    if(data.category) qs('#affiliateCategoryInput').value = data.category;
+    if(data.meta) qs('#affiliateMetaInput').value = data.meta;
+    if(data.finalUrl) qs('#affiliateLinkInput').value = data.finalUrl;
+  }
+
+  async function autoDetectAffiliateProduct(){
+    if(!adminDetected()) return;
+
+    const fullInput = qs('#affiliateFullLinkInput');
+    const affiliateInput = qs('#affiliateLinkInput');
+    const btn = qs('#affiliateAutoDetectButton');
+    const link = (fullInput?.value || affiliateInput?.value || '').trim();
+
+    if(!link){
+      setDetectStatus('Sila paste Shopee product link dahulu.', true);
+      return;
+    }
+
+    const oldText = btn ? btn.textContent : '';
+    if(btn){
+      btn.disabled = true;
+      btn.textContent = '⏳ Detecting...';
+    }
+    setDetectStatus('Sedang baca link produk melalui backend...', false);
+
+    try{
+      const res = await fetch('/api/detect-product', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({url: link})
+      });
+      const data = await res.json();
+
+      if(!res.ok || !data.ok){
+        throw new Error(data.error || 'Auto detect gagal');
+      }
+
+      applyDetectedProduct(data);
+      if(fullInput && data.finalUrl) fullInput.value = data.finalUrl;
+      setDetectStatus(data.note || ('Auto filled guna ' + (data.source || 'metadata') + '. Sila semak sebelum Save.'), data.source === 'url-fallback');
+    }catch(err){
+      setDetectStatus('Auto detect gagal: ' + err.message + '. Shopee mungkin block. Isi manual atau paste title produk.', true);
+    }finally{
+      if(btn){
+        btn.disabled = false;
+        btn.textContent = oldText || '🔍 Auto Detect';
+      }
+    }
   }
 
   function closeModal(){
@@ -262,14 +235,7 @@
 
     qs('#affiliateAdminClose')?.addEventListener('click', closeModal);
 
-    qs('#affiliateDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
-
-    qs('#affiliateFullLinkInput')?.addEventListener('keydown', e => {
-      if(e.key === 'Enter'){
-        e.preventDefault();
-        autoDetectAffiliateProduct();
-      }
-    });
+    qs('#affiliateAutoDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
 
     qs('#affiliateAdminModal')?.addEventListener('click', e => {
       if(e.target.id === 'affiliateAdminModal') closeModal();
