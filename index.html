@@ -4078,7 +4078,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       <div class="benchmark-panel" id="benchmarkPanel">
         <h3>📍 Request BM / SBM - Stesen Tanda Aras</h3>
         <p class="request-note">
-          Cari BM/SBM guna nombor stesen seperti 0109. Sistem akan cuba auto scrape eBiz JUPEM untuk dapatkan ProductID dan jana link download. Anda juga masih boleh paste ProductID/cart link sebagai fallback.
+          Cari BM/SBM guna nombor stesen seperti 0109. Sistem akan auto cari sebagai H 0109, dapatkan ProductID dari troli eBiz JUPEM dan jana link download. Anda juga boleh paste ProductID/cart link sebagai fallback.
         </p>
 
         <form class="benchmark-form" id="benchmarkForm">
@@ -4115,7 +4115,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
           <label for="benchmarkSearch">
             Carian
-            <input id="benchmarkSearch" type="search" placeholder="Contoh: 0109 atau paste ProductID/cart link">
+            <input id="benchmarkSearch" type="search" placeholder="Contoh: 0109 / H 0109 / ProductID=636">
           </label>
 
           <button class="btn blue" id="benchmarkSearchButton" type="submit">Search BM / SBM</button>
@@ -8632,7 +8632,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     if (errorEl) errorEl.textContent = '';
     if (statusEl) {
       statusEl.style.display = 'block';
-      statusEl.textContent = 'Auto searching BM/SBM ProductID from eBiz JUPEM...';
+      statusEl.textContent = 'Auto searching BM/SBM ProductID from eBiz JUPEM... contoh 0109 akan dicari sebagai H 0109.';
     }
     if (searchBtn) searchBtn.disabled = true;
     try {

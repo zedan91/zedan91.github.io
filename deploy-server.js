@@ -189,6 +189,31 @@ function cleanSearch(value) {
     .slice(0, 120);
 }
 
+function normalizeBenchmarkSearch(value) {
+  let text = cleanSearch(value).toUpperCase().replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+
+  // eBiz No. Stesen sebenar dipaparkan sebagai contoh: H 0109, bukan 0109 sahaja.
+  const hMatch = text.match(/^H\s*(\d{3,6})$/);
+  if (hMatch) return `H ${hMatch[1]}`;
+
+  if (/^\d{3,6}$/.test(text)) {
+    return `H ${text}`;
+  }
+
+  return text;
+}
+
+function getBenchmarkSearchTerms(value) {
+  const raw = cleanSearch(value);
+  const normalized = normalizeBenchmarkSearch(raw);
+  const compactH = normalized.replace(/^H\s+(\d+)$/i, 'H$1');
+  const terms = [normalized, compactH, raw]
+    .map(item => String(item || '').trim())
+    .filter(Boolean);
+  return Array.from(new Set(terms));
+}
+
 function stripHtml(value) {
   return String(value || '')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -382,49 +407,58 @@ async function searchBenchmarkFromEbiz(produk, negeri, q) {
   const baseUrl = 'https://ebiz.jupem.gov.my/Produk/StesenTandaAras';
   const baseResponse = await fetchBenchmarkCandidate(baseUrl, { method: 'GET' });
   const baseHtml = baseResponse.text || '';
-  const bodies = buildBenchmarkFormBodies(baseHtml, produk, negeri, q);
-  const urls = [
-    `${baseUrl}?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
-    `${baseUrl}?Jenis=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(q)}`,
-    `${baseUrl}?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
-    `${baseUrl}?Produk=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&SearchString=${encodeURIComponent(q)}`,
-    `https://ebiz.jupem.gov.my/Produk/GetStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
-    `https://ebiz.jupem.gov.my/Produk/GetStesenTandaArasList?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
-    `https://ebiz.jupem.gov.my/Produk/CarianStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
-    `https://ebiz.jupem.gov.my/Produk/StesenTandaArasSenarai?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`
-  ];
-
-  const attempts = [];
-  urls.forEach(url => attempts.push({ method: 'GET', url }));
-  [baseUrl, ...urls.slice(4)].forEach(url => {
-    bodies.forEach(body => attempts.push({ method: 'POST', url, body: encodeForm(body) }));
-  });
+  const searchTerms = getBenchmarkSearchTerms(q);
 
   let lastError = '';
-  for (const attempt of attempts) {
-    try {
-      const result = await fetchBenchmarkCandidate(attempt.url, {
-        method: attempt.method,
-        body: attempt.method === 'POST' ? attempt.body : undefined
-      });
-      if (!result.ok) {
-        lastError = `HTTP ${result.status} from ${attempt.url}`;
-        continue;
+  let firstSourceUrl = '';
+
+  for (const searchTerm of searchTerms) {
+    const bodies = buildBenchmarkFormBodies(baseHtml, produk, negeri, searchTerm);
+    const urls = [
+      `${baseUrl}?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `${baseUrl}?Jenis=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(searchTerm)}`,
+      `${baseUrl}?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `${baseUrl}?Produk=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&SearchString=${encodeURIComponent(searchTerm)}`,
+      `https://ebiz.jupem.gov.my/Produk/GetStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `https://ebiz.jupem.gov.my/Produk/GetStesenTandaArasList?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `https://ebiz.jupem.gov.my/Produk/CarianStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `https://ebiz.jupem.gov.my/Produk/StesenTandaArasSenarai?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`
+    ];
+
+    if (!firstSourceUrl) firstSourceUrl = urls[0];
+
+    const attempts = [];
+    urls.forEach(url => attempts.push({ method: 'GET', url, searchTerm }));
+    [baseUrl, ...urls.slice(4)].forEach(url => {
+      bodies.forEach(body => attempts.push({ method: 'POST', url, body: encodeForm(body), searchTerm }));
+    });
+
+    for (const attempt of attempts) {
+      try {
+        const result = await fetchBenchmarkCandidate(attempt.url, {
+          method: attempt.method,
+          body: attempt.method === 'POST' ? attempt.body : undefined
+        });
+        if (!result.ok) {
+          lastError = `HTTP ${result.status} from ${attempt.url}`;
+          continue;
+        }
+        let rows = [];
+        const trimmed = result.text.trim();
+        if (/^[\[{]/.test(trimmed) || /json/i.test(result.contentType)) {
+          try { rows = parseBenchmarkJsonPayload(JSON.parse(trimmed), produk, negeri); } catch (error) {}
+        }
+        if (!rows.length) rows = parseBenchmarkRows(result.text, produk, negeri);
+        if (rows.length) {
+          return { rows, sourceUrl: attempt.url, method: attempt.method, searchTerm: attempt.searchTerm, note: `Auto search parsed ProductID from eBiz JUPEM result using No. Stesen ${attempt.searchTerm}.` };
+        }
+      } catch (error) {
+        lastError = error.message;
       }
-      let rows = [];
-      const trimmed = result.text.trim();
-      if (/^[\[{]/.test(trimmed) || /json/i.test(result.contentType)) {
-        try { rows = parseBenchmarkJsonPayload(JSON.parse(trimmed), produk, negeri); } catch (error) {}
-      }
-      if (!rows.length) rows = parseBenchmarkRows(result.text, produk, negeri);
-      if (rows.length) {
-        return { rows, sourceUrl: attempt.url, method: attempt.method, note: 'Auto search parsed ProductID from eBiz JUPEM result.' };
-      }
-    } catch (error) {
-      lastError = error.message;
     }
   }
-  return { rows: [], sourceUrl: urls[0], method: 'GET', note: lastError || 'No ProductID found in eBiz response.' };
+
+  return { rows: [], sourceUrl: firstSourceUrl || baseUrl, method: 'GET', searchTerm: searchTerms[0] || q, note: lastError || 'No ProductID found in eBiz response.' };
 }
 
 function parseBenchmarkRows(html, produkFallback, negeriFallback) {
@@ -600,8 +634,9 @@ async function handler(req, res) {
       const directJenis = extractBenchmarkJenis(q, produk);
       const isExplicitProductId = /ProductID\s*=|MuatTurunStesenTandaAras\/|GeodetikTroliTandaAras\?/i.test(q) || (/^[1-9]\d{2,11}$/.test(q) && !/^0/.test(q));
 
+      const normalizedSearch = normalizeBenchmarkSearch(q);
       const sourceUrl =
-        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(getBenchmarkJenis(produk))}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`;
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(getBenchmarkJenis(produk))}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(normalizedSearch || q)}`;
 
       if (directId && isExplicitProductId) {
         const directProduct = directJenis === 2 ? 'SBM' : produk;
