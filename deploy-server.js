@@ -132,6 +132,36 @@ function cleanBenchmarkProduct(value) {
   return v === 'SBM' ? 'SBM' : 'BM';
 }
 
+function getBenchmarkJenis(produk) {
+  return cleanBenchmarkProduct(produk) === 'SBM' ? 2 : 1;
+}
+
+function cleanBenchmarkId(value) {
+  const match = String(value || '').match(/\d{1,12}/);
+  return match ? match[0] : '';
+}
+
+function buildBenchmarkDownloadUrl(id, produk) {
+  const cleanId = cleanBenchmarkId(id);
+  if (!cleanId) return '';
+  return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(cleanId)}?jenis=${getBenchmarkJenis(produk)}`;
+}
+
+function extractBenchmarkId(rowHtml) {
+  const text = String(rowHtml || '');
+  const patterns = [
+    /MuatTurunStesenTandaAras\/(\d+)/i,
+    /TambahKeTroli\/(\d+)/i,
+    /data[-_](?:id|item|produk)=['"]?(\d+)/i,
+    /value=['"]?(\d{2,12})['"]?/i
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+  return '';
+}
+
 function cleanSearch(value) {
   return String(value || '')
     .trim()
@@ -174,10 +204,13 @@ function parseBenchmarkRows(html, produkFallback, negeriFallback) {
     if (joined.includes('no. stesen') || joined.includes('tambah ke troli')) continue;
 
     const linkMatch = rowHtml.match(/href=["']([^"']*(?:Lokasi|Peta|Map|Koordinat|location)[^"']*)["']/i) || rowHtml.match(/href=["']([^"']*)["']/i);
-    const stationNo = cells[1] || cells[0] || '';
+    const itemId = extractBenchmarkId(rowHtml);
+    const stationNo = cells[1] || cells[0] || itemId || '';
     if (!stationNo || /^no\.?$/i.test(stationNo)) continue;
 
     rows.push({
+      id: itemId,
+      jenis: getBenchmarkJenis(produkFallback),
       product: produkFallback,
       stationNo,
       negeri: cells[2] || negeriFallback,
@@ -186,6 +219,7 @@ function parseBenchmarkRows(html, produkFallback, negeriFallback) {
       huraian: cells[5] || '',
       harga: cells[6] || '',
       locationUrl: linkMatch ? absolutizeJupemUrl(linkMatch[1]) : '',
+      downloadUrl: itemId ? buildBenchmarkDownloadUrl(itemId, produkFallback) : '',
       raw: cells
     });
   }
@@ -354,7 +388,25 @@ async function handler(req, res) {
           }
 
           const html = await response.text();
-          const results = parseBenchmarkRows(html, produk, negeri);
+          let results = parseBenchmarkRows(html, produk, negeri);
+
+          const queryAsId = cleanBenchmarkId(q);
+          if (!results.length && queryAsId) {
+            results = [{
+              id: queryAsId,
+              jenis: getBenchmarkJenis(produk),
+              product: produk,
+              stationNo: q || queryAsId,
+              negeri,
+              daerah: '',
+              bandar: '',
+              huraian: `${produk} ID ${queryAsId}`,
+              harga: '',
+              locationUrl: '',
+              downloadUrl: buildBenchmarkDownloadUrl(queryAsId, produk),
+              raw: []
+            }];
+          }
 
           if (results.length || targetUrl === candidates[candidates.length - 1]) {
             return send(

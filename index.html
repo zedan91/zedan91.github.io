@@ -8578,6 +8578,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <div><strong>${esc(item.stationNo || '-')}</strong><br>${esc(item.product || '')}</div>
           <div>${esc(item.negeri || '-')}<br>${esc(item.daerah || '')}</div>
           <div>${esc(item.harga || 'RM -')}</div>
+          <div>${item.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;" href="${esc(item.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : ''}</div>
           <button class="small-action-btn" type="button" data-remove-benchmark-cart="${index}">Remove</button>
         </div>`;
     }).join('');
@@ -8585,9 +8586,9 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
   function addCart(item){
     const items = readCart();
-    const key = [item.product, item.stationNo, item.negeri, item.daerah].join('|').toLowerCase();
+    const key = [item.product, item.id || item.stationNo, item.negeri, item.daerah].join('|').toLowerCase();
     const exists = items.some(function(existing){
-      return [existing.product, existing.stationNo, existing.negeri, existing.daerah].join('|').toLowerCase() === key;
+      return [existing.product, existing.id || existing.stationNo, existing.negeri, existing.daerah].join('|').toLowerCase() === key;
     });
     if (!exists) {
       items.push({ ...item, addedAtMs: Date.now() });
@@ -8610,16 +8611,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     resultsBody.innerHTML = rows.map(function(row, index){
       const encoded = encodeURIComponent(JSON.stringify(row));
       const locationLink = row.locationUrl ? `<a class="btn blue" style="margin:0;padding:7px 9px;font-size:12px;" href="${esc(row.locationUrl)}" target="_blank" rel="noopener">Lokasi</a>` : '';
+      const downloadLink = row.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;margin-top:6px;" href="${esc(row.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : '';
       return `
         <tr>
           <td>${index + 1}</td>
-          <td><strong>${esc(row.stationNo || '-')}</strong></td>
+          <td><strong>${esc(row.stationNo || '-')}</strong>${row.id ? '<br><small>ID: ' + esc(row.id) + '</small>' : ''}</td>
           <td>${esc(row.negeri || '-')}</td>
           <td>${esc(row.daerah || '-')}</td>
           <td>${esc(row.bandar || '-')}</td>
           <td>${esc(row.huraian || '-')}${locationLink ? '<br>' + locationLink : ''}</td>
           <td>${esc(row.harga || '-')}</td>
-          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button></td>
+          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button>${downloadLink ? '<br>' + downloadLink : ''}</td>
         </tr>`;
     }).join('');
   }
@@ -8647,7 +8649,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       renderResults(Array.isArray(data.results) ? data.results : []);
       if (statusEl) {
         statusEl.textContent = data.results && data.results.length
-          ? `${data.results.length} benchmark record found.`
+          ? `${data.results.length} BM/SBM record found. If search value is an eBiz ID, direct download link is generated automatically.`
           : 'No benchmark record returned from backend. Use Open in eBiz JUPEM to continue direct search.';
       }
       if (data.sourceUrl && openEbizBtn) openEbizBtn.href = data.sourceUrl;
