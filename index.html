@@ -3210,19 +3210,19 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
 
 <style>
-body.is-admin #registeredUsersPanel,
-body.is-admin #refreshPurchaseButton,
-body.is-admin #togglePurchaseRecordsButton {
-  display: initial !important;
+#registeredUsersPanel {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
-body.is-admin #registeredUsersPanel {
+#registeredUsersPanel[hidden] {
   display: block !important;
 }
 
-body.is-admin #refreshPurchaseButton,
-body.is-admin #togglePurchaseRecordsButton {
-  display: inline-block !important;
+#purchaseRecordsList,
+.purchase-records-list {
+  display: block !important;
 }
 </style>
 
@@ -8903,40 +8903,50 @@ body.is-admin #togglePurchaseRecordsButton {
 
 <script>
 (function(){
-  function azobssRestoreAdminPurchasePanel(){
-    try{
-      var username = (
-        localStorage.getItem('azobssUsername') ||
-        sessionStorage.getItem('azobssUsername') ||
-        localStorage.getItem('azobssUserName') ||
-        sessionStorage.getItem('azobssUserName') ||
-        ''
-      ).trim().toLowerCase();
+  function showPurchaseRecordsPanel(){
+    var panel = document.getElementById('registeredUsersPanel');
+    if(panel){
+      panel.hidden = false;
+      panel.removeAttribute('hidden');
+      panel.style.display = 'block';
+      panel.style.visibility = 'visible';
+      panel.style.opacity = '1';
+    }
 
-      var adminNames = ['zedan91','zedan07','admin','azobss'];
-      var isAdmin = adminNames.indexOf(username) !== -1;
+    var title = document.getElementById('purchasePanelTitle');
+    if(title) title.textContent = 'Purchase Records Users';
 
-      if(!isAdmin) return;
+    var records = document.getElementById('purchaseRecordsList');
+    if(records){
+      records.hidden = false;
+      records.removeAttribute('hidden');
+      records.style.display = 'block';
+    }
 
-      document.body.classList.add('is-admin');
+    var refreshBtn = document.getElementById('refreshPurchaseButton');
+    var toggleBtn = document.getElementById('togglePurchaseRecordsButton');
 
-      var panel = document.getElementById('registeredUsersPanel');
-      var refreshBtn = document.getElementById('refreshPurchaseButton');
-      var toggleBtn = document.getElementById('togglePurchaseRecordsButton');
+    if(refreshBtn){
+      refreshBtn.style.display = 'inline-block';
+      if(!refreshBtn.dataset.autoClicked){
+        refreshBtn.dataset.autoClicked = '1';
+        setTimeout(function(){
+          try { refreshBtn.click(); } catch(e){}
+        }, 400);
+      }
+    }
 
-      if(panel) panel.style.display = '';
-      if(refreshBtn) refreshBtn.style.display = '';
-      if(toggleBtn) toggleBtn.style.display = '';
-
-      var title = document.getElementById('purchasePanelTitle');
-      if(title) title.textContent = 'Purchase Records Users';
-    }catch(e){}
+    if(toggleBtn){
+      toggleBtn.style.display = 'inline-block';
+      toggleBtn.textContent = 'Hide Records';
+    }
   }
 
-  document.addEventListener('DOMContentLoaded', azobssRestoreAdminPurchasePanel);
-  window.addEventListener('load', azobssRestoreAdminPurchasePanel);
-  setTimeout(azobssRestoreAdminPurchasePanel, 500);
-  setTimeout(azobssRestoreAdminPurchasePanel, 1500);
+  document.addEventListener('DOMContentLoaded', showPurchaseRecordsPanel);
+  window.addEventListener('load', showPurchaseRecordsPanel);
+  setTimeout(showPurchaseRecordsPanel, 300);
+  setTimeout(showPurchaseRecordsPanel, 1000);
+  setTimeout(showPurchaseRecordsPanel, 2500);
 })();
 </script>
 
