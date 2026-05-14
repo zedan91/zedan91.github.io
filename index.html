@@ -3168,7 +3168,44 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   }
 }
 
-</style>
+
+    .benchmark-pagination {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0 0;
+    }
+
+    .benchmark-page-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid rgba(37,99,235,0.7);
+      border-radius: 8px;
+      background: #0f172a;
+      color: #dbeafe;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .benchmark-page-btn:hover {
+      background: rgba(37,99,235,0.25);
+    }
+
+    .benchmark-page-btn.is-active {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: white;
+    }
+
+    .benchmark-page-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+  </style>
 
 
 </head>
@@ -4143,6 +4180,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             <tbody id="benchmarkResultsBody"></tbody>
           </table>
         </div>
+
+        <div class="benchmark-pagination" id="benchmarkPagination" hidden></div>
         <div class="benchmark-cart-list" id="benchmarkCartList" style="display:none;"></div>
         </div>
       </div>
@@ -8595,17 +8634,31 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     }
   }
 
-  function renderResults(rows){
+  function renderResults(rows, page){
     if (!resultsBody || !resultsWrap) return;
 
-    if (!rows.length) {
+    benchmarkLastRows = Array.isArray(rows) ? rows : [];
+    benchmarkCurrentPage = Number(page) || 1;
+
+    if (!benchmarkLastRows.length) {
       resultsWrap.hidden = true;
+      if (benchmarkPagination) {
+        benchmarkPagination.hidden = true;
+        benchmarkPagination.innerHTML = '';
+      }
       return;
     }
 
+    const totalPages = Math.max(1, Math.ceil(benchmarkLastRows.length / benchmarkRowsPerPage));
+    if (benchmarkCurrentPage > totalPages) benchmarkCurrentPage = totalPages;
+    if (benchmarkCurrentPage < 1) benchmarkCurrentPage = 1;
+
     resultsWrap.hidden = false;
 
-    resultsBody.innerHTML = rows.map(function(row, index){
+    const startIndex = (benchmarkCurrentPage - 1) * benchmarkRowsPerPage;
+    const visibleRows = benchmarkLastRows.slice(startIndex, startIndex + benchmarkRowsPerPage);
+
+    resultsBody.innerHTML = visibleRows.map(function(row, index){
       const jenis = String(row.jenis || (row.product === 'SBM' ? '2' : '1'));
       const productId = row.productId || row.id || '';
       const downloadUrl =
@@ -8618,7 +8671,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       return `
         <tr>
-          <td>${index + 1}</td>
+          <td>${startIndex + index + 1}</td>
           <td>${downloadButton}</td>
           <td><strong>${esc(row.stationNo || row.stesen || '-')}</strong></td>
           <td>${esc(row.negeri || '-')}</td>
@@ -8628,9 +8681,47 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           <td>${esc(row.harga || '-')}</td>
         </tr>`;
     }).join('');
+
+    renderBenchmarkPagination(totalPages);
   }
 
+  function renderBenchmarkPagination(totalPages){
+    if (!benchmarkPagination) return;
+
+    if (totalPages <= 1) {
+      benchmarkPagination.hidden = true;
+      benchmarkPagination.innerHTML = '';
+      return;
+    }
+
+    benchmarkPagination.hidden = false;
+
+    const buttons = [];
+
+    buttons.push(`<button class="benchmark-page-btn" type="button" data-benchmark-page="first" ${benchmarkCurrentPage === 1 ? 'disabled' : ''}>&lt;&lt;</button>`);
+    buttons.push(`<button class="benchmark-page-btn" type="button" data-benchmark-page="prev" ${benchmarkCurrentPage === 1 ? 'disabled' : ''}>P</button>`);
+
+    const maxButtons = 10;
+    let start = Math.max(1, benchmarkCurrentPage - 4);
+    let end = Math.min(totalPages, start + maxButtons - 1);
+    start = Math.max(1, end - maxButtons + 1);
+
+    for (let pageNo = start; pageNo <= end; pageNo++) {
+      buttons.push(`<button class="benchmark-page-btn ${pageNo === benchmarkCurrentPage ? 'is-active' : ''}" type="button" data-benchmark-page="${pageNo}">${pageNo}</button>`);
+    }
+
+    buttons.push(`<button class="benchmark-page-btn" type="button" data-benchmark-page="next" ${benchmarkCurrentPage === totalPages ? 'disabled' : ''}>N</button>`);
+    buttons.push(`<button class="benchmark-page-btn" type="button" data-benchmark-page="last" ${benchmarkCurrentPage === totalPages ? 'disabled' : ''}>&gt;&gt;</button>`);
+
+    benchmarkPagination.innerHTML = buttons.join('');
+  }
+
+
   let benchmarkDbCache = null;
+  let benchmarkCurrentPage = 1;
+  let benchmarkLastRows = [];
+  const benchmarkRowsPerPage = 3;
+  const benchmarkPagination = document.getElementById('benchmarkPagination');
 
   function normalizeBenchmarkText(value){
     return String(value || '')
@@ -8719,7 +8810,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     try {
       const db = await loadBenchmarkDb();
       const rows = searchBenchmarkDb(db);
-      renderResults(rows);
+      renderResults(rows, 1);
       if (statusEl) {
         statusEl.textContent = rows.length
           ? `${rows.length} BM/SBM record found`
@@ -8735,6 +8826,21 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   });
 
   document.addEventListener('click', function(event){
+    const pageButton = event.target.closest('[data-benchmark-page]');
+    if (pageButton) {
+      const action = pageButton.dataset.benchmarkPage;
+      const totalPages = Math.max(1, Math.ceil(benchmarkLastRows.length / benchmarkRowsPerPage));
+      let nextPage = benchmarkCurrentPage;
+
+      if (action === 'first') nextPage = 1;
+      else if (action === 'prev') nextPage = Math.max(1, benchmarkCurrentPage - 1);
+      else if (action === 'next') nextPage = Math.min(totalPages, benchmarkCurrentPage + 1);
+      else if (action === 'last') nextPage = totalPages;
+      else nextPage = Number(action) || benchmarkCurrentPage;
+
+      renderResults(benchmarkLastRows, nextPage);
+      return;
+    }
     const addButton = event.target.closest('[data-add-benchmark]');
     if (addButton) {
       try {
