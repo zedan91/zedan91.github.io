@@ -4137,6 +4137,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
             <thead>
               <tr>
                 <th>No.</th>
+                <th>Download</th>
                 <th>No. Stesen</th>
                 <th>Negeri</th>
                 <th>Daerah</th>
@@ -8611,17 +8612,18 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     resultsBody.innerHTML = rows.map(function(row, index){
       const encoded = encodeURIComponent(JSON.stringify(row));
       const locationLink = row.locationUrl ? `<a class="btn blue" style="margin:0;padding:7px 9px;font-size:12px;" href="${esc(row.locationUrl)}" target="_blank" rel="noopener">Lokasi</a>` : '';
-      const downloadLink = row.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;margin-top:6px;" href="${esc(row.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : '';
+      const downloadButton = row.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;white-space:nowrap;" href="${esc(row.downloadUrl)}" target="_blank" rel="noopener">⬇ Download</a>` : '-';
       return `
         <tr>
           <td>${index + 1}</td>
+          <td>${downloadButton}</td>
           <td><strong>${esc(row.stationNo || row.stesen || '-')}</strong></td>
           <td>${esc(row.negeri || '-')}</td>
           <td>${esc(row.daerah || '-')}</td>
           <td>${esc(row.bandar || '-')}</td>
           <td>${esc(row.huraian || '-')}${locationLink ? '<br>' + locationLink : ''}</td>
           <td>${esc(row.harga || '-')}</td>
-          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button>${downloadLink ? '<br>' + downloadLink : ''}</td>
+          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button></td>
         </tr>`;
     }).join('');
   }
