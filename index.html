@@ -8661,6 +8661,16 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
   if (!form) return;
 
+
+  const BM_SBM_BACKEND_BASE = 'https://azobss-backend.onrender.com/api/download-stesen-tanda-aras';
+
+  function buildBenchmarkDownloadUrl(productId, jenis){
+    productId = String(productId || '').trim();
+    jenis = String(jenis || '1').trim() === '2' ? '2' : '1';
+    if (!productId) return '';
+    return `${BM_SBM_BACKEND_BASE}?productId=${encodeURIComponent(productId)}&jenis=${encodeURIComponent(jenis)}`;
+  }
+
   function esc(value){
     return String(value || '').replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
@@ -8771,7 +8781,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       const productId = row.productId || row.id || '';
       const downloadUrl =
         row.downloadUrl ||
-        (productId ? `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(productId)}?jenis=${encodeURIComponent(jenis)}` : '');
+        (productId ? buildBenchmarkDownloadUrl(productId, jenis) : '');
 
       const downloadButton = downloadUrl
         ? `<a href="${esc(downloadUrl)}" target="_blank" rel="noopener" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl })}" class="btn blue bm-record-download" style="padding:6px 12px;font-size:12px;margin:0;display:inline-block;white-space:nowrap;text-decoration:none;border-radius:8px;">⬇ Download</a>`
@@ -8880,7 +8890,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       huraian: item.huraian || '',
       harga: item.harga || 'RM3',
       locationUrl: item.locationUrl || '',
-      downloadUrl: item.downloadUrl || (productId ? `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(productId)}?jenis=${jenis}` : '')
+      downloadUrl: item.downloadUrl || (productId ? buildBenchmarkDownloadUrl(productId, jenis) : '')
     };
   }
 

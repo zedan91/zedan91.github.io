@@ -532,6 +532,74 @@ async function handler(req, res) {
       );
     }
 
+
+
+// =========================
+// JUPEM BM / SBM SECURE DOWNLOAD PROXY
+// =========================
+
+if (
+  pathname === "/api/download-stesen-tanda-aras" &&
+  req.method === "GET"
+) {
+  const productId = String(parsed.query.productId || parsed.query.id || "")
+    .trim()
+    .replace(/[^0-9]/g, "");
+
+  const jenis = String(parsed.query.jenis || "1").trim() === "2" ? "2" : "1";
+
+  if (!productId) {
+    return send(
+      res,
+      400,
+      JSON.stringify({ ok: false, error: "Missing productId" }),
+      "application/json"
+    );
+  }
+
+  const jupemUrl =
+    `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(productId)}?jenis=${encodeURIComponent(jenis)}`;
+
+  console.log("Fetching BM/SBM:", jupemUrl);
+
+  const response = await fetchJupem(jupemUrl);
+
+  if (!response.ok) {
+    return send(
+      res,
+      404,
+      JSON.stringify({ ok: false, error: "BM/SBM not found" }),
+      "application/json"
+    );
+  }
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const firstText = buffer.slice(0, 160).toString("utf8").toLowerCase();
+
+  if (!buffer.length || firstText.includes("<html")) {
+    return send(
+      res,
+      404,
+      JSON.stringify({ ok: false, error: "Invalid BM/SBM file" }),
+      "application/json"
+    );
+  }
+
+  const contentType = response.headers.get("content-type") || "application/octet-stream";
+  const safePrefix = jenis === "2" ? "SBM" : "BM";
+  const ext = contentType.includes("pdf") ? "pdf" : (contentType.includes("zip") ? "zip" : "dat");
+
+  res.writeHead(200, {
+    "Content-Type": contentType,
+    "Content-Disposition": `attachment; filename="${safePrefix}-${productId}.${ext}"`,
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*"
+  });
+
+  res.end(buffer);
+  return;
+}
+
 // =========================
 // JUPEM PA PDF CONVERTER
 // =========================

@@ -15,6 +15,16 @@
 
   if (!form) return;
 
+
+  const BM_SBM_BACKEND_BASE = 'https://azobss-backend.onrender.com/api/download-stesen-tanda-aras';
+
+  function buildBenchmarkDownloadUrl(productId, jenis){
+    productId = String(productId || '').trim();
+    jenis = String(jenis || '1').trim() === '2' ? '2' : '1';
+    if (!productId) return '';
+    return `${BM_SBM_BACKEND_BASE}?productId=${encodeURIComponent(productId)}&jenis=${encodeURIComponent(jenis)}`;
+  }
+
   function esc(value){
     return String(value || '').replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
@@ -107,7 +117,7 @@
       const locationLink = row.locationUrl ? `<a class="btn blue" style="margin:0;padding:7px 9px;font-size:12px;" href="${esc(row.locationUrl)}" target="_blank" rel="noopener">Lokasi</a>` : '';
       const bmId = row.productId || row.id || '';
       const bmJenis = row.jenis || (row.product === 'SBM' ? '2' : '1');
-      const bmDownloadUrl = row.downloadUrl || (bmId ? `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(bmId)}?jenis=${encodeURIComponent(bmJenis)}` : '');
+      const bmDownloadUrl = row.downloadUrl || (bmId ? buildBenchmarkDownloadUrl(bmId, bmJenis) : '');
       const downloadButton = bmDownloadUrl
         ? `<a class="small-action-btn blue bm-download-btn bm-record-download" data-benchmark-record="${benchmarkRecordPayload({ ...row, downloadUrl: bmDownloadUrl })}" style="text-decoration:none;display:inline-block;padding:6px 10px;font-size:12px;white-space:nowrap;" href="${esc(bmDownloadUrl)}" target="_blank" rel="noopener">Download</a>`
         : '<span style="color:#94a3b8;">-</span>';
@@ -176,7 +186,7 @@
       huraian: item.huraian || '',
       harga: item.harga || 'RM3',
       locationUrl: item.locationUrl || '',
-      downloadUrl: item.downloadUrl || (productId ? `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(productId)}?jenis=${jenis}` : '')
+      downloadUrl: item.downloadUrl || (productId ? buildBenchmarkDownloadUrl(productId, jenis) : '')
     };
   }
 
@@ -201,7 +211,7 @@
         bandar: '',
         huraian: 'Direct ProductID',
         harga: '5',
-        downloadUrl: `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(id)}?jenis=${jenis}`
+        downloadUrl: buildBenchmarkDownloadUrl(id, jenis)
       }];
     }
 
