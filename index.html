@@ -1264,15 +1264,6 @@
       margin: 0;
     }
 
-
-    /* Clean BM/SBM UI: hide eBiz fallback buttons and cart area */
-    .benchmark-actions,
-    #benchmarkOpenEbizButton,
-    #benchmarkClearCartButton,
-    #benchmarkCartList {
-      display: none !important;
-    }
-
     .benchmark-result-wrap {
       margin-top: 12px;
       overflow-x: auto;
@@ -4132,12 +4123,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
         <p class="request-error" id="benchmarkError"></p>
         <p class="request-status" id="benchmarkStatus"></p>
-<div class="benchmark-result-wrap" id="benchmarkResultWrap" hidden>
+
+        <div class="benchmark-actions">
+          <a class="btn orange" id="benchmarkOpenEbizButton" href="https://ebiz.jupem.gov.my/Produk/StesenTandaAras" target="_blank" rel="noopener">Open in eBiz JUPEM</a>
+          <button class="btn" id="benchmarkClearCartButton" type="button">Clear Cart</button>
+        </div>
+
+        <div class="benchmark-result-wrap" id="benchmarkResultWrap" hidden>
           <table class="benchmark-table">
             <thead>
               <tr>
                 <th>No.</th>
-                <th>Download</th>
                 <th>No. Stesen</th>
                 <th>Negeri</th>
                 <th>Daerah</th>
@@ -4151,7 +4147,10 @@ body:not(.is-admin) .affiliate-card-admin-actions{
           </table>
         </div>
 
-        <div class="benchmark-cart-list" id="benchmarkCartList" style="display:none;"></div>
+        <h4 style="margin:14px 0 0;color:#e2e8f0;">BM / SBM Cart</h4>
+        <div class="benchmark-cart-list" id="benchmarkCartList">
+          <div class="benchmark-cart-item">No BM/SBM item in cart yet.</div>
+        </div>
       </div>
 
 
@@ -8570,7 +8569,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const items = readCart();
     if (!cartList) return;
     if (!items.length) {
-      cartList.innerHTML = '';
+      cartList.innerHTML = '<div class="benchmark-cart-item">No BM/SBM item in cart yet.</div>';
       return;
     }
     cartList.innerHTML = items.map(function(item, index){
@@ -8612,18 +8611,17 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     resultsBody.innerHTML = rows.map(function(row, index){
       const encoded = encodeURIComponent(JSON.stringify(row));
       const locationLink = row.locationUrl ? `<a class="btn blue" style="margin:0;padding:7px 9px;font-size:12px;" href="${esc(row.locationUrl)}" target="_blank" rel="noopener">Lokasi</a>` : '';
-      const downloadButton = row.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;white-space:nowrap;" href="${esc(row.downloadUrl)}" target="_blank" rel="noopener">⬇ Download</a>` : '-';
+      const downloadLink = row.downloadUrl ? `<a class="small-action-btn blue" style="text-decoration:none;margin-top:6px;" href="${esc(row.downloadUrl)}" target="_blank" rel="noopener">Download</a>` : '';
       return `
         <tr>
           <td>${index + 1}</td>
-          <td>${downloadButton}</td>
-          <td><strong>${esc(row.stationNo || row.stesen || '-')}</strong></td>
+          <td><strong>${esc(row.stationNo || row.stesen || '-')}</strong>${row.id || row.productId ? '<br><small>ID: ' + esc(row.id || row.productId) + '</small>' : ''}</td>
           <td>${esc(row.negeri || '-')}</td>
           <td>${esc(row.daerah || '-')}</td>
           <td>${esc(row.bandar || '-')}</td>
           <td>${esc(row.huraian || '-')}${locationLink ? '<br>' + locationLink : ''}</td>
           <td>${esc(row.harga || '-')}</td>
-          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button></td>
+          <td><button class="small-action-btn blue" type="button" data-add-benchmark="${encoded}">Add Cart</button>${downloadLink ? '<br>' + downloadLink : ''}</td>
         </tr>`;
     }).join('');
   }
@@ -8739,8 +8737,8 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       renderResults(rows);
       if (statusEl) {
         statusEl.textContent = rows.length
-          ? `${rows.length} BM/SBM record found`
-          : 'No BM/SBM record found';
+          ? `${rows.length} BM/SBM record found from local database. ProductID and download link ready.`
+          : 'No BM/SBM record found in local database.';
       }
     } catch (error) {
       renderResults([]);
