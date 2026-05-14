@@ -1,0 +1,29 @@
+AZOBSS upgrade package
+
+Changes made:
+1. index.html split into external files:
+   - assets/css/style.css
+   - assets/js/firebase-auth.js
+   - assets/js/affiliate-admin.js
+   - assets/js/affiliate-json-loader.js
+   - assets/js/affiliate-pagination.js
+   - assets/js/bm-sbm.js
+
+2. Removed heavy/non-deploy folders from package:
+   - .git
+   - node_modules
+   - .cert
+   - .vscode
+
+3. BM/SBM database moved to:
+   - data/stesen-tanda-aras-records.json
+
+4. BM/SBM UI cleaned:
+   - Open in eBiz hidden/removed
+   - Clear Cart hidden/removed
+   - BM/SBM Cart hidden/removed
+   - No BM/SBM item message removed
+   - Result table now shows Download button directly after No.
+
+Upload all files/folders in this package to GitHub root.
+Do not upload node_modules or .git folders manually.

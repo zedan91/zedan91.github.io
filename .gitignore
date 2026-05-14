@@ -1,7 +1,9 @@
-traffic-data.json
-*.log
+# AZOBSS deploy cleanup
 node_modules/
+.git/
+.cert/
+.vscode/
+temp/
+*.log
 .DS_Store
 Thumbs.db
-.vscode/
-*.zip
