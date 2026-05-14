@@ -208,7 +208,8 @@ function getBenchmarkSearchTerms(value) {
   const raw = cleanSearch(value);
   const normalized = normalizeBenchmarkSearch(raw);
   const compactH = normalized.replace(/^H\s+(\d+)$/i, 'H$1');
-  const terms = [normalized, compactH, raw]
+  const numericFromH = (normalized.match(/^H\s+(\d+)$/i) || [])[1] || '';
+  const terms = [raw, numericFromH, normalized, compactH]
     .map(item => String(item || '').trim())
     .filter(Boolean);
   return Array.from(new Set(terms));
@@ -385,18 +386,22 @@ function parseBenchmarkJsonPayload(payload, produkFallback, negeriFallback) {
 }
 
 async function fetchBenchmarkCandidate(urlToFetch, options = {}) {
+  const method = options.method || 'GET';
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+    'Accept': options.accept || 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8',
+    'Referer': 'https://ebiz.jupem.gov.my/Produk/StesenTandaAras'
+  };
+  if (method !== 'GET') {
+    headers['Content-Type'] = options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
+    headers['X-Requested-With'] = 'XMLHttpRequest';
+    headers['Origin'] = 'https://ebiz.jupem.gov.my';
+  }
   const response = await fetch(urlToFetch, {
     redirect: 'follow',
-    method: options.method || 'GET',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
-      'Accept': options.accept || 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8',
-      'Content-Type': options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8',
-      'X-Requested-With': 'XMLHttpRequest',
-      'Origin': 'https://ebiz.jupem.gov.my',
-      'Referer': 'https://ebiz.jupem.gov.my/Produk/StesenTandaAras'
-    },
-    body: options.body
+    method,
+    headers,
+    body: method === 'GET' ? undefined : options.body
   });
   const text = await response.text();
   return { ok: response.ok, status: response.status, text, contentType: response.headers.get('content-type') || '' };
@@ -414,11 +419,17 @@ async function searchBenchmarkFromEbiz(produk, negeri, q) {
 
   for (const searchTerm of searchTerms) {
     const bodies = buildBenchmarkFormBodies(baseHtml, produk, negeri, searchTerm);
+    const productCode = cleanBenchmarkProduct(produk);
     const urls = [
+      // Exact eBiz page pattern observed from saved result page:
+      // /Produk/StesenTandaAras?produk=BM&negeri=JOHOR&carian=0109
+      `${baseUrl}?produk=${encodeURIComponent(productCode)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `${baseUrl}?produk=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
+      `${baseUrl}?Produk=${encodeURIComponent(productCode)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(searchTerm)}`,
       `${baseUrl}?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
       `${baseUrl}?Jenis=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(searchTerm)}`,
-      `${baseUrl}?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
       `${baseUrl}?Produk=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&SearchString=${encodeURIComponent(searchTerm)}`,
+      `https://ebiz.jupem.gov.my/Produk/GetStesenTandaAras?produk=${encodeURIComponent(productCode)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
       `https://ebiz.jupem.gov.my/Produk/GetStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
       `https://ebiz.jupem.gov.my/Produk/GetStesenTandaArasList?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
       `https://ebiz.jupem.gov.my/Produk/CarianStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
@@ -635,8 +646,9 @@ async function handler(req, res) {
       const isExplicitProductId = /ProductID\s*=|MuatTurunStesenTandaAras\/|GeodetikTroliTandaAras\?/i.test(q) || (/^[1-9]\d{2,11}$/.test(q) && !/^0/.test(q));
 
       const normalizedSearch = normalizeBenchmarkSearch(q);
+      const ebizSearchValue = (normalizedSearch.match(/^H\s+(\d+)$/i) || [])[1] || q;
       const sourceUrl =
-        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(getBenchmarkJenis(produk))}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(normalizedSearch || q)}`;
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(ebizSearchValue || q)}`;
 
       if (directId && isExplicitProductId) {
         const directProduct = directJenis === 2 ? 'SBM' : produk;
