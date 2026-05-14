@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
-const BENCHMARK_JSON = path.join(ROOT, "data", "stesen-tanda-aras-records.json");
+const BENCHMARK_JSON = path.join(ROOT, "stesen-tanda-aras-records.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 const DOWNLOAD_TOKENS = new Map();
 
