@@ -3658,7 +3658,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
     <div class="affiliate-shop">
       <div class="affiliate-controls">
-        <input class="affiliate-search" id="affiliateSearch" type="search" placeholder="Search products, gadgets, SSD, camera..." aria-label="Search affiliate products">
+        <input class="affiliate-search" id="affiliateSearch" type="search" placeholder="Contoh: 0109 / H 0109" aria-label="Search affiliate products">
         <div class="affiliate-filters" aria-label="Affiliate product filters">
           <button class="affiliate-filter is-active" type="button" data-affiliate-filter="all">All</button>
           <button class="affiliate-filter" type="button" data-affiliate-filter="pc">PC Tools</button>
@@ -3815,12 +3815,12 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
       <label>
         Product Title
-        <input id="affiliateTitleInput" type="text" placeholder="Product title" required>
+        <input id="affiliateTitleInput" type="text" placeholder="Contoh: 0109 / H 0109" required>
       </label>
 
       <label>
         Description
-        <textarea id="affiliateDescInput" placeholder="Short product description" required></textarea>
+        <textarea id="affiliateDescInput" placeholder="Contoh: 0109 / H 0109" required></textarea>
       </label>
 
       <div class="affiliate-admin-row">
@@ -4078,7 +4078,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       <div class="benchmark-panel" id="benchmarkPanel">
         <h3>📍 Request BM / SBM - Stesen Tanda Aras</h3>
         <p class="request-note">
-          Cari BM/SBM guna nombor stesen seperti 0109. Sistem akan auto cari sebagai H 0109, dapatkan ProductID dari troli eBiz JUPEM dan jana link download. Anda juga boleh paste ProductID/cart link sebagai fallback.
+          Cari BM/SBM guna nombor stesen seperti 0109. Sistem akan auto cari sebagai H 0109, dapatkan link download daripada database BM/SBM.
         </p>
 
         <form class="benchmark-form" id="benchmarkForm">
@@ -4115,7 +4115,7 @@ body:not(.is-admin) .affiliate-card-admin-actions{
 
           <label for="benchmarkSearch">
             Carian
-            <input id="benchmarkSearch" type="search" placeholder="Contoh: 0109 / H 0109 / ProductID=636">
+            <input id="benchmarkSearch" type="search" placeholder="Contoh: 0109 / H 0109">
           </label>
 
           <button class="btn blue" id="benchmarkSearchButton" type="submit">Search BM / SBM</button>
@@ -8691,25 +8691,6 @@ body:not(.is-admin) .affiliate-card-admin-actions{
     const qPlain = normalizeBenchmarkText(qRaw);
     const stateNorm = normalizeBenchmarkText(stateEl.value);
     const jenis = wantedJenis();
-
-    const directIdMatch = qRaw.match(/(?:ProductID\s*=|MuatTurunStesenTandaAras\/)(\d{1,12})/i) || qRaw.match(/^([1-9]\d{2,11})$/);
-    if (directIdMatch) {
-      const id = directIdMatch[1];
-      return [{
-        id,
-        productId: id,
-        jenis,
-        product: jenis === '2' ? 'SBM' : 'BM',
-        stationNo: qRaw,
-        negeri: stateEl.value,
-        daerah: '',
-        bandar: '',
-        huraian: 'Direct ProductID',
-        harga: '5',
-        downloadUrl: `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(id)}?jenis=${jenis}`
-      }];
-    }
-
     return data.filter(function(item){
       const itemStation = normalizeBenchmarkText(item.stesen || item.stationNo);
       const itemState = normalizeBenchmarkText(item.negeri);

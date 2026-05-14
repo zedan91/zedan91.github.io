@@ -15,97 +15,8 @@ const PORT = process.env.PORT || 3000;
 const ROOT = process.cwd();
 
 const AFFILIATE_JSON = path.join(ROOT, "affiliate-products.json");
-const BENCHMARK_JSON = path.join(ROOT, "stesen-tanda-aras-records.json");
 const TEMP_DIR = path.join(ROOT, "temp");
 const DOWNLOAD_TOKENS = new Map();
-
-let benchmarkRecordsCache = null;
-let benchmarkRecordsCacheMtime = 0;
-
-function normalizeBenchmarkKey(value) {
-  return String(value || "")
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "");
-}
-
-function readBenchmarkRecords() {
-  try {
-    if (!fs.existsSync(BENCHMARK_JSON)) return [];
-    const stat = fs.statSync(BENCHMARK_JSON);
-    if (benchmarkRecordsCache && benchmarkRecordsCacheMtime === stat.mtimeMs) {
-      return benchmarkRecordsCache;
-    }
-    const parsed = JSON.parse(fs.readFileSync(BENCHMARK_JSON, "utf8"));
-    benchmarkRecordsCache = Array.isArray(parsed) ? parsed : [];
-    benchmarkRecordsCacheMtime = stat.mtimeMs;
-    return benchmarkRecordsCache;
-  } catch (error) {
-    console.error("Failed to read BM/SBM records:", error.message);
-    return [];
-  }
-}
-
-function normalizeBenchmarkRecord(row, produkFallback, negeriFallback) {
-  const id = String(row.productId || row.id || "").trim();
-  const jenis = Number(row.jenis || getBenchmarkJenis(produkFallback));
-  const product = jenis === 2 ? "SBM" : "BM";
-  return {
-    id,
-    jenis,
-    product,
-    stationNo: String(row.stesen || row.stationNo || row.noStesen || id || "").trim(),
-    negeri: String(row.negeri || negeriFallback || "").trim(),
-    daerah: String(row.daerah || "").trim(),
-    bandar: String(row.bandar || "").trim(),
-    huraian: String(row.huraian || "").trim(),
-    harga: String(row.harga || "5").trim(),
-    locationUrl: row.locationUrl || "",
-    downloadUrl: row.downloadUrl || (id ? buildBenchmarkDownloadUrl(id, product, jenis) : ""),
-    raw: row
-  };
-}
-
-function searchBenchmarkDatabase(produk, negeri, q) {
-  const records = readBenchmarkRecords();
-  if (!records.length) return [];
-
-  const jenisWanted = getBenchmarkJenis(produk);
-  const negeriKey = normalizeBenchmarkKey(negeri);
-  const raw = cleanSearch(q);
-  const normalized = normalizeBenchmarkSearch(raw);
-
-  const queryKeys = Array.from(new Set([
-    raw,
-    normalized,
-    normalized.replace(/^H\s+(.+)$/i, "H$1"),
-    raw.replace(/^([A-Z]+)\s*(\d+)$/i, "$1 $2")
-  ].map(normalizeBenchmarkKey).filter(Boolean)));
-
-  const directId = cleanBenchmarkId(raw);
-  const normalizedRows = records
-    .map(row => normalizeBenchmarkRecord(row, produk, negeri))
-    .filter(row => Number(row.jenis) === jenisWanted)
-    .filter(row => !negeriKey || normalizeBenchmarkKey(row.negeri) === negeriKey);
-
-  let matches = [];
-
-  if (directId) {
-    matches = normalizedRows.filter(row => String(row.id) === directId);
-  }
-
-  if (!matches.length && queryKeys.length) {
-    matches = normalizedRows.filter(row => queryKeys.includes(normalizeBenchmarkKey(row.stationNo)));
-  }
-
-  if (!matches.length && queryKeys.length) {
-    matches = normalizedRows.filter(row => {
-      const searchable = normalizeBenchmarkKey(`${row.stationNo} ${row.negeri} ${row.daerah} ${row.bandar} ${row.huraian}`);
-      return queryKeys.some(key => key.length >= 3 && searchable.includes(key));
-    });
-  }
-
-  return matches.slice(0, 50);
-}
 
 // AUTO DELETE FILE > 30 DAYS
 const FILE_EXPIRE_MS =
@@ -221,87 +132,11 @@ function cleanBenchmarkProduct(value) {
   return v === 'SBM' ? 'SBM' : 'BM';
 }
 
-function getBenchmarkJenis(produk) {
-  return cleanBenchmarkProduct(produk) === 'SBM' ? 2 : 1;
-}
-
-function cleanBenchmarkId(value) {
-  const text = String(value || '').trim();
-  const patterns = [
-    /ProductID\s*=\s*(\d{1,12})/i,
-    /MuatTurunStesenTandaAras\/(\d{1,12})/i,
-    /GeodetikTroliTandaAras\?[^\s'\"]*ProductID=(\d{1,12})/i,
-    /(?:^|\D)([1-9]\d{2,11})(?:\D|$)/
-  ];
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) return match[1].replace(/^0+(?=\d)/, '');
-  }
-  return '';
-}
-
-function extractBenchmarkJenis(value, fallbackProduk) {
-  const text = String(value || '');
-  const match = text.match(/jenis\s*=\s*([12])/i);
-  if (match) return Number(match[1]);
-  return getBenchmarkJenis(fallbackProduk);
-}
-
-function buildBenchmarkDownloadUrl(id, produk, jenisOverride) {
-  const cleanId = cleanBenchmarkId(id);
-  if (!cleanId) return '';
-  const jenis = jenisOverride === 2 || String(jenisOverride) === '2' ? 2 : getBenchmarkJenis(produk);
-  return `https://ebiz.jupem.gov.my/MuatTurunPembelian/MuatTurunStesenTandaAras/${encodeURIComponent(cleanId)}?jenis=${jenis}`;
-}
-
-function extractBenchmarkId(rowHtml) {
-  const text = String(rowHtml || '');
-  const patterns = [
-    /GeodetikTroliTandaAras\?[^'\"]*ProductID=(\d{1,12})/i,
-    /ProductID\s*=\s*(\d{1,12})/i,
-    /MuatTurunStesenTandaAras\/(\d{1,12})/i,
-    /TambahKeTroli\/(\d{1,12})/i,
-    /data[-_](?:id|item|produk)=['\"]?(\d{1,12})/i,
-    /value=['\"]?(\d{2,12})['\"]?/i
-  ];
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) return match[1].replace(/^0+(?=\d)/, '');
-  }
-  return '';
-}
-
 function cleanSearch(value) {
   return String(value || '')
     .trim()
     .replace(/[<>]/g, '')
     .slice(0, 120);
-}
-
-function normalizeBenchmarkSearch(value) {
-  let text = cleanSearch(value).toUpperCase().replace(/\s+/g, ' ').trim();
-  if (!text) return '';
-
-  // eBiz No. Stesen sebenar dipaparkan sebagai contoh: H 0109, bukan 0109 sahaja.
-  const hMatch = text.match(/^H\s*(\d{3,6})$/);
-  if (hMatch) return `H ${hMatch[1]}`;
-
-  if (/^\d{3,6}$/.test(text)) {
-    return `H ${text}`;
-  }
-
-  return text;
-}
-
-function getBenchmarkSearchTerms(value) {
-  const raw = cleanSearch(value);
-  const normalized = normalizeBenchmarkSearch(raw);
-  const compactH = normalized.replace(/^H\s+(\d+)$/i, 'H$1');
-  const numericFromH = (normalized.match(/^H\s+(\d+)$/i) || [])[1] || '';
-  const terms = [raw, numericFromH, normalized, compactH]
-    .map(item => String(item || '').trim())
-    .filter(Boolean);
-  return Array.from(new Set(terms));
 }
 
 function stripHtml(value) {
@@ -326,241 +161,6 @@ function absolutizeJupemUrl(rawUrl) {
   return 'https://ebiz.jupem.gov.my/' + rawUrl.replace(/^\/+/, '');
 }
 
-
-function decodeHtmlEntities(value) {
-  return String(value || '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&#x27;/gi, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function parseHtmlAttributes(tag) {
-  const attrs = {};
-  String(tag || '').replace(/([\w:-]+)\s*=\s*(["'])(.*?)\2/gi, function (_, key, quote, value) {
-    attrs[key.toLowerCase()] = decodeHtmlEntities(value);
-    return '';
-  });
-  return attrs;
-}
-
-function parseHiddenInputs(html) {
-  const fields = {};
-  String(html || '').replace(/<input\b[^>]*>/gi, function (tag) {
-    const attrs = parseHtmlAttributes(tag);
-    if ((attrs.type || '').toLowerCase() === 'hidden' && attrs.name) {
-      fields[attrs.name] = attrs.value || '';
-    }
-    return '';
-  });
-  return fields;
-}
-
-function findOptionValueByText(html, wantedTexts) {
-  const wants = (Array.isArray(wantedTexts) ? wantedTexts : [wantedTexts])
-    .map(item => String(item || '').toLowerCase())
-    .filter(Boolean);
-  let found = '';
-  String(html || '').replace(/<option\b([^>]*)>([\s\S]*?)<\/option>/gi, function (_, attrText, labelHtml) {
-    if (found) return '';
-    const label = stripHtml(labelHtml).toLowerCase();
-    if (!label || wants.some(want => label.includes(want))) {
-      if (label && wants.some(want => label.includes(want))) {
-        const attrs = parseHtmlAttributes(attrText);
-        found = attrs.value || stripHtml(labelHtml);
-      }
-    }
-    return '';
-  });
-  return found;
-}
-
-function buildBenchmarkFormBodies(baseHtml, produk, negeri, q) {
-  const jenis = getBenchmarkJenis(produk);
-  const hidden = parseHiddenInputs(baseHtml);
-  const productLabelHints = jenis === 2
-    ? ['stesen tanda aras piawai', 'sbm']
-    : ['stesen tanda aras (bm)', 'stesen tanda aras bm'];
-  const productValue = findOptionValueByText(baseHtml, productLabelHints) || String(jenis);
-  const stateValue = findOptionValueByText(baseHtml, [negeri]) || negeri;
-  const base = {
-    ...hidden,
-    produk,
-    Produk: produk,
-    product: produk,
-    Product: produk,
-    jenis: String(jenis),
-    Jenis: String(jenis),
-    IdProduk: String(jenis),
-    ProductType: String(jenis),
-    Negeri: stateValue,
-    negeri: stateValue,
-    state: negeri,
-    State: negeri,
-    KodNegeri: stateValue,
-    kodNegeri: stateValue,
-    Carian: q,
-    carian: q,
-    Search: q,
-    search: q,
-    SearchString: q,
-    keyword: q,
-    q
-  };
-  return [
-    { ...base, Produk: productValue, produk: productValue },
-    { ...base, jenis: String(jenis), Jenis: String(jenis), Produk: String(jenis), produk: String(jenis) },
-    { ...base, JenisProduk: String(jenis), jenisProduk: String(jenis), Negeri: negeri },
-    { ...base, ddlProduk: productValue, ddlNegeri: stateValue, txtCarian: q },
-    { ...base, productId: productValue, stateId: stateValue, term: q }
-  ];
-}
-
-function encodeForm(data) {
-  const params = new URLSearchParams();
-  Object.entries(data || {}).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) params.set(key, String(value));
-  });
-  return params.toString();
-}
-
-function parseBenchmarkJsonPayload(payload, produkFallback, negeriFallback) {
-  const rows = [];
-  const visit = value => {
-    if (!value) return;
-    if (Array.isArray(value)) {
-      value.forEach(visit);
-      return;
-    }
-    if (typeof value !== 'object') return;
-
-    const idRaw = value.ProductID || value.productId || value.ProductId || value.ID || value.Id || value.id || value.ProdukID || value.produkId;
-    const id = cleanBenchmarkId(idRaw || JSON.stringify(value));
-    const jenis = Number(value.jenis || value.Jenis || value.ProductType || value.productType || getBenchmarkJenis(produkFallback));
-    const product = jenis === 2 ? 'SBM' : 'BM';
-    const stationNo = value.NoStesen || value.noStesen || value.No || value.no || value.Stesen || value.stesen || value.Kod || value.kod || value.Nama || value.name || id;
-    if (id || stationNo) {
-      rows.push({
-        id,
-        jenis,
-        product,
-        stationNo: String(stationNo || id || '').trim(),
-        negeri: value.Negeri || value.negeri || negeriFallback,
-        daerah: value.Daerah || value.daerah || '',
-        bandar: value.Bandar || value.bandar || '',
-        huraian: value.Huraian || value.huraian || value.Keterangan || value.keterangan || '',
-        harga: value.Harga || value.harga || value.Price || value.price || '',
-        locationUrl: absolutizeJupemUrl(value.LocationUrl || value.locationUrl || value.UrlLokasi || value.urlLokasi || ''),
-        downloadUrl: id ? buildBenchmarkDownloadUrl(id, product, jenis) : '',
-        raw: value
-      });
-    }
-    Object.values(value).forEach(child => {
-      if (child && typeof child === 'object') visit(child);
-    });
-  };
-  visit(payload);
-  const seen = new Set();
-  return rows.filter(item => {
-    const key = [item.id, item.stationNo, item.jenis].join('|');
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).slice(0, 60);
-}
-
-async function fetchBenchmarkCandidate(urlToFetch, options = {}) {
-  const method = options.method || 'GET';
-  const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
-    'Accept': options.accept || 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8',
-    'Referer': 'https://ebiz.jupem.gov.my/Produk/StesenTandaAras'
-  };
-  if (method !== 'GET') {
-    headers['Content-Type'] = options.contentType || 'application/x-www-form-urlencoded; charset=UTF-8';
-    headers['X-Requested-With'] = 'XMLHttpRequest';
-    headers['Origin'] = 'https://ebiz.jupem.gov.my';
-  }
-  const response = await fetch(urlToFetch, {
-    redirect: 'follow',
-    method,
-    headers,
-    body: method === 'GET' ? undefined : options.body
-  });
-  const text = await response.text();
-  return { ok: response.ok, status: response.status, text, contentType: response.headers.get('content-type') || '' };
-}
-
-async function searchBenchmarkFromEbiz(produk, negeri, q) {
-  const jenis = getBenchmarkJenis(produk);
-  const baseUrl = 'https://ebiz.jupem.gov.my/Produk/StesenTandaAras';
-  const baseResponse = await fetchBenchmarkCandidate(baseUrl, { method: 'GET' });
-  const baseHtml = baseResponse.text || '';
-  const searchTerms = getBenchmarkSearchTerms(q);
-
-  let lastError = '';
-  let firstSourceUrl = '';
-
-  for (const searchTerm of searchTerms) {
-    const bodies = buildBenchmarkFormBodies(baseHtml, produk, negeri, searchTerm);
-    const productCode = cleanBenchmarkProduct(produk);
-    const urls = [
-      // Exact eBiz page pattern observed from saved result page:
-      // /Produk/StesenTandaAras?produk=BM&negeri=JOHOR&carian=0109
-      `${baseUrl}?produk=${encodeURIComponent(productCode)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `${baseUrl}?produk=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `${baseUrl}?Produk=${encodeURIComponent(productCode)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(searchTerm)}`,
-      `${baseUrl}?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `${baseUrl}?Jenis=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&Carian=${encodeURIComponent(searchTerm)}`,
-      `${baseUrl}?Produk=${encodeURIComponent(jenis)}&Negeri=${encodeURIComponent(negeri)}&SearchString=${encodeURIComponent(searchTerm)}`,
-      `https://ebiz.jupem.gov.my/Produk/GetStesenTandaAras?produk=${encodeURIComponent(productCode)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `https://ebiz.jupem.gov.my/Produk/GetStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `https://ebiz.jupem.gov.my/Produk/GetStesenTandaArasList?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `https://ebiz.jupem.gov.my/Produk/CarianStesenTandaAras?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`,
-      `https://ebiz.jupem.gov.my/Produk/StesenTandaArasSenarai?jenis=${encodeURIComponent(jenis)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(searchTerm)}`
-    ];
-
-    if (!firstSourceUrl) firstSourceUrl = urls[0];
-
-    const attempts = [];
-    urls.forEach(url => attempts.push({ method: 'GET', url, searchTerm }));
-    [baseUrl, ...urls.slice(4)].forEach(url => {
-      bodies.forEach(body => attempts.push({ method: 'POST', url, body: encodeForm(body), searchTerm }));
-    });
-
-    for (const attempt of attempts) {
-      try {
-        const result = await fetchBenchmarkCandidate(attempt.url, {
-          method: attempt.method,
-          body: attempt.method === 'POST' ? attempt.body : undefined
-        });
-        if (!result.ok) {
-          lastError = `HTTP ${result.status} from ${attempt.url}`;
-          continue;
-        }
-        let rows = [];
-        const trimmed = result.text.trim();
-        if (/^[\[{]/.test(trimmed) || /json/i.test(result.contentType)) {
-          try { rows = parseBenchmarkJsonPayload(JSON.parse(trimmed), produk, negeri); } catch (error) {}
-        }
-        if (!rows.length) rows = parseBenchmarkRows(result.text, produk, negeri);
-        if (rows.length) {
-          return { rows, sourceUrl: attempt.url, method: attempt.method, searchTerm: attempt.searchTerm, note: `Auto search parsed ProductID from eBiz JUPEM result using No. Stesen ${attempt.searchTerm}.` };
-        }
-      } catch (error) {
-        lastError = error.message;
-      }
-    }
-  }
-
-  return { rows: [], sourceUrl: firstSourceUrl || baseUrl, method: 'GET', searchTerm: searchTerms[0] || q, note: lastError || 'No ProductID found in eBiz response.' };
-}
-
 function parseBenchmarkRows(html, produkFallback, negeriFallback) {
   const rows = [];
   const tableRowPattern = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
@@ -574,16 +174,11 @@ function parseBenchmarkRows(html, produkFallback, negeriFallback) {
     if (joined.includes('no. stesen') || joined.includes('tambah ke troli')) continue;
 
     const linkMatch = rowHtml.match(/href=["']([^"']*(?:Lokasi|Peta|Map|Koordinat|location)[^"']*)["']/i) || rowHtml.match(/href=["']([^"']*)["']/i);
-    const itemId = extractBenchmarkId(rowHtml);
-    const itemJenis = extractBenchmarkJenis(rowHtml, produkFallback);
-    const itemProduct = itemJenis === 2 ? 'SBM' : 'BM';
-    const stationNo = cells[1] || cells[0] || itemId || '';
+    const stationNo = cells[1] || cells[0] || '';
     if (!stationNo || /^no\.?$/i.test(stationNo)) continue;
 
     rows.push({
-      id: itemId,
-      jenis: itemJenis,
-      product: itemProduct,
+      product: produkFallback,
       stationNo,
       negeri: cells[2] || negeriFallback,
       daerah: cells[3] || '',
@@ -591,7 +186,6 @@ function parseBenchmarkRows(html, produkFallback, negeriFallback) {
       huraian: cells[5] || '',
       harga: cells[6] || '',
       locationUrl: linkMatch ? absolutizeJupemUrl(linkMatch[1]) : '',
-      downloadUrl: itemId ? buildBenchmarkDownloadUrl(itemId, itemProduct, itemJenis) : '',
       raw: cells
     });
   }
@@ -730,133 +324,63 @@ async function handler(req, res) {
         );
       }
 
-      const directId = cleanBenchmarkId(q);
-      const directJenis = extractBenchmarkJenis(q, produk);
-      const isExplicitProductId = /ProductID\s*=|MuatTurunStesenTandaAras\/|GeodetikTroliTandaAras\?/i.test(q) || (/^[1-9]\d{2,11}$/.test(q) && !/^0/.test(q));
-
-      const normalizedSearch = normalizeBenchmarkSearch(q);
-      const ebizSearchValue = (normalizedSearch.match(/^H\s+(\d+)$/i) || [])[1] || q;
       const sourceUrl =
-        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(ebizSearchValue || q)}`;
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?produk=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`;
 
-      if (directId && isExplicitProductId) {
-        const directProduct = directJenis === 2 ? 'SBM' : produk;
-        return send(
-          res,
-          200,
-          JSON.stringify({
-            ok: true,
-            produk: directProduct,
-            negeri,
-            q,
-            sourceUrl,
-            results: [{
-              id: directId,
-              jenis: directJenis,
-              product: directProduct,
-              stationNo: q || directId,
-              negeri,
-              daerah: '',
-              bandar: '',
-              huraian: 'Direct eBiz ProductID/cart link detected.',
-              harga: '',
-              locationUrl: '',
-              downloadUrl: buildBenchmarkDownloadUrl(directId, directProduct, directJenis),
-              raw: []
-            }],
-            note: 'Direct ProductID detected and download link generated.'
-          }, null, 2),
-          "application/json"
-        );
-      }
+      const candidates = [
+        sourceUrl,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?jenis=${encodeURIComponent(produk)}&negeri=${encodeURIComponent(negeri)}&carian=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras?product=${encodeURIComponent(produk)}&state=${encodeURIComponent(negeri)}&search=${encodeURIComponent(q)}`,
+        `https://ebiz.jupem.gov.my/Produk/StesenTandaAras`
+      ];
 
-      const dbRows = searchBenchmarkDatabase(produk, negeri, q);
-      if (dbRows.length) {
-        return send(
-          res,
-          200,
-          JSON.stringify({
-            ok: true,
-            produk,
-            negeri,
-            q,
-            sourceUrl,
-            results: dbRows,
-            note: `Found ${dbRows.length} BM/SBM record(s) from AZOBSS local database.`
-          }, null, 2),
-          "application/json"
-        );
-      }
+      let lastError = "";
 
-      let autoSearch;
-      try {
-        autoSearch = await searchBenchmarkFromEbiz(produk, negeri, q);
-      } catch (error) {
-        autoSearch = { rows: [], sourceUrl, note: error.message || 'Auto search failed.' };
-      }
+      for (const targetUrl of candidates) {
+        try {
+          console.log("Benchmark search:", targetUrl);
+          const response = await fetch(targetUrl, {
+            redirect: "follow",
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Referer": "https://ebiz.jupem.gov.my/Produk/StesenTandaAras"
+            }
+          });
 
-      if (autoSearch.rows && autoSearch.rows.length) {
-        return send(
-          res,
-          200,
-          JSON.stringify({
-            ok: true,
-            produk,
-            negeri,
-            q,
-            sourceUrl: autoSearch.sourceUrl || sourceUrl,
-            results: autoSearch.rows,
-            note: autoSearch.note || 'Auto search parsed ProductID from eBiz JUPEM.'
-          }, null, 2),
-          "application/json"
-        );
-      }
+          if (!response.ok) {
+            lastError = `HTTP ${response.status}`;
+            continue;
+          }
 
-      const fallbackId = cleanBenchmarkId(q);
-      if (fallbackId && isExplicitProductId) {
-        const fallbackJenis = extractBenchmarkJenis(q, produk);
-        const fallbackProduct = fallbackJenis === 2 ? 'SBM' : produk;
-        return send(
-          res,
-          200,
-          JSON.stringify({
-            ok: true,
-            produk: fallbackProduct,
-            negeri,
-            q,
-            sourceUrl,
-            results: [{
-              id: fallbackId,
-              jenis: fallbackJenis,
-              product: fallbackProduct,
-              stationNo: q || fallbackId,
-              negeri,
-              daerah: '',
-              bandar: '',
-              huraian: 'Direct eBiz ProductID lookup',
-              harga: '',
-              locationUrl: '',
-              downloadUrl: buildBenchmarkDownloadUrl(fallbackId, fallbackProduct, fallbackJenis),
-              raw: []
-            }],
-            note: 'Search page could not be parsed, but a ProductID was detected and direct download link was generated.'
-          }, null, 2),
-          "application/json"
-        );
+          const html = await response.text();
+          const results = parseBenchmarkRows(html, produk, negeri);
+
+          if (results.length || targetUrl === candidates[candidates.length - 1]) {
+            return send(
+              res,
+              200,
+              JSON.stringify({
+                ok: true,
+                produk,
+                negeri,
+                q,
+                sourceUrl,
+                results,
+                note: results.length ? "Results parsed from JUPEM eBiz page." : "No parsable table returned. Open sourceUrl to continue in eBiz JUPEM."
+              }, null, 2),
+              "application/json"
+            );
+          }
+        } catch (err) {
+          lastError = err.message;
+        }
       }
 
       return send(
         res,
-        200,
-        JSON.stringify({
-          ok: true,
-          produk,
-          negeri,
-          q,
-          sourceUrl,
-          results: [],
-          note: autoSearch && autoSearch.note ? autoSearch.note : 'No ProductID found. Open sourceUrl in eBiz JUPEM and inspect cart ProductID if needed.'
-        }, null, 2),
+        502,
+        JSON.stringify({ ok: false, error: lastError || "Benchmark search failed", sourceUrl }),
         "application/json"
       );
     }
