@@ -1,12 +1,6 @@
 (function(){
   const STORAGE_KEY = 'azobss_affiliate_products_v4';
   const ADMIN_USERNAME = 'zedan91';
-  const AZOBSS_BACKEND_BASE = 'https://azobss-backend.onrender.com';
-
-  function getBackendUrl(path){
-    // GitHub Pages/static hosting cannot call /api locally, so force Render backend.
-    return AZOBSS_BACKEND_BASE.replace(/\/$/, '') + path;
-  }
 
   function qs(s){return document.querySelector(s);}
   function qsa(s){return Array.from(document.querySelectorAll(s));}
@@ -205,29 +199,27 @@
     setDetectStatus('Sedang baca link produk melalui backend...', false);
 
     try{
-      const res = await fetch(getBackendUrl('/api/detect-product'), {
+      const detectApi = 'https://azobss-backend.onrender.com/api/detect-product';
+      const res = await fetch(detectApi, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({url: link})
       });
 
-      // Jangan terus res.json() sebab kalau Render/GitHub pulangkan HTML error page,
-      // browser akan keluar "Unexpected token '<'". Kita baca text dulu dan validate JSON.
       const rawText = await res.text();
       let data;
       try{
         data = JSON.parse(rawText);
       }catch(parseErr){
-        throw new Error('Backend tidak pulangkan JSON. Pastikan Render sudah deploy deploy-server.js terbaru dan endpoint /api/detect-product aktif.');
+        throw new Error('Backend Render tidak pulangkan JSON. Deploy semula backend atau semak endpoint /api/detect-product.');
       }
 
       if(!res.ok || !data.ok){
-        throw new Error(data.error || data.note || 'Auto detect gagal');
+        throw new Error(data.error || 'Auto detect gagal');
       }
 
       applyDetectedProduct(data);
       if(fullInput && data.finalUrl) fullInput.value = data.finalUrl;
-      if(affiliateInput && data.finalUrl) affiliateInput.value = data.finalUrl;
       setDetectStatus(data.note || ('Auto filled guna ' + (data.source || 'metadata') + '. Sila semak sebelum Save.'), data.source === 'url-fallback');
     }catch(err){
       setDetectStatus('Auto detect gagal: ' + err.message + '. Shopee mungkin block. Isi manual atau paste title produk.', true);

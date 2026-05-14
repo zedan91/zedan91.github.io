@@ -8280,12 +8280,20 @@ display:none !important;
     setDetectStatus('Sedang baca link produk melalui backend...', false);
 
     try{
-      const res = await fetch('/api/detect-product', {
+      const detectApi = 'https://azobss-backend.onrender.com/api/detect-product';
+      const res = await fetch(detectApi, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({url: link})
       });
-      const data = await res.json();
+
+      const rawText = await res.text();
+      let data;
+      try{
+        data = JSON.parse(rawText);
+      }catch(parseErr){
+        throw new Error('Backend Render tidak pulangkan JSON. Deploy semula backend atau semak endpoint /api/detect-product.');
+      }
 
       if(!res.ok || !data.ok){
         throw new Error(data.error || 'Auto detect gagal');
