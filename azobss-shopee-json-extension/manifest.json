@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "AZOBSS Shopee JSON Auto Extractor",
+  "version": "1.0.0",
+  "description": "Auto extract Shopee product metadata and download JSON for AZOBSS affiliate import.",
+  "permissions": [
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://shopee.com.my/*",
+    "https://*.shopee.com.my/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://shopee.com.my/*",
+        "https://*.shopee.com.my/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
