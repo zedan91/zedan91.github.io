@@ -557,6 +557,76 @@
     }
   }
 
+
+  function mapImportedCategoryToAffiliateCategory(categoryText, titleText, descText){
+    const text = String([categoryText, titleText, descText].join(' ')).toLowerCase();
+
+    if(/home appliances|oven|steam oven|microwave|air fryer|rice cooker|pressure cooker|induction cooker|kettle|toaster|blender|mixer|chopper|juicer|food processor|vacuum|mop|cleaner|cookware|frypan|wok|pan|pot|tefal|spatula/.test(text)){
+      return {
+        category: 'Home Appliances',
+        badge: 'Kitchen Essentials',
+        icon: '🍳',
+        meta: 'Best for kitchen and home use'
+      };
+    }
+
+    if(/computer|accessories|ssd|nvme|ram|router|wifi|keyboard|mouse|monitor|laptop|pc|usb|hard disk|printer/.test(text)){
+      return {
+        category: 'Computer & Accessories',
+        badge: 'PC Setup',
+        icon: '💻',
+        meta: 'Best for PC setup and daily use'
+      };
+    }
+
+    if(/mobile|phone|iphone|android|charger|powerbank|cable|case|screen protector|earbuds|bluetooth/.test(text)){
+      return {
+        category: 'Mobile & Accessories',
+        badge: 'Daily Tech',
+        icon: '📱',
+        meta: 'Useful mobile gadget'
+      };
+    }
+
+    if(/automotive|dashcam|car|motor|tyre|tire|jump starter|kereta/.test(text)){
+      return {
+        category: 'Automotive',
+        badge: 'Car Essential',
+        icon: '🚗',
+        meta: 'Useful for car and travel'
+      };
+    }
+
+    if(/fashion|shoe|sandal|shirt|dress|bag|wallet|watch|blouse|pants|jeans/.test(text)){
+      return {
+        category: 'Fashion Accessories',
+        badge: 'Trending Fashion',
+        icon: '👜',
+        meta: 'Popular fashion item'
+      };
+    }
+
+    if(/baby|kids|toy|stroller|milk bottle|diaper/.test(text)){
+      return {
+        category: 'Baby & Toys',
+        badge: 'Baby Essentials',
+        icon: '🧸',
+        meta: 'Useful for baby and kids'
+      };
+    }
+
+    if(/sports|gym|fitness|dumbbell|cycling|outdoor|camping/.test(text)){
+      return {
+        category: 'Sports & Outdoor',
+        badge: 'Fitness',
+        icon: '🏋️',
+        meta: 'Best for workout and outdoor'
+      };
+    }
+
+    return null;
+  }
+
   function normalizeShopeeImportedData(raw){
     const data = Array.isArray(raw) ? raw[0] : (raw || {});
     const item = data.item || data.data || data.product || data.item_basic || {};
@@ -564,7 +634,11 @@
     const description = String(data.description || data.desc || data.productDescription || item.description || item.desc || '').trim();
     const link = String(data.url || data.link || data.finalUrl || data.affiliateLink || '').trim();
     const image = String(data.image || data.imageUrl || data.thumbnail || item.image || '').trim();
-    return {title, description, link, image};
+    const category = String(data.category || data.categoryName || data.category_name || item.category || item.categoryName || item.category_name || '').trim();
+    const categoryCandidates = Array.isArray(data.categoryCandidates) ? data.categoryCandidates.join(' ') : '';
+    const breadcrumbCategories = Array.isArray(data.breadcrumbCategories) ? data.breadcrumbCategories.join(' ') : '';
+    const jsonCategories = Array.isArray(data.jsonCategories) ? data.jsonCategories.join(' ') : '';
+    return {title, description, link, image, category, categoryCandidates, breadcrumbCategories, jsonCategories};
   }
 
   function applyShopeeJsonToForm(raw){
@@ -574,12 +648,21 @@
       setJsonImportStatus('JSON tiada product title. Cuba copy tajuk produk dan guna Auto Fill backup.', true);
       return;
     }
-    const category = affiliateTitleToCategory(data.title);
+    const categoryText = [
+      data.category,
+      data.categoryCandidates,
+      data.breadcrumbCategories,
+      data.jsonCategories
+    ].filter(Boolean).join(' ');
+
+    const mapped = mapImportedCategoryToAffiliateCategory(categoryText, data.title, data.description);
+    const category = mapped ? mapped.category : affiliateTitleToCategory(data.title);
+
     qs('#affiliateTitleInput').value = data.title;
-    qs('#affiliateIcon').value = affiliateTitleToIcon(data.title);
-    qs('#affiliateBadge').value = affiliateTitleToBadge(data.title, category);
+    qs('#affiliateIcon').value = mapped ? mapped.icon : affiliateTitleToIcon(data.title);
+    qs('#affiliateBadge').value = mapped ? mapped.badge : affiliateTitleToBadge(data.title, category);
     qs('#affiliateCategoryInput').value = category;
-    qs('#affiliateMetaInput').value = affiliateTitleToMeta(data.title, category);
+    qs('#affiliateMetaInput').value = mapped ? mapped.meta : affiliateTitleToMeta(data.title, category);
     qs('#affiliateDescInput').value = data.description ? data.description : affiliateTitleToDescription(data.title, category);
     const jsonSourceLink = (qs('#affiliateJsonShopeeLinkInput')?.value || '').trim();
     const preferredLink = jsonSourceLink || data.link;
