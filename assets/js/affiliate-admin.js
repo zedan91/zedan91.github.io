@@ -492,22 +492,21 @@
   async function openShopeeForJsonExtension(){
     if(!adminDetected()) return;
     const input = qs('#affiliateJsonShopeeLinkInput');
-    const full = qs('#affiliateFullLinkInput');
-    const aff = qs('#affiliateLinkInput');
-    let url = (input?.value || full?.value || aff?.value || '').trim();
+    let url = (input?.value || '').trim();
     if(!url){
-      setJsonImportStatus('Paste link Shopee dahulu sebelum tekan Accept & Open.', true);
+      setJsonImportStatus('Paste link Shopee dalam ruang Shopee JSON Auto Import dahulu sebelum tekan Accept & Open.', true);
       input?.focus();
       return;
     }
     if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
     if(!/shopee\./i.test(url)){
       setJsonImportStatus('Link mesti link Shopee.', true);
+      input?.focus();
       return;
     }
     if(input) input.value = url;
-    if(full && !full.value.trim()) full.value = url;
-    if(aff && !aff.value.trim()) aff.value = url;
+    // Jangan sync field JSON Auto Import ke Affiliate Link / Full Product Link.
+    // Field ini berdiri sendiri untuk proses buka Shopee + copy console script.
 
     const script = buildShopeeConsoleExtractorScript();
     let copied = false;
@@ -556,9 +555,10 @@
     qs('#affiliateMetaInput').value = affiliateTitleToMeta(data.title, category);
     qs('#affiliateDescInput').value = data.description ? data.description : affiliateTitleToDescription(data.title, category);
     if(data.link){
-      qs('#affiliateLinkInput').value = data.link;
+      // JSON import link ialah sumber produk, bukan wajib affiliate link.
+      // Jangan overwrite Affiliate Link supaya link affiliate pendek tidak hilang.
       const full = qs('#affiliateFullLinkInput');
-      if(full) full.value = data.link;
+      if(full && !full.value.trim()) full.value = data.link;
     }
     const manual = qs('#affiliateManualTitleInput');
     if(manual) manual.value = data.title;
