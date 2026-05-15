@@ -3703,6 +3703,16 @@ body.is-admin .lucky-draw-prize-admin{
   }
 }
 
+
+/* Admin lucky draw test/reset buttons */
+#testLuckyDrawSpinButton{
+  background:#2563eb !important;
+}
+#resetLuckyDrawWinnerButton{
+  background:#ef4444 !important;
+  color:#fff !important;
+}
+
 </style>
 
 
@@ -5015,6 +5025,8 @@ display:none !important;
             <input id="luckyDrawParticipantSearch" type="search" placeholder="Search nama / username / phone / email">
             <button class="btn blue" id="refreshLuckyDrawParticipantsButton" type="button">Refresh</button>
             <button class="btn orange" id="exportLuckyDrawParticipantsButton" type="button">Export CSV</button>
+            <button class="btn blue" id="testLuckyDrawSpinButton" type="button">Test Spin</button>
+            <button class="btn orange" id="resetLuckyDrawWinnerButton" type="button">Reset Winner</button>
           </div>
         </div>
 
@@ -5808,8 +5820,11 @@ display:none !important;
         if (!firebaseReady || !db) throw new Error('Firebase not ready');
         const winnerSnap = await getDoc(doc(db, 'luckyDrawWinners', getLuckyDrawWinnerDocId(monthKey)));
         if (winnerSnap.exists()) {
-          showLuckyDrawWinner({ id: winnerSnap.id, ...winnerSnap.data() });
-          return winnerSnap.data();
+          const winnerData = winnerSnap.data();
+          if (!winnerData.deleted) {
+            showLuckyDrawWinner({ id: winnerSnap.id, ...winnerData });
+            return winnerData;
+          }
         }
       } catch (error) {
         try {
@@ -5865,11 +5880,13 @@ display:none !important;
         const existing = await getDoc(winnerRef);
         if (existing.exists()) {
           const existingData = { id: existing.id, ...existing.data() };
-          showLuckyDrawWinner(existingData);
-          return existingData;
+          if (!existingData.deleted) {
+            showLuckyDrawWinner(existingData);
+            return existingData;
+          }
         }
 
-        await setDoc(winnerRef, payload, { merge: true });
+        await setDoc(winnerRef, { ...payload, deleted: false }, { merge: true });
         showLuckyDrawWinner(payload);
         return payload;
       } catch (error) {
@@ -5967,6 +5984,104 @@ display:none !important;
       luckyDrawCountdownTimer = setInterval(updateLuckyDrawCountdown, 1000);
       loadLuckyDrawWinner();
     }
+
+
+
+    const testLuckyDrawSpinButton = document.getElementById('testLuckyDrawSpinButton');
+    const resetLuckyDrawWinnerButton = document.getElementById('resetLuckyDrawWinnerButton');
+
+    async function testLuckyDrawSpinNow() {
+      if (!isAdminUser(currentUser)) return;
+
+      await loadLuckyDrawParticipants();
+
+      const active = allLuckyDrawParticipants.filter(function (entry) {
+        return !entry.deleted && entry.usernameKey;
+      });
+
+      if (!active.length) {
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Tiada peserta untuk test spin.';
+        if (luckyDrawSpinnerName) luckyDrawSpinnerName.textContent = 'Tiada peserta untuk spin.';
+        return;
+      }
+
+      const randomWinner = active[Math.floor(Math.random() * active.length)];
+
+      if (luckyDrawParticipantsStatus) {
+        luckyDrawParticipantsStatus.textContent = 'Test spin sedang berjalan...';
+      }
+
+      // Test spin sahaja: tak save sebagai winner sebenar
+      if (luckyDrawSpinnerName && luckyDrawSpinStage) {
+        luckyDrawSpinRunning = true;
+        luckyDrawSpinStage.classList.add('is-spinning');
+        luckyDrawSpinStage.classList.remove('has-winner');
+
+        let tick = 0;
+        const maxTicks = 36;
+        const names = active.map(getWinnerDisplayName);
+
+        const interval = setInterval(function () {
+          luckyDrawSpinnerName.textContent = names[tick % names.length];
+          tick += 1;
+
+          if (tick >= maxTicks) {
+            clearInterval(interval);
+            luckyDrawSpinRunning = false;
+            luckyDrawSpinStage.classList.remove('is-spinning');
+            luckyDrawSpinStage.classList.add('has-winner');
+            luckyDrawSpinnerName.textContent = `TEST 🎉 ${getWinnerDisplayName(randomWinner)} 🎉`;
+
+            if (luckyDrawParticipantsStatus) {
+              luckyDrawParticipantsStatus.textContent = 'Test spin selesai. Pemenang test tidak disimpan.';
+            }
+          }
+        }, 90);
+      }
+    }
+
+    async function resetLuckyDrawWinner() {
+      if (!isAdminUser(currentUser)) return;
+
+      const monthKey = getLuckyDrawMonthKey();
+      const ok = confirm(`Reset pemenang Lucky Draw bulan ${getLuckyDrawMonthName(monthKey)}?`);
+      if (!ok) return;
+
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+
+        // Soft reset: simpan rekod lama sebagai reset supaya admin masih ada audit.
+        await setDoc(doc(db, 'luckyDrawWinners', getLuckyDrawWinnerDocId(monthKey)), {
+          deleted: true,
+          resetBy: currentUser.usernameKey || currentUser.name || 'admin',
+          resetAtMs: Date.now(),
+          resetAt: serverTimestamp()
+        }, { merge: true });
+
+      } catch (error) {
+        try {
+          const winners = JSON.parse(localStorage.getItem('azobssLuckyDrawWinners') || '{}');
+          delete winners[monthKey];
+          localStorage.setItem('azobssLuckyDrawWinners', JSON.stringify(winners));
+        } catch(storageError){}
+      }
+
+      currentLuckyDrawWinner = null;
+
+      if (luckyDrawWinnerName) luckyDrawWinnerName.textContent = 'Belum dipilih';
+      if (luckyDrawWinnerMonthLabel) luckyDrawWinnerMonthLabel.textContent = `Pemenang Bulan ${getLuckyDrawMonthName(monthKey)}`;
+      if (luckyDrawSpinnerName) luckyDrawSpinnerName.textContent = 'Winner sudah di-reset. Menunggu spin sebenar.';
+      if (luckyDrawSpinStage) {
+        luckyDrawSpinStage.classList.remove('has-winner', 'is-spinning');
+      }
+
+      if (luckyDrawParticipantsStatus) {
+        luckyDrawParticipantsStatus.textContent = 'Pemenang bulan ini sudah di-reset.';
+      }
+    }
+
+    if (testLuckyDrawSpinButton) testLuckyDrawSpinButton.addEventListener('click', testLuckyDrawSpinNow);
+    if (resetLuckyDrawWinnerButton) resetLuckyDrawWinnerButton.addEventListener('click', resetLuckyDrawWinner);
 
 
     async function resolveInviterByCode(inviteCode, newUsernameKey) {
