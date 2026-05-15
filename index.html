@@ -5404,6 +5404,150 @@ body > .login-floating,
   display:inline-flex !important;
 }
 
+
+/* =========================================================
+   AZOBSS AUTH STATE TOPBAR FINAL
+   - Before login: Sign in + Sign up shown in topbar
+   - After login: Sign in/Sign up hidden, username pill shown
+========================================================= */
+
+/* hide old duplicate loose auth buttons outside topbar */
+body > .floating-auth,
+body > .auth-floating,
+body > .auth-buttons,
+body > .login-floating,
+#authFloating,
+#floatingAuth,
+#loginFloating,
+#authButtons,
+.header-auth,
+.site-auth,
+.login-actions,
+.signup-actions{
+  display:none !important;
+}
+
+/* Topbar auth buttons */
+.hero-actions .top-auth-btn{
+  flex:0 0 auto !important;
+  height:62px !important;
+  min-height:62px !important;
+  padding:0 14px !important;
+  border-radius:18px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  white-space:nowrap !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+  transition:transform .2s ease, box-shadow .2s ease !important;
+}
+
+.hero-actions .top-auth-btn:hover{
+  transform:translateY(-2px) !important;
+}
+
+.hero-actions .top-auth-btn.signin{
+  color:#e5e7eb !important;
+  background:rgba(15,23,42,.78) !important;
+  border:1px solid rgba(148,163,184,.25) !important;
+}
+
+.hero-actions .top-auth-btn.signup{
+  color:#fff !important;
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  border:1px solid rgba(34,197,94,.65) !important;
+  box-shadow:0 0 16px rgba(34,197,94,.12) !important;
+}
+
+/* User pill in topbar */
+.hero-actions .top-user-pill{
+  margin-left:auto !important;
+  flex:0 0 auto !important;
+  height:62px !important;
+  padding:0 14px !important;
+  border-radius:22px !important;
+  display:none !important;
+  align-items:center !important;
+  gap:10px !important;
+  color:#fff !important;
+  background:rgba(15,23,42,.76) !important;
+  border:1px solid rgba(148,163,184,.20) !important;
+  box-shadow:0 10px 24px rgba(2,6,23,.22) !important;
+}
+
+.hero-actions .top-user-avatar{
+  width:42px !important;
+  height:42px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  border:2px solid #22c55e !important;
+  color:#22c55e !important;
+  background:rgba(2,6,23,.58) !important;
+  font-weight:900 !important;
+}
+
+.hero-actions .top-user-name{
+  font-size:14px !important;
+  font-weight:900 !important;
+  white-space:nowrap !important;
+}
+
+.hero-actions .top-user-logout{
+  border:0 !important;
+  border-radius:14px !important;
+  padding:8px 12px !important;
+  background:rgba(255,255,255,.10) !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+  cursor:pointer !important;
+}
+
+/* Logged-in state */
+body.azobss-logged-in .hero-actions .top-auth-btn{
+  display:none !important;
+}
+
+body.azobss-logged-in .hero-actions .top-user-pill{
+  display:flex !important;
+}
+
+/* Logged-out state */
+body:not(.azobss-logged-in) .hero-actions .top-user-pill{
+  display:none !important;
+}
+
+body:not(.azobss-logged-in) .hero-actions .top-auth-btn{
+  display:inline-flex !important;
+}
+
+/* Make topbar balanced with auth buttons */
+.hero-actions{
+  justify-content:flex-start !important;
+}
+
+.hero-actions .hero-whatsapp{
+  margin-left:0 !important;
+}
+
+/* Mobile: keep auth buttons hidden in carousel to prevent messy layout; login can use original header if needed */
+@media(max-width:900px){
+  .hero-actions .top-auth-btn{
+    display:none !important;
+  }
+  .hero-actions .top-user-pill{
+    height:78px !important;
+    padding:0 10px !important;
+    scroll-snap-align:start !important;
+  }
+  body.azobss-logged-in .hero-actions .top-user-pill{
+    display:flex !important;
+  }
+}
+
 </style>
 
 
@@ -5855,6 +5999,13 @@ display:none !important;
       
       <button class="top-auth-btn signin" id="topbarSignInButton" type="button">↪ Sign in</button>
       <button class="top-auth-btn signup" id="topbarSignUpButton" type="button">✚ Sign up</button>
+
+      
+      <div class="top-user-pill" id="topbarUserPill">
+        <div class="top-user-avatar" id="topbarUserAvatar">Z</div>
+        <div class="top-user-name" id="topbarUserName">User</div>
+        <button class="top-user-logout" id="topbarLogoutButton" type="button">Logout</button>
+      </div>
 
       <a class="hero-whatsapp" href="https://alvo.chat/6nZ2" aria-label="Contact Us Now melalui WhatsApp" target="_blank" rel="noopener">
         <span class="hero-whatsapp-icon">
@@ -12157,6 +12308,138 @@ document.addEventListener('DOMContentLoaded', function(){
       btn.classList.add('active-section');
     });
   });
+});
+</script>
+
+<!-- AZOBSS auth state topbar final script -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const body = document.body;
+  const signIn = document.getElementById('topbarSignInButton');
+  const signUp = document.getElementById('topbarSignUpButton');
+  const logout = document.getElementById('topbarLogoutButton');
+  const userNameEl = document.getElementById('topbarUserName');
+  const userAvatarEl = document.getElementById('topbarUserAvatar');
+
+  function getStoredUser(){
+    const keys = [
+      'azobssUser',
+      'azobss_user',
+      'currentUser',
+      'loggedInUser',
+      'user',
+      'username',
+      'azobssUsername'
+    ];
+
+    for(const key of keys){
+      const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if(!value) continue;
+
+      try{
+        const obj = JSON.parse(value);
+        if(obj && typeof obj === 'object'){
+          return obj.username || obj.name || obj.email || obj.user || obj.displayName || '';
+        }
+      }catch(e){
+        return value;
+      }
+    }
+
+    // detect visible old profile name if website already renders it
+    const possible = document.querySelector('.user-name, .username, #userName, #currentUserName, [data-username]');
+    if(possible && possible.textContent.trim()){
+      return possible.textContent.trim();
+    }
+
+    return '';
+  }
+
+  function clickFirst(selectors){
+    for(const sel of selectors){
+      const el = document.querySelector(sel);
+      if(el && !el.classList.contains('top-auth-btn')){
+        el.click();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function setAuthState(username){
+    const clean = String(username || '').trim();
+
+    if(clean){
+      body.classList.add('azobss-logged-in');
+      if(userNameEl) userNameEl.textContent = clean;
+      if(userAvatarEl) userAvatarEl.textContent = clean.charAt(0).toUpperCase();
+    }else{
+      body.classList.remove('azobss-logged-in');
+      if(userNameEl) userNameEl.textContent = 'User';
+      if(userAvatarEl) userAvatarEl.textContent = 'Z';
+    }
+  }
+
+  function refreshAuthState(){
+    setAuthState(getStoredUser());
+  }
+
+  if(signIn){
+    signIn.addEventListener('click', function(){
+      clickFirst([
+        '#signInButton',
+        '#loginButton',
+        '#authLoginButton',
+        '[data-auth="signin"]',
+        '[data-login]',
+        '.sign-in-btn',
+        '.login-btn'
+      ]);
+    });
+  }
+
+  if(signUp){
+    signUp.addEventListener('click', function(){
+      clickFirst([
+        '#signUpButton',
+        '#registerButton',
+        '#authRegisterButton',
+        '[data-auth="signup"]',
+        '[data-signup]',
+        '.sign-up-btn',
+        '.signup-btn'
+      ]);
+    });
+  }
+
+  if(logout){
+    logout.addEventListener('click', function(){
+      clickFirst([
+        '#logoutButton',
+        '#signOutButton',
+        '[data-auth="logout"]',
+        '[data-logout]',
+        '.logout-btn',
+        '.sign-out-btn'
+      ]);
+
+      // fallback clear common auth keys
+      ['azobssUser','azobss_user','currentUser','loggedInUser','user','username','azobssUsername'].forEach(function(key){
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+
+      setTimeout(refreshAuthState, 120);
+    });
+  }
+
+  refreshAuthState();
+
+  // Check again after login modal/action updates storage/UI
+  setInterval(refreshAuthState, 1000);
+
+  window.addEventListener('storage', refreshAuthState);
 });
 </script>
 
