@@ -4012,8 +4012,9 @@ display:none !important;
         <div class="affiliate-detect-row">
           <input id="affiliateFullLinkInput" type="url" placeholder="https://shopee.com.my/product/xxxx/yyyy">
           <button class="affiliate-admin-btn" id="affiliateAutoDetectButton" type="button">🔍 Auto Detect</button>
+          <button class="affiliate-admin-btn" id="affiliateOpenProductButton" type="button">↗ Open</button>
         </div>
-        <small id="affiliateDetectStatus" class="affiliate-detect-status">Paste full Shopee product link, then click Auto Detect.</small>
+        <small id="affiliateDetectStatus" class="affiliate-detect-status">Paste full Shopee product link, click Auto Detect. Jika Shopee block, tekan Open dan copy tajuk produk ke backup.</small>
       </label>
 
       <label>
@@ -4022,7 +4023,7 @@ display:none !important;
           <input id="affiliateManualTitleInput" type="text" placeholder="Paste tajuk produk jika Shopee gagal detect">
           <button class="affiliate-admin-btn" id="affiliateTitleAutoFillButton" type="button">✨ Auto Fill</button>
         </div>
-        <small id="affiliateTitleFillStatus" class="affiliate-detect-status">Backup: paste tajuk produk, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.</small>
+        <small id="affiliateTitleFillStatus" class="affiliate-detect-status">Backup paling stabil: paste tajuk produk Shopee, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.</small>
       </label>
 
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
@@ -8245,8 +8246,8 @@ display:none !important;
     qs('#affiliateLinkInput').value = product ? product.link : '';
     if(qs('#affiliateFullLinkInput')) qs('#affiliateFullLinkInput').value = product ? product.link : '';
     if(qs('#affiliateManualTitleInput')) qs('#affiliateManualTitleInput').value = product ? product.title : '';
-    setDetectStatus('Paste full Shopee product link, then click Auto Detect.', false);
-    setTitleFillStatus('Backup: paste tajuk produk, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.', false);
+    setDetectStatus('Paste full Shopee product link, click Auto Detect. Jika Shopee block, tekan Open dan copy tajuk produk ke backup.', false);
+    setTitleFillStatus('Backup paling stabil: paste tajuk produk Shopee, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.', false);
     qs('#affiliateAdminModal').classList.add('is-open');
   }
 

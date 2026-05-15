@@ -155,8 +155,8 @@
     qs('#affiliateLinkInput').value = product ? product.link : '';
     if(qs('#affiliateFullLinkInput')) qs('#affiliateFullLinkInput').value = product ? product.link : '';
     if(qs('#affiliateManualTitleInput')) qs('#affiliateManualTitleInput').value = product ? product.title : '';
-    setDetectStatus('Paste full Shopee product link, then click Auto Detect.', false);
-    setTitleFillStatus('Backup: paste tajuk produk, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.', false);
+    setDetectStatus('Paste full Shopee product link, click Auto Detect. Jika Shopee block, tekan Open dan copy tajuk produk ke backup.', false);
+    setTitleFillStatus('Backup paling stabil: paste tajuk produk Shopee, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.', false);
     qs('#affiliateAdminModal').classList.add('is-open');
   }
 
@@ -335,6 +335,25 @@
     if(data.finalUrl) qs('#affiliateLinkInput').value = data.finalUrl;
   }
 
+
+  function openAffiliateProductLink(){
+    if(!adminDetected()) return;
+    const fullInput = qs('#affiliateFullLinkInput');
+    const affiliateInput = qs('#affiliateLinkInput');
+    const link = (fullInput?.value || affiliateInput?.value || '').trim();
+    if(!link){
+      setDetectStatus('Sila paste Shopee product link dahulu sebelum Open.', true);
+      return;
+    }
+    if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = link;
+    window.open(link, '_blank', 'noopener');
+    const manual = qs('#affiliateManualTitleInput');
+    if(manual){
+      setTimeout(() => manual.focus(), 300);
+    }
+    setTitleFillStatus('Lepas produk terbuka, copy tajuk produk Shopee dan paste di sini, kemudian tekan ✨ Auto Fill.', false);
+  }
+
   async function autoDetectAffiliateProduct(){
     if(!adminDetected()) return;
 
@@ -378,8 +397,16 @@
       applyDetectedProduct(data);
       if(fullInput && data.finalUrl) fullInput.value = data.finalUrl;
       setDetectStatus(data.note || ('Auto filled guna ' + (data.source || 'metadata') + '. Sila semak sebelum Save.'), data.source === 'url-fallback');
+      if(data.source === 'url-fallback'){
+        const manual = qs('#affiliateManualTitleInput');
+        if(manual) manual.focus();
+        setTitleFillStatus('Shopee block metadata. Untuk hasil tepat, paste tajuk produk Shopee di sini dan tekan ✨ Auto Fill.', false);
+      }
     }catch(err){
-      setDetectStatus('Auto detect gagal: ' + err.message + '. Shopee mungkin block. Isi manual atau paste title produk.', true);
+      setDetectStatus('Auto detect gagal: ' + err.message + '. Shopee mungkin block. Tekan Open, copy tajuk produk, paste di backup, kemudian Auto Fill.', true);
+      const manual = qs('#affiliateManualTitleInput');
+      if(manual) manual.focus();
+      setTitleFillStatus('Paste tajuk produk Shopee di sini untuk auto isi form dengan lebih tepat.', false);
     }finally{
       if(btn){
         btn.disabled = false;
@@ -401,6 +428,7 @@
     qs('#affiliateAdminClose')?.addEventListener('click', closeModal);
 
     qs('#affiliateAutoDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
+    qs('#affiliateOpenProductButton')?.addEventListener('click', openAffiliateProductLink);
     qs('#affiliateTitleAutoFillButton')?.addEventListener('click', autoFillAffiliateFromTitle);
 
     qs('#affiliateAdminModal')?.addEventListener('click', e => {
