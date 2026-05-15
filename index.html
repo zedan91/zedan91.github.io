@@ -3299,6 +3299,132 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   word-break: break-word;
 }
 
+
+/* =========================================================
+   ADMIN LUCKY DRAW / GIVEAWAY PARTICIPANT EDIT PANEL
+========================================================= */
+.admin-lucky-draw-panel{
+  display:none;
+  margin-top:22px;
+  padding:20px;
+  border-radius:18px;
+  border:1px solid rgba(34,197,94,.35);
+  background:rgba(15,23,42,.72);
+  box-shadow:0 18px 45px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.admin-lucky-draw-panel.is-visible{
+  display:block;
+}
+
+.admin-lucky-draw-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.admin-lucky-draw-head h3{
+  margin:8px 0 6px;
+  color:#fff;
+  font-size:22px;
+}
+
+.admin-lucky-draw-head p{
+  margin:0;
+  color:#cbd5e1;
+}
+
+.admin-lucky-draw-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.lucky-draw-admin-status{
+  margin:10px 0 14px;
+  color:#fde68a;
+  font-weight:800;
+}
+
+.admin-lucky-draw-table-wrap{
+  overflow:auto;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:14px;
+  background:rgba(2,6,23,.38);
+}
+
+.admin-lucky-draw-table{
+  width:100%;
+  min-width:980px;
+  border-collapse:collapse;
+  color:#e5e7eb;
+}
+
+.admin-lucky-draw-table th,
+.admin-lucky-draw-table td{
+  padding:10px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+  text-align:left;
+  vertical-align:middle;
+  font-size:13px;
+}
+
+.admin-lucky-draw-table th{
+  color:#22c55e;
+  background:rgba(2,6,23,.45);
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+
+.admin-lucky-draw-table input{
+  width:100%;
+  min-width:110px;
+  border:1px solid rgba(148,163,184,.28);
+  border-radius:9px;
+  background:rgba(15,23,42,.9);
+  color:#fff;
+  padding:8px 9px;
+  font-size:13px;
+}
+
+.admin-lucky-draw-table .admin-mini-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.admin-lucky-draw-table .admin-save-btn,
+.admin-lucky-draw-table .admin-hide-btn{
+  border:0;
+  border-radius:9px;
+  padding:8px 10px;
+  font-weight:900;
+  cursor:pointer;
+  color:#fff;
+}
+
+.admin-lucky-draw-table .admin-save-btn{
+  background:#2563eb;
+}
+
+.admin-lucky-draw-table .admin-hide-btn{
+  background:#ef4444;
+}
+
+@media(max-width:760px){
+  .admin-lucky-draw-head{
+    display:block;
+  }
+  .admin-lucky-draw-actions{
+    justify-content:flex-start;
+    margin-top:12px;
+  }
+}
+
 </style>
 
 
@@ -3380,6 +3506,130 @@ display:none !important;
   .affiliate-back-btn{min-width:0 !important;width:100% !important;}
 }
 @media (min-width: 769px) and (max-width: 1100px){.affiliate-products{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}}
+</style>
+
+
+<style>
+
+/* =========================================================
+AZOBSS MODERN FLOATING GLASS TOPBAR
+========================================================= */
+
+:root{
+  --az-neon:#00ff66;
+  --az-dark:rgba(5,10,24,.72);
+  --az-border:rgba(255,255,255,.10);
+}
+
+.hero-actions,
+.topbar,
+.az-topbar{
+
+    position:fixed !important;
+    top:14px !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+
+    width:min(1450px, calc(100vw - 28px)) !important;
+
+    z-index:99999 !important;
+
+    padding:12px 16px !important;
+
+    border-radius:28px !important;
+
+    background:rgba(4,10,24,.58) !important;
+
+    backdrop-filter:blur(10px) !important;
+    -webkit-backdrop-filter:blur(10px) !important;
+
+    border:1px solid rgba(255,255,255,.08) !important;
+
+    box-shadow:
+      0 10px 40px rgba(0,0,0,.45),
+      inset 0 1px 0 rgba(255,255,255,.05) !important;
+
+    transition:
+      all .25s ease,
+      background .25s ease !important;
+}
+
+/* shrink on scroll */
+body.az-scroll .hero-actions,
+body.az-scroll .topbar,
+body.az-scroll .az-topbar{
+
+    top:8px !important;
+
+    transform:translateX(-50%) scale(.96) !important;
+
+    background:rgba(4,10,24,.82) !important;
+
+    box-shadow:
+      0 8px 30px rgba(0,0,0,.58),
+      0 0 25px rgba(0,255,102,.08) !important;
+}
+
+/* cards */
+.hero-actions > *,
+.az-topbar > *{
+
+    border-radius:22px !important;
+}
+
+/* neon hover */
+.hero-actions a:hover,
+.hero-actions button:hover,
+.az-topbar a:hover,
+.az-topbar button:hover{
+
+    box-shadow:
+      0 0 20px rgba(0,255,102,.18),
+      inset 0 0 0 1px rgba(0,255,102,.22) !important;
+
+    transform:translateY(-2px) !important;
+
+    transition:.22s ease !important;
+}
+
+/* logo text */
+.az-logo,
+.logo,
+.site-logo{
+
+    color:var(--az-neon) !important;
+    font-weight:900 !important;
+    letter-spacing:1px !important;
+
+    text-shadow:
+      0 0 14px rgba(0,255,102,.25) !important;
+}
+
+/* responsive mobile */
+@media(max-width:900px){
+
+  .hero-actions,
+  .topbar,
+  .az-topbar{
+
+      width:calc(100vw - 14px) !important;
+
+      padding:10px !important;
+
+      border-radius:22px !important;
+
+      overflow-x:auto !important;
+      overflow-y:hidden !important;
+
+      scrollbar-width:none !important;
+  }
+
+  .hero-actions::-webkit-scrollbar{
+      display:none !important;
+  }
+
+}
+
 </style>
 
 </head>
@@ -4599,6 +4849,42 @@ display:none !important;
           </div>
         </div>
       </div>
+
+    <div class="admin-lucky-draw-panel" id="adminLuckyDrawPanel">
+      <div class="admin-lucky-draw-head">
+        <div>
+          <span class="lucky-draw-kicker">Admin Only</span>
+          <h3>Senarai Peserta Giveaway</h3>
+          <p>Admin boleh lihat, edit, refresh dan hide peserta cabutan bertuah.</p>
+        </div>
+        <div class="admin-lucky-draw-actions">
+          <button class="btn blue" id="refreshLuckyDrawAdminButton" type="button">Refresh Peserta</button>
+          <button class="btn orange" id="exportLuckyDrawAdminButton" type="button">Export CSV</button>
+        </div>
+      </div>
+      <div class="lucky-draw-admin-status" id="adminLuckyDrawStatus">Login sebagai admin untuk lihat peserta.</div>
+      <div class="admin-lucky-draw-table-wrap">
+        <table class="admin-lucky-draw-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Bulan</th>
+              <th>Username</th>
+              <th>Nama</th>
+              <th>Telefon</th>
+              <th>Email</th>
+              <th>Invite Code</th>
+              <th>Join</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="adminLuckyDrawList">
+            <tr><td colspan="9">Tiada data peserta.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     </div>
   </div>
 
@@ -5007,6 +5293,210 @@ display:none !important;
         : 'Share website dahulu sebelum join cabutan bertuah.';
       if (joinLuckyDrawButton) joinLuckyDrawButton.disabled = hasJoined;
     }
+
+
+    const adminLuckyDrawPanel = document.getElementById('adminLuckyDrawPanel');
+    const adminLuckyDrawList = document.getElementById('adminLuckyDrawList');
+    const adminLuckyDrawStatus = document.getElementById('adminLuckyDrawStatus');
+    const refreshLuckyDrawAdminButton = document.getElementById('refreshLuckyDrawAdminButton');
+    const exportLuckyDrawAdminButton = document.getElementById('exportLuckyDrawAdminButton');
+    let allLuckyDrawAdminEntries = [];
+
+    function formatLuckyDrawDate(value) {
+      if (!value) return '-';
+      if (typeof value === 'number') return new Date(value).toLocaleString('en-MY');
+      if (value && typeof value.toDate === 'function') return value.toDate().toLocaleString('en-MY');
+      return String(value);
+    }
+
+    function escapeLuckyDrawHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showLuckyDrawAdminPanel() {
+      if (!adminLuckyDrawPanel) return;
+      const allowed = isAdminUser(currentUser);
+      adminLuckyDrawPanel.classList.toggle('is-visible', !!allowed);
+      if (!allowed && adminLuckyDrawStatus) {
+        adminLuckyDrawStatus.textContent = 'Login sebagai admin untuk lihat peserta.';
+      }
+    }
+
+    function renderLuckyDrawAdminEntries() {
+      if (!adminLuckyDrawList) return;
+
+      if (!allLuckyDrawAdminEntries.length) {
+        adminLuckyDrawList.innerHTML = '<tr><td colspan="9">Tiada peserta Giveaway lagi.</td></tr>';
+        return;
+      }
+
+      adminLuckyDrawList.innerHTML = allLuckyDrawAdminEntries.map(function (entry, index) {
+        const rowId = escapeLuckyDrawHtml(entry.id);
+        return `
+          <tr data-entry-id="${rowId}">
+            <td>${index + 1}</td>
+            <td>${escapeLuckyDrawHtml(entry.monthKey || '-')}</td>
+            <td>${escapeLuckyDrawHtml(entry.usernameKey || '-')}</td>
+            <td><input data-field="name" value="${escapeLuckyDrawHtml(entry.name || '')}"></td>
+            <td><input data-field="phone" value="${escapeLuckyDrawHtml(entry.phone || '')}"></td>
+            <td><input data-field="contactEmail" value="${escapeLuckyDrawHtml(entry.contactEmail || '')}"></td>
+            <td><input data-field="inviteCode" value="${escapeLuckyDrawHtml(entry.inviteCode || '')}"></td>
+            <td>${escapeLuckyDrawHtml(formatLuckyDrawDate(entry.joinedAtMs || entry.joinedAt || entry.createdAtMs))}</td>
+            <td>
+              <div class="admin-mini-actions">
+                <button class="admin-save-btn" type="button" data-action="save">Save</button>
+                <button class="admin-hide-btn" type="button" data-action="hide">Hide</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadLuckyDrawAdminEntries() {
+      showLuckyDrawAdminPanel();
+
+      if (!isAdminUser(currentUser)) return;
+
+      if (!firebaseReady || !db) {
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = 'Firebase belum disambungkan.';
+        return;
+      }
+
+      if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = 'Loading peserta Giveaway...';
+
+      try {
+        const snapshot = await getDocs(collection(db, 'luckyDrawEntries'));
+        const rows = [];
+        snapshot.forEach(function (item) {
+          const data = item.data();
+          if (!data.deleted) rows.push({ id: item.id, ...data });
+        });
+
+        rows.sort(function (a, b) {
+          return (b.joinedAtMs || b.createdAtMs || 0) - (a.joinedAtMs || a.createdAtMs || 0);
+        });
+
+        allLuckyDrawAdminEntries = rows;
+        renderLuckyDrawAdminEntries();
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = `Jumlah peserta aktif: ${rows.length}`;
+      } catch (error) {
+        const localEntries = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]');
+        allLuckyDrawAdminEntries = localEntries.map(function (entry, index) {
+          return { id: entry.id || `local_${index}`, ...entry };
+        }).filter(function (entry) {
+          return !entry.deleted;
+        });
+        renderLuckyDrawAdminEntries();
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = 'Gagal load Firebase. Papar data local jika ada.';
+      }
+    }
+
+    async function saveLuckyDrawAdminEntry(row) {
+      if (!row || !isAdminUser(currentUser)) return;
+
+      const id = row.dataset.entryId;
+      const original = allLuckyDrawAdminEntries.find(function (entry) {
+        return entry.id === id;
+      });
+
+      if (!original) return;
+
+      const payload = {
+        name: row.querySelector('[data-field="name"]').value.trim(),
+        phone: row.querySelector('[data-field="phone"]').value.trim(),
+        contactEmail: row.querySelector('[data-field="contactEmail"]').value.trim(),
+        inviteCode: row.querySelector('[data-field="inviteCode"]').value.trim(),
+        editedBy: currentUser.usernameKey || currentUser.name || 'admin',
+        editedAtMs: Date.now(),
+        editedAt: serverTimestamp()
+      };
+
+      try {
+        await setDoc(doc(db, 'luckyDrawEntries', id), payload, { merge: true });
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = `Peserta ${payload.name || original.usernameKey} berjaya dikemaskini.`;
+        await loadLuckyDrawAdminEntries();
+      } catch (error) {
+        Object.assign(original, payload);
+        localStorage.setItem('azobssLuckyDrawEntries', JSON.stringify(allLuckyDrawAdminEntries));
+        renderLuckyDrawAdminEntries();
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = 'Firebase gagal save. Data local dikemaskini sementara.';
+      }
+    }
+
+    async function hideLuckyDrawAdminEntry(row) {
+      if (!row || !isAdminUser(currentUser)) return;
+      const id = row.dataset.entryId;
+      const original = allLuckyDrawAdminEntries.find(function (entry) {
+        return entry.id === id;
+      });
+
+      if (!original) return;
+
+      const ok = confirm(`Hide peserta ${original.name || original.usernameKey}?`);
+      if (!ok) return;
+
+      try {
+        await setDoc(doc(db, 'luckyDrawEntries', id), {
+          deleted: true,
+          deletedBy: currentUser.usernameKey || currentUser.name || 'admin',
+          deletedAtMs: Date.now(),
+          deletedAt: serverTimestamp()
+        }, { merge: true });
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = 'Peserta berjaya di-hide.';
+        await loadLuckyDrawAdminEntries();
+      } catch (error) {
+        original.deleted = true;
+        allLuckyDrawAdminEntries = allLuckyDrawAdminEntries.filter(function (entry) {
+          return entry.id !== id;
+        });
+        localStorage.setItem('azobssLuckyDrawEntries', JSON.stringify(allLuckyDrawAdminEntries));
+        renderLuckyDrawAdminEntries();
+        if (adminLuckyDrawStatus) adminLuckyDrawStatus.textContent = 'Firebase gagal hide. Data local dikemaskini sementara.';
+      }
+    }
+
+    function exportLuckyDrawAdminCsv() {
+      if (!isAdminUser(currentUser) || !allLuckyDrawAdminEntries.length) return;
+
+      const headers = ['monthKey', 'usernameKey', 'name', 'phone', 'contactEmail', 'inviteCode', 'joinedAtMs'];
+      const csv = [
+        headers.join(','),
+        ...allLuckyDrawAdminEntries.map(function (entry) {
+          return headers.map(function (key) {
+            return `"${String(entry[key] ?? '').replace(/"/g, '""')}"`;
+          }).join(',');
+        })
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `azobss-giveaway-participants-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    if (adminLuckyDrawList) {
+      adminLuckyDrawList.addEventListener('click', function (event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const row = button.closest('tr[data-entry-id]');
+        if (button.dataset.action === 'save') saveLuckyDrawAdminEntry(row);
+        if (button.dataset.action === 'hide') hideLuckyDrawAdminEntry(row);
+      });
+    }
+
+    if (refreshLuckyDrawAdminButton) refreshLuckyDrawAdminButton.addEventListener('click', loadLuckyDrawAdminEntries);
+    if (exportLuckyDrawAdminButton) exportLuckyDrawAdminButton.addEventListener('click', exportLuckyDrawAdminCsv);
+
 
     async function resolveInviterByCode(inviteCode, newUsernameKey) {
       const code = cleanInviteCode(inviteCode);
@@ -7566,6 +8056,7 @@ display:none !important;
       }
 
       userMenu.style.display = 'none';
+      if (adminLuckyDrawPanel) adminLuckyDrawPanel.classList.remove('is-visible');
       userUpgradeButton.hidden = true;
       siteAuthActions.style.display = 'flex';
       updateReceiptWhatsappLink(null);
@@ -9929,6 +10420,19 @@ document.addEventListener('DOMContentLoaded', function(){
     setupAffiliateShowMore();
   });
   obs.observe(affiliateArea, {childList:true, subtree:true});
+});
+</script>
+
+
+<script>
+window.addEventListener('scroll', function(){
+
+   if(window.scrollY > 30){
+      document.body.classList.add('az-scroll');
+   }else{
+      document.body.classList.remove('az-scroll');
+   }
+
 });
 </script>
 
