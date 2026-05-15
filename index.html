@@ -5929,6 +5929,188 @@ body > [id*="user" i]:not(.hero-actions):not(.modal):not(.popup){
   }
 }
 
+
+/* =========================================================
+   MAJOR TOPBAR STRUCTURE FIX
+========================================================= */
+
+/* hide auth buttons after login */
+body.azobss-logged-in .top-auth-btn{
+    display:none !important;
+}
+
+/* ONLY show auth buttons when not logged in */
+body:not(.azobss-logged-in) .top-auth-btn{
+    display:inline-flex !important;
+}
+
+/* keep only ONE user pill */
+body.azobss-logged-in .top-user-pill{
+    display:flex !important;
+}
+
+body:not(.azobss-logged-in) .top-user-pill{
+    display:none !important;
+}
+
+/* topbar proper sizing */
+.hero-actions{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+
+    gap:10px !important;
+
+    width:min(1180px, calc(100vw - 40px)) !important;
+    max-width:min(1180px, calc(100vw - 40px)) !important;
+
+    padding:10px 12px !important;
+
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+
+    scrollbar-width:none !important;
+}
+
+.hero-actions::-webkit-scrollbar{
+    display:none !important;
+}
+
+/* menu cards */
+.hero-actions .btn{
+    flex:0 0 170px !important;
+    width:170px !important;
+    min-width:170px !important;
+    max-width:170px !important;
+
+    height:60px !important;
+    min-height:60px !important;
+}
+
+/* giveaway slightly wider */
+.hero-actions .btn.purple{
+    flex:0 0 185px !important;
+    width:185px !important;
+    min-width:185px !important;
+    max-width:185px !important;
+}
+
+/* whatsapp button */
+.hero-actions .hero-whatsapp{
+    flex:0 0 70px !important;
+    width:70px !important;
+    min-width:70px !important;
+    max-width:70px !important;
+
+    height:60px !important;
+    min-height:60px !important;
+}
+
+/* user pill */
+.hero-actions .top-user-pill{
+    margin-left:auto !important;
+
+    flex:0 0 auto !important;
+    min-width:max-content !important;
+
+    height:60px !important;
+    min-height:60px !important;
+
+    padding:0 14px !important;
+    gap:10px !important;
+
+    border-radius:18px !important;
+
+    align-items:center !important;
+    justify-content:center !important;
+
+    overflow:visible !important;
+}
+
+/* avatar */
+.hero-actions .top-user-avatar{
+    width:38px !important;
+    height:38px !important;
+    min-width:38px !important;
+    flex:0 0 38px !important;
+}
+
+/* username */
+.hero-actions .top-user-name{
+    font-size:14px !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+}
+
+/* logout */
+.hero-actions .top-user-logout{
+    height:34px !important;
+    padding:0 12px !important;
+    border-radius:12px !important;
+    white-space:nowrap !important;
+}
+
+/* remove weird overlap */
+.hero-actions > *{
+    position:relative !important;
+    z-index:2 !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    .hero-actions{
+        left:8px !important;
+        right:8px !important;
+        transform:none !important;
+
+        width:auto !important;
+        max-width:none !important;
+
+        padding:8px !important;
+
+        scroll-snap-type:x mandatory !important;
+    }
+
+    .hero-actions .btn,
+    .hero-actions .hero-whatsapp,
+    .hero-actions .top-user-pill{
+        scroll-snap-align:start !important;
+    }
+
+    .hero-actions .btn{
+        flex:0 0 120px !important;
+        width:120px !important;
+        min-width:120px !important;
+        max-width:120px !important;
+
+        height:78px !important;
+        min-height:78px !important;
+    }
+
+    .hero-actions .btn.purple{
+        flex:0 0 135px !important;
+        width:135px !important;
+        min-width:135px !important;
+        max-width:135px !important;
+    }
+
+    .hero-actions .hero-whatsapp{
+        flex:0 0 76px !important;
+        width:76px !important;
+        min-width:76px !important;
+        max-width:76px !important;
+
+        height:78px !important;
+        min-height:78px !important;
+    }
+
+    .hero-actions .top-user-pill{
+        height:78px !important;
+        min-height:78px !important;
+    }
+}
+
 </style>
 
 
