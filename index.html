@@ -6111,6 +6111,216 @@ body:not(.azobss-logged-in) .top-user-pill{
     }
 }
 
+
+/* =========================================================
+FINAL TOPBAR ALIGNMENT REPAIR
+========================================================= */
+
+/* main topbar */
+.hero-actions{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    flex-wrap:nowrap !important;
+
+    gap:12px !important;
+
+    width:min(1220px, calc(100vw - 40px)) !important;
+    max-width:min(1220px, calc(100vw - 40px)) !important;
+
+    padding:12px 14px !important;
+    min-height:84px !important;
+
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+
+    scrollbar-width:none !important;
+}
+
+.hero-actions::-webkit-scrollbar{
+    display:none !important;
+}
+
+/* ALL cards same clean size */
+.hero-actions .btn{
+    flex:0 0 190px !important;
+    width:190px !important;
+    min-width:190px !important;
+    max-width:190px !important;
+
+    height:72px !important;
+    min-height:72px !important;
+
+    border-radius:20px !important;
+
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+
+    padding:10px 14px !important;
+
+    overflow:hidden !important;
+}
+
+/* icon */
+.hero-actions .btn .hero-action-icon{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    flex:0 0 42px !important;
+
+    border-radius:50% !important;
+
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+
+    margin-right:12px !important;
+
+    overflow:hidden !important;
+}
+
+/* text */
+.hero-actions .btn span:last-child{
+    font-size:13px !important;
+    line-height:1.15 !important;
+    text-align:left !important;
+
+    white-space:normal !important;
+    word-break:break-word !important;
+
+    overflow:hidden !important;
+}
+
+/* PA card specifically */
+.hero-actions #heroRequestButton{
+    background:linear-gradient(135deg,#2563eb,#3b82f6) !important;
+}
+
+.hero-actions #heroRequestButton span:last-child{
+    max-width:100px !important;
+}
+
+/* giveaway slightly wider */
+.hero-actions .btn.purple{
+    flex:0 0 210px !important;
+    width:210px !important;
+    min-width:210px !important;
+    max-width:210px !important;
+}
+
+/* whatsapp */
+.hero-actions .hero-whatsapp{
+    flex:0 0 72px !important;
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+
+    height:72px !important;
+    min-height:72px !important;
+
+    border-radius:20px !important;
+}
+
+/* user pill */
+.hero-actions .top-user-pill{
+    margin-left:auto !important;
+
+    height:72px !important;
+    min-height:72px !important;
+
+    padding:0 16px !important;
+
+    border-radius:20px !important;
+
+    display:flex !important;
+    align-items:center !important;
+    gap:12px !important;
+
+    overflow:visible !important;
+
+    flex:0 0 auto !important;
+    min-width:max-content !important;
+}
+
+/* avatar */
+.hero-actions .top-user-avatar{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    flex:0 0 42px !important;
+}
+
+/* username */
+.hero-actions .top-user-name{
+    white-space:nowrap !important;
+    overflow:visible !important;
+    font-size:14px !important;
+}
+
+/* logout */
+.hero-actions .top-user-logout{
+    height:36px !important;
+    padding:0 14px !important;
+    border-radius:12px !important;
+    white-space:nowrap !important;
+}
+
+/* hide sign in/up once logged in */
+body.azobss-logged-in .top-auth-btn{
+    display:none !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    .hero-actions{
+        width:auto !important;
+        max-width:none !important;
+
+        left:8px !important;
+        right:8px !important;
+        transform:none !important;
+
+        padding:8px !important;
+        min-height:96px !important;
+
+        gap:8px !important;
+    }
+
+    .hero-actions .btn{
+        flex:0 0 145px !important;
+        width:145px !important;
+        min-width:145px !important;
+        max-width:145px !important;
+
+        height:84px !important;
+        min-height:84px !important;
+    }
+
+    .hero-actions .btn.purple{
+        flex:0 0 170px !important;
+        width:170px !important;
+        min-width:170px !important;
+        max-width:170px !important;
+    }
+
+    .hero-actions .hero-whatsapp{
+        flex:0 0 76px !important;
+        width:76px !important;
+        min-width:76px !important;
+        max-width:76px !important;
+
+        height:84px !important;
+        min-height:84px !important;
+    }
+
+    .hero-actions .top-user-pill{
+        height:84px !important;
+        min-height:84px !important;
+    }
+}
+
 </style>
 
 
