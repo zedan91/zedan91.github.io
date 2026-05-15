@@ -254,69 +254,70 @@ function shortenDescription(text, fallbackTitle) {
   return `${fallbackTitle || 'Produk ini'} sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.`;
 }
 
-function titleToIcon(title) {
+
+function titleRule(title) {
   const t = String(title || '').toLowerCase();
-  if (/ssd|nvme|hard disk|hdd|ram|router|wifi|pc|laptop|keyboard|mouse|monitor|usb|type-c|charger/.test(t)) return /ssd|nvme/.test(t) ? 'SSD' : 'PC';
-  if (/vacuum|mop|clean|penyapu|habuk/.test(t)) return '🧹';
-  if (/car|kereta|dashcam|tyre|tayar|automotive|motor/.test(t)) return '🚗';
-  if (/camera|drone|cctv|webcam/.test(t)) return 'CAM';
-  if (/bag|wallet|beg/.test(t)) return '👜';
-  if (/shoe|kasut|sandal/.test(t)) return '👟';
-  if (/baju|shirt|dress|clothes|tudung|hijab/.test(t)) return '👕';
-  if (/watch|jam tangan/.test(t)) return '⌚';
-  if (/baby|toy|mainan/.test(t)) return '🧸';
-  if (/food|coklat|chocolate|snack|kopi|coffee|grocery/.test(t)) return '🍫';
-  if (/sport|outdoor|camp|gym/.test(t)) return '🏕️';
-  if (/book|game|hobby/.test(t)) return '🎮';
-  return '🛒';
+  const has = (re) => re.test(t);
+
+  if (has(/tefal|supercook|cookware|frypan|frying pan|wok|stewpot|soup pot|casserole|saucepan|pan\b|\bpot\b|spatula|ladle|knife|chopper|cutlery|kitchen|dapur|periuk|kuali|penggoreng|senduk|pinggan|mangkuk|bekas makanan|food container|lunch box|tupperware|thermos|flask/)) {
+    return { category:'home-living', badge:'Kitchen Essentials', icon:'🍳', meta:'Best for cooking and daily kitchen use' };
+  }
+  if (has(/air fryer|rice cooker|pressure cooker|multi cooker|slow cooker|induction cooker|microwave|oven|toaster|blender|mixer|food processor|meat grinder|grinder|kettle|water dispenser|coffee maker|juicer|appliance|mesin basuh|washing machine|refrigerator|fridge|freezer|iron|steam iron/)) {
+    return { category:'home-appliances', badge:'Home Appliance', icon:'🔌', meta:'Best for easier daily home use' };
+  }
+  if (has(/vacuum|cordless vacuum|handheld vacuum|cleaner|mop|spin mop|robot vacuum|penyapu|habuk|dust|lint remover|washer|cleaning|pembersih|detergent|sabun lantai|trash bin|tong sampah/)) {
+    return { category:'home-living', badge:'Cleaning Gadget', icon:'🧹', meta:'Best for home and car cleaning' };
+  }
+  if (has(/ssd|nvme|m\.2|hard disk|hdd|ram|ddr4|ddr5|gpu|rtx|gtx|radeon|processor|cpu|motherboard|pc case|power supply|psu|monitor|keyboard|mouse|gaming mouse|printer|scanner|webcam|usb hub|type-c hub|laptop stand|thermal paste|cooling fan|cooler|speaker|headset|earphone|microphone|mic|capture card/)) {
+    return { category:'computer', badge: has(/ssd|nvme|m\.2|storage/) ? 'Fast Storage' : 'Computer & Accessories', icon:'💻', meta: has(/ssd|nvme|m\.2/) ? 'Best for Windows and game loading' : 'Best for PC setup and daily use' };
+  }
+  if (has(/router|wifi|wi-fi|mesh|modem|lan cable|ethernet|network|5g router|4g router|repeater|extender|switch hub/)) {
+    return { category:'computer', badge:'Networking', icon:'5G', meta:'Best for stronger home internet setup' };
+  }
+  if (has(/iphone|android|smartphone|phone|telefon|phone case|casing|screen protector|tempered glass|charger|fast charger|powerbank|power bank|usb c|type c|lightning cable|cable|adapter|magsafe|holder phone|phone holder|tripod phone/)) {
+    return { category:'mobile', badge:'Daily Tech', icon:'📱', meta:'Useful mobile gadget for daily use' };
+  }
+  if (has(/dashcam|dash cam|car camera|car vacuum|car charger|jump starter|tyre|tire|tayar|automotive|kereta|motor|motorcycle|car mat|carpet car|seat cover|car holder|windshield|wiper|engine oil|minyak hitam|polish|wax|coating/)) {
+    return { category:'automotive', badge:'Car Essential', icon:'🚗', meta:'Best for daily car use' };
+  }
+  if (has(/camera|dslr|mirrorless|action cam|gopro|drone|dji|cctv|ip camera|webcam|lens|tripod|gimbal|stabilizer|ring light|lighting/)) {
+    return { category:'camera', badge:'Camera Gear', icon:'CAM', meta:'Best for photo, video and content setup' };
+  }
+  if (has(/ps5|ps4|xbox|nintendo|switch|console|controller|gamepad|gaming chair|gaming desk|game\b|games\b/)) {
+    return { category:'gaming', badge:'Gaming Gear', icon:'🎮', meta:'Best for gaming setup' };
+  }
+  if (has(/watch|smartwatch|smart watch|jam tangan|casio|seiko|g-shock|gshock/)) return { category:'watches', badge:'Watch Pick', icon:'⌚', meta:'Daily watch and style item' };
+  if (has(/handbag|tote bag|women bag|beg wanita|purse|sling bag wanita|shoulder bag/)) return { category:'womens-bags', badge:'Bag Pick', icon:'👜', meta:'Useful bag for daily carry' };
+  if (has(/wallet|dompet|men bag|beg lelaki|sling bag lelaki|crossbody bag|card holder/)) return { category:'mens-bags', badge:'Daily Carry', icon:'👝', meta:'Best for wallet and daily carry' };
+  if (has(/dress|blouse|skirt|women clothes|baju perempuan|kurung|kebaya|abaya|jubah wanita/)) return { category:'women-clothes', badge:'Women Fashion', icon:'👗', meta:'Popular fashion item' };
+  if (has(/shirt|tshirt|t-shirt|polo|men clothes|baju lelaki|seluar lelaki|pants|jeans|shorts|hoodie|jacket/)) return { category:'men-clothes', badge:'Men Fashion', icon:'👕', meta:'Daily men fashion item' };
+  if (has(/tudung|hijab|shawl|telekung|kopiah|sejadah|muslim|jubah|abaya/)) return { category:'muslim', badge:'Muslim Fashion', icon:'🧕', meta:'Useful Muslim fashion item' };
+  if (has(/women shoe|heels|high heel|flat shoe|kasut wanita|sandal wanita/)) return { category:'women-shoes', badge:'Women Shoes', icon:'👠', meta:'Daily footwear pick' };
+  if (has(/shoe|shoes|sneaker|kasut|sandal|slipper|boots/)) return { category:'men-shoes', badge:'Shoes Pick', icon:'👟', meta:'Daily footwear pick' };
+  if (has(/beauty|skincare|skin care|makeup|serum|sunscreen|moisturizer|cleanser|lipstick|perfume|health|supplement|masker|facial|shampoo|hair dryer|trimmer|shaver/)) return { category:'health', badge:'Self Care', icon:'✨', meta:'Best for self care and daily routine' };
+  if (has(/baby|kids|kid|toy|toys|mainan|stroller|milk bottle|botol susu|diaper|lampin|school bag|beg sekolah/)) return { category:'baby', badge:'Baby & Kids', icon:'🧸', meta:'Useful for baby and kids' };
+  if (has(/food|coklat|chocolate|snack|biscuit|cookies|kopi|coffee|tea|grocery|groceries|minuman|makanan|instant noodle|pet food|cat food|dog food|kibble/)) return { category:'groceries', badge: has(/chocolate|coklat/) ? 'Chocolate' : 'Groceries', icon:'🍫', meta:'Best for snack, grocery or daily stock' };
+  if (has(/gym|dumbbell|fitness|yoga|cycling|bicycle|sport|sports|outdoor|camping|camp|tent|hiking|fishing|badminton|football/)) return { category:'sports', badge:'Sports & Outdoor', icon:'🏕️', meta:'Best for workout and outdoor activity' };
+  if (has(/book|books|novel|komik|comic|stationery|alat tulis|hobby|puzzle|lego|model kit/)) return { category:'books', badge:'Books & Hobby', icon:'📚', meta:'Best for reading and hobby' };
+  if (has(/travel|luggage|bagasi|suitcase|passport holder|neck pillow|travel bag|organizer travel/)) return { category:'travel', badge:'Travel Essential', icon:'🧳', meta:'Best for travel and packing' };
+  if (has(/ticket|voucher|coupon|topup|reload|gift card/)) return { category:'tickets', badge:'Voucher', icon:'🎟️', meta:'Ticket, voucher or digital item' };
+  return { category:'others', badge:'Useful Item', icon:'🛒', meta:'Best for useful daily item' };
+}
+
+function titleToIcon(title) {
+  return titleRule(title).icon;
 }
 
 function titleToCategory(title) {
-  const t = String(title || '').toLowerCase();
-  if (/ssd|nvme|hard disk|hdd|ram|router|wifi|pc|laptop|keyboard|mouse|monitor|usb|type-c|charger|printer/.test(t)) return 'computer';
-  if (/phone|iphone|android|case|screen protector|powerbank/.test(t)) return 'mobile';
-  if (/vacuum|mop|organizer|rack|lamp|sofa|home|rumah|clean/.test(t)) return 'home-living';
-  if (/air fryer|blender|kettle|rice cooker|appliance/.test(t)) return 'home-appliances';
-  if (/car|kereta|dashcam|tyre|tayar|automotive|motor/.test(t)) return 'automotive';
-  if (/camera|drone|cctv|webcam/.test(t)) return 'camera';
-  if (/watch|jam tangan/.test(t)) return 'watches';
-  if (/bag|handbag|tote|purse/.test(t)) return 'womens-bags';
-  if (/wallet|men bag|sling bag/.test(t)) return 'mens-bags';
-  if (/dress|women clothes|baju perempuan/.test(t)) return 'women-clothes';
-  if (/shirt|tshirt|men clothes|baju lelaki/.test(t)) return 'men-clothes';
-  if (/shoe|kasut|sneaker|sandal/.test(t)) return 'men-shoes';
-  if (/tudung|hijab|muslim/.test(t)) return 'muslim';
-  if (/beauty|skin|makeup|health|serum/.test(t)) return 'health';
-  if (/baby|toy|mainan/.test(t)) return 'baby';
-  if (/food|coklat|chocolate|snack|kopi|coffee|grocery|pet/.test(t)) return 'groceries';
-  if (/sport|outdoor|camp|gym/.test(t)) return 'sports';
-  if (/game|console|controller/.test(t)) return 'gaming';
-  if (/book|hobby/.test(t)) return 'books';
-  if (/travel|luggage|bagasi/.test(t)) return 'travel';
-  return 'others';
+  return titleRule(title).category;
 }
 
 function titleToBadge(title, category) {
-  const t = String(title || '').toLowerCase();
-  if (/ssd|nvme|storage/.test(t)) return 'Fast Storage';
-  if (/router|wifi|5g/.test(t)) return 'Networking';
-  if (/vacuum|mop|clean/.test(t)) return 'Cleaning Gadget';
-  if (/car|kereta|dashcam/.test(t)) return 'Car Gadget';
-  if (/chocolate|coklat|snack/.test(t)) return 'Chocolate';
-  if (category === 'computer') return 'Computer & Accessories';
-  if (category === 'home-living') return 'Home Useful Item';
-  return 'Useful Item';
+  return titleRule(title).badge;
 }
 
 function titleToMeta(title, category) {
-  const t = String(title || '').toLowerCase();
-  if (/ssd|nvme/.test(t)) return 'Best for Windows and game loading';
-  if (/router|wifi/.test(t)) return 'Best for stronger home internet setup';
-  if (/vacuum|mop|clean/.test(t)) return 'Best for car and home cleaning';
-  if (/car|kereta|dashcam/.test(t)) return 'Best for daily car use';
-  if (/chocolate|coklat|snack/.test(t)) return 'Best for snack and gift idea';
-  if (category === 'computer') return 'Best for PC setup and daily use';
-  return 'Best for useful daily item';
+  return titleRule(title).meta;
 }
 
 function cleanShopeeTitle(title) {
