@@ -210,11 +210,11 @@
     }
 
     if(has(/camera|dslr|mirrorless|action cam|gopro|drone|dji|cctv|ip camera|webcam|lens|tripod|gimbal|stabilizer|ring light|lighting/)){
-      return {category:'camera', badge:'Camera Gear', icon:'CAM', meta:'Best for photo, video and content setup', desc:'sesuai untuk rakaman gambar, video, keselamatan atau content creation. Berguna untuk kerja harian dan setup kreatif.'};
+      return {category:'cameras-drones', badge:'Camera Gear', icon:'CAM', meta:'Best for photo, video and content setup', desc:'sesuai untuk rakaman gambar, video, keselamatan atau content creation. Berguna untuk kerja harian dan setup kreatif.'};
     }
 
     if(has(/ps5|ps4|xbox|nintendo|switch|console|controller|gamepad|gaming chair|gaming desk|game\b|games\b/)){
-      return {category:'gaming', badge:'Gaming Gear', icon:'🎮', meta:'Best for gaming setup', desc:'sesuai untuk setup gaming dan hiburan. Berguna untuk pengalaman bermain yang lebih selesa.'};
+      return {category:'gaming-consoles', badge:'Gaming Gear', icon:'🎮', meta:'Best for gaming setup', desc:'sesuai untuk setup gaming dan hiburan. Berguna untuk pengalaman bermain yang lebih selesa.'};
     }
 
     if(has(/watch|smartwatch|smart watch|jam tangan|casio|seiko|g-shock|gshock/)){
@@ -254,11 +254,11 @@
     }
 
     if(has(/baby|kids|kid|toy|toys|mainan|stroller|milk bottle|botol susu|diaper|lampin|school bag|beg sekolah/)){
-      return {category:'baby', badge:'Baby & Kids', icon:'🧸', meta:'Useful for baby and kids', desc:'sesuai untuk bayi, kanak-kanak atau kegunaan keluarga. Praktikal untuk keperluan harian.'};
+      return {category:'baby-toys', badge:'Baby & Kids', icon:'🧸', meta:'Useful for baby and kids', desc:'sesuai untuk bayi, kanak-kanak atau kegunaan keluarga. Praktikal untuk keperluan harian.'};
     }
 
     if(has(/food|coklat|chocolate|snack|biscuit|cookies|kopi|coffee|tea|grocery|groceries|minuman|makanan|instant noodle|pet food|cat food|dog food|kibble/)){
-      return {category:'groceries', badge: has(/chocolate|coklat/) ? 'Chocolate' : 'Groceries', icon:'🍫', meta:'Best for snack, grocery or daily stock', desc:'sesuai untuk stok harian, kudapan atau keperluan rumah. Semak detail produk sebelum membeli.'};
+      return {category:'groceries-pets', badge: has(/chocolate|coklat/) ? 'Chocolate' : 'Groceries', icon:'🍫', meta:'Best for snack, grocery or daily stock', desc:'sesuai untuk stok harian, kudapan atau keperluan rumah. Semak detail produk sebelum membeli.'};
     }
 
     if(has(/gym|dumbbell|fitness|yoga|cycling|bicycle|sport|sports|outdoor|camping|camp|tent|hiking|fishing|badminton|football/)){
@@ -562,7 +562,7 @@
     const text = String([categoryText, titleText, descText].join(' ')).toLowerCase();
 
     if(/chocolate|coklat|candy|snack|food|grocery|groceries|minuman|drink|coffee|tea|biscuit|milk|halal|caramel/.test(text)){
-      return { category:'groceries', badge:'Groceries', icon:'🛒', meta:'Best for daily food and grocery items' };
+      return { category:'groceries-pets', badge:'Groceries', icon:'🛒', meta:'Best for daily food and grocery items' };
     }
 
     if(/oven|steam oven|microwave|air fryer|rice cooker|pressure cooker|induction cooker|kettle|toaster|air conditioner|aircond|vacuum|washing machine|fridge|refrigerator|blender|mixer|chopper|juicer|food processor/.test(text)){
@@ -582,23 +582,23 @@
     }
 
     if(/dashcam|camera|cctv|tapo|drone|gopro|lens|4k|cam/.test(text)){
-      return { category:'camera', badge:'Camera', icon:'📷', meta:'Best for recording and monitoring' };
+      return { category:'cameras-drones', badge:'Camera', icon:'📷', meta:'Best for recording and monitoring' };
     }
 
     if(/playstation|ps5|xbox|nintendo|console|gamepad|gaming console/.test(text)){
-      return { category:'gaming', badge:'Gaming Console', icon:'🎮', meta:'Best for home gaming setup' };
+      return { category:'gaming-consoles', badge:'Gaming Console', icon:'🎮', meta:'Best for home gaming setup' };
     }
 
     if(/automotive|dashcam|car|motor|tyre|tire|jump starter|kereta|sandal car|car mat|car vacuum/.test(text)){
       return { category:'automotive', badge:'Car Essential', icon:'🚗', meta:'Useful for car and travel' };
     }
 
-    if(/watch|smartwatch|band|huawei band|mi band|fitness tracker/.test(text)){
+    if(/smartwatch|smart watch|watch|ultra watch|t900|t800|t500|huawei band|mi band|fitness tracker|health watch|sport watch|bluetooth call/.test(text)){
       return { category:'watches', badge:'Smartwatch', icon:'⌚', meta:'Best for fitness and daily tracking' };
     }
 
     if(/baby|kids|toy|stroller|milk bottle|milk powder|bekas susu|diaper|formula/.test(text)){
-      return { category:'baby', badge:'Baby Essentials', icon:'🍼', meta:'Best for baby and kids use' };
+      return { category:'baby-toys', badge:'Baby Essentials', icon:'🍼', meta:'Best for baby and kids use' };
     }
 
     if(/sport|sports|gym|fitness|dumbbell|cycling|outdoor|camping|exercise/.test(text)){
@@ -606,7 +606,7 @@
     }
 
     if(/shoe|sandal|shirt|dress|bag|wallet|watch|fashion|blouse|pants|jeans|men|women/.test(text)){
-      return { category:'fashion', badge:'Fashion', icon:'👜', meta:'Popular fashion item' };
+      return { category:'fashion-accessories', badge:'Fashion Accessories', icon:'👜', meta:'Popular fashion item' };
     }
 
     return { category:'others', badge:'Useful Item', icon:'🛒', meta:'Best for useful daily item' };
