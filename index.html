@@ -6321,6 +6321,98 @@ body.azobss-logged-in .top-auth-btn{
     }
 }
 
+
+/* =========================================================
+FIX SIGN IN / SIGN UP CARD ISSUES
+========================================================= */
+
+/* auth wrapper */
+.hero-actions .top-auth-wrap{
+    display:flex !important;
+    align-items:center !important;
+    gap:10px !important;
+    flex:0 0 auto !important;
+}
+
+/* sign in + sign up */
+.hero-actions .top-auth-btn{
+    flex:0 0 auto !important;
+
+    min-width:110px !important;
+    width:auto !important;
+
+    height:58px !important;
+    min-height:58px !important;
+
+    padding:0 18px !important;
+
+    border-radius:18px !important;
+
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+
+    white-space:nowrap !important;
+    overflow:hidden !important;
+
+    position:relative !important;
+    z-index:5 !important;
+}
+
+/* sign in */
+.hero-actions .top-auth-btn.signin-btn{
+    background:rgba(15,23,42,.88) !important;
+    border:1px solid rgba(148,163,184,.22) !important;
+}
+
+/* sign up */
+.hero-actions .top-auth-btn.signup-btn{
+    background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+    border:none !important;
+}
+
+/* prevent clipping */
+.hero-actions .top-auth-btn span{
+    font-size:14px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+}
+
+/* once login -> hide auth */
+body.azobss-logged-in .top-auth-wrap,
+body.azobss-logged-in .top-auth-btn{
+    display:none !important;
+}
+
+/* user pill spacing after login */
+body.azobss-logged-in .top-user-pill{
+    margin-left:auto !important;
+}
+
+/* fix right side overlap */
+.hero-actions{
+    padding-right:18px !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    .hero-actions .top-auth-btn{
+        min-width:100px !important;
+        height:72px !important;
+        min-height:72px !important;
+
+        border-radius:18px !important;
+
+        padding:0 14px !important;
+    }
+
+    .hero-actions .top-auth-btn span{
+        font-size:13px !important;
+    }
+}
+
 </style>
 
 
