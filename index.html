@@ -3252,6 +3252,44 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   }
 }
 
+
+/* Affiliate card description clamp */
+.affiliate-product-card .affiliate-desc,
+.affiliate-product-card p{
+  max-height: 118px;
+  overflow: hidden;
+  position: relative;
+}
+
+.affiliate-product-card.is-expanded .affiliate-desc,
+.affiliate-product-card.is-expanded p{
+  max-height: none;
+}
+
+.affiliate-show-more-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgba(59,130,246,.75);
+  border-radius: 9px;
+  background: rgba(15,43,91,.8);
+  color: #dbeafe;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.affiliate-show-more-btn:hover{
+  background: rgba(37,99,235,.95);
+}
+
+.affiliate-product-card{
+  min-height: 0 !important;
+}
+
 </style>
 
 
@@ -9831,6 +9869,46 @@ display:none !important;
   window.addEventListener('load',bind);
   setTimeout(bind,300);setTimeout(bind,1200);setTimeout(bind,2500);
 })();
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  function setupAffiliateShowMore(){
+    document.querySelectorAll('.affiliate-product-card').forEach(function(card){
+      if(card.dataset.showMoreReady === '1') return;
+
+      const desc = card.querySelector('.affiliate-desc') || card.querySelector('p');
+      if(!desc) return;
+
+      card.dataset.showMoreReady = '1';
+
+      setTimeout(function(){
+        if(desc.scrollHeight <= 125) return;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'affiliate-show-more-btn';
+        btn.textContent = 'Show More';
+
+        btn.addEventListener('click', function(){
+          const expanded = card.classList.toggle('is-expanded');
+          btn.textContent = expanded ? 'Hide' : 'Show More';
+        });
+
+        desc.insertAdjacentElement('afterend', btn);
+      }, 50);
+    });
+  }
+
+  setupAffiliateShowMore();
+
+  const affiliateArea = document.getElementById('affiliateProducts') || document.body;
+  const obs = new MutationObserver(function(){
+    setupAffiliateShowMore();
+  });
+  obs.observe(affiliateArea, {childList:true, subtree:true});
+});
 </script>
 
 </body>
