@@ -23,7 +23,7 @@ Struktur:
    - service akan guna folder `/backend`
 
 4. Set Environment Variables di Render:
-   - ADMIN_KEY = password admin anda
+   - ADMIN_KEY = optional sahaja, versi ini NO PASSWORD MODE
    - PUBLIC_BASE_URL = URL Render backend selepas deploy
    - CORS_ORIGIN = https://azobss.com
    - TZ = Asia/Kuala_Lumpur

@@ -11953,17 +11953,12 @@ window.AZOBSS_LUCKY_DRAW_API = window.AZOBSS_LUCKY_DRAW_API || 'https://azobss-l
   const api = () => (window.AZOBSS_LUCKY_DRAW_API || '').replace(/\/$/, '');
 
   function getAdminKey(){
-    let key = localStorage.getItem('azobssLuckyDrawAdminKey') || '';
-    if(!key){
-      key = prompt('Masukkan ADMIN_KEY Render backend:') || '';
-      if(key) localStorage.setItem('azobssLuckyDrawAdminKey', key);
-    }
-    return key;
+    return '';
   }
 
   async function apiFetch(path, options = {}){
     const headers = options.headers || {};
-    if(options.admin) headers['x-admin-key'] = getAdminKey();
+    // No password mode: backend does not require ADMIN_KEY.
     return fetch(api() + path, { ...options, headers });
   }
 

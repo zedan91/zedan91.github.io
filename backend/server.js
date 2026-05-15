@@ -76,7 +76,9 @@ function isAdmin(req) {
 }
 
 function requireAdmin(req, res, next) {
-  if (!isAdmin(req)) return res.status(401).json({ ok: false, error: "Admin key invalid / missing" });
+  // NO PASSWORD MODE:
+  // Admin actions are allowed without ADMIN_KEY.
+  // Keep CORS_ORIGIN restricted to your website domain in Render settings.
   return next();
 }
 
