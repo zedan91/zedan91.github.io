@@ -1,0 +1,8 @@
+{
+  "monthKey": "default",
+  "title": "Hadiah belum diumumkan",
+  "description": "Admin boleh letak nama hadiah dan description di file Lucky-draw/giveaway-prize.json.",
+  "image": "Lucky-draw/prize-placeholder.svg",
+  "updatedAt": "",
+  "updatedBy": "admin"
+}

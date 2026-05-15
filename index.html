@@ -4054,6 +4054,25 @@ body.is-admin .lucky-draw-prize-admin{
   }
 }
 
+
+/* =========================================================
+   LUCKY-DRAW FOLDER JSON MODE
+========================================================= */
+.lucky-draw-folder-note{
+  display:block;
+  margin-top:8px;
+  color:#cbd5e1;
+  line-height:1.5;
+}
+
+.lucky-draw-folder-note b{
+  color:#22c55e;
+}
+
+.lucky-draw-prize-actions{
+  align-items:center;
+}
+
 </style>
 
 
@@ -5410,10 +5429,12 @@ display:none !important;
             <textarea id="luckyDrawPrizeDescriptionInput" placeholder="Description hadiah / barang giveaway"></textarea>
 
             <div class="lucky-draw-prize-actions">
-              <button class="btn blue" id="saveLuckyDrawPrizeButton" type="button">Save Prize</button>
+              <button class="btn blue" id="saveLuckyDrawPrizeButton" type="button">Generate JSON</button>
+              <button class="btn orange" id="downloadLuckyDrawPrizeJsonButton" type="button">Download JSON</button>
               <button class="btn orange" id="refreshLuckyDrawPrizeButton" type="button">Refresh Prize</button>
             </div>
             <div class="lucky-draw-prize-save-status" id="luckyDrawPrizeSaveStatus"></div>
+            <small class="lucky-draw-folder-note">Lucky-draw folder note: upload gambar hadiah ke <b>/Lucky-draw/</b> dan upload file <b>giveaway-prize.json</b> ke folder yang sama.</small>
           </div>
         </div>
 
@@ -6790,7 +6811,7 @@ display:none !important;
       updateLuckyDrawCountdown();
       luckyDrawCountdownTimer = setInterval(updateLuckyDrawCountdown, 1000);
       loadLuckyDrawWinner();
-      loadLuckyDrawPrize();
+      loadLuckyDrawPrizeFromGithubFolder();
     }
 
 
@@ -6806,6 +6827,164 @@ display:none !important;
           sessionStorage.removeItem(`azobssLuckyDrawJoined_${monthKey}_${currentUser.usernameKey}`);
         }
       } catch(error){}
+    }
+
+
+
+    const downloadLuckyDrawPrizeJsonButton = document.getElementById('downloadLuckyDrawPrizeJsonButton');
+    let luckyDrawSelectedPrizeFileName = '';
+
+    function getLuckyDrawPrizeJsonPath() {
+      return 'Lucky-draw/giveaway-prize.json?v=' + Date.now();
+    }
+
+    function getLuckyDrawPrizePlaceholderPath() {
+      return 'Lucky-draw/prize-placeholder.svg';
+    }
+
+    async function loadLuckyDrawPrizeFromGithubFolder() {
+      try {
+        const response = await fetch(getLuckyDrawPrizeJsonPath(), { cache: 'no-store' });
+        if (!response.ok) throw new Error('JSON not found');
+        const data = await response.json();
+
+        const imagePath = data.image || data.imageUrl || getLuckyDrawPrizePlaceholderPath();
+        if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = imagePath;
+        if (luckyDrawPrizeTitle) luckyDrawPrizeTitle.textContent = data.title || 'Hadiah belum diumumkan';
+        if (luckyDrawPrizeDescription) luckyDrawPrizeDescription.innerText = data.description || '';
+
+        if (luckyDrawPrizeTitleInput) luckyDrawPrizeTitleInput.value = data.title || '';
+        if (luckyDrawPrizeDescriptionInput) luckyDrawPrizeDescriptionInput.value = data.description || '';
+        if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = data.image || '';
+
+        setLuckyDrawPrizeStatus('');
+        return data;
+      } catch (error) {
+        const fallback = {
+          title: 'Hadiah belum diumumkan',
+          description: 'File Lucky-draw/giveaway-prize.json belum dijumpai atau belum upload ke GitHub.',
+          image: getLuckyDrawPrizePlaceholderPath()
+        };
+
+        if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = fallback.image;
+        if (luckyDrawPrizeTitle) luckyDrawPrizeTitle.textContent = fallback.title;
+        if (luckyDrawPrizeDescription) luckyDrawPrizeDescription.innerText = fallback.description;
+        setLuckyDrawPrizeStatus('Hadiah dibaca dari folder /Lucky-draw/. Upload giveaway-prize.json untuk publish.');
+        return fallback;
+      }
+    }
+
+    function buildLuckyDrawPrizeJsonPayload() {
+      const cleanFileName = luckyDrawSelectedPrizeFileName || 'prize-placeholder.svg';
+      const imagePath = cleanFileName.startsWith('Lucky-draw/')
+        ? cleanFileName
+        : 'Lucky-draw/' + cleanFileName;
+
+      return {
+        monthKey: getLuckyDrawMonthKey(),
+        title: luckyDrawPrizeTitleInput ? luckyDrawPrizeTitleInput.value.trim() : '',
+        description: luckyDrawPrizeDescriptionInput ? luckyDrawPrizeDescriptionInput.value.trim() : '',
+        image: imagePath,
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser && (currentUser.usernameKey || currentUser.name) ? (currentUser.usernameKey || currentUser.name) : 'admin'
+      };
+    }
+
+    function downloadTextFile(filename, content, type = 'application/json') {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function generateLuckyDrawPrizeJson() {
+      if (!isAdminUser(currentUser)) {
+        setLuckyDrawPrizeStatus('Admin sahaja boleh generate JSON hadiah.');
+        return;
+      }
+
+      const payload = buildLuckyDrawPrizeJsonPayload();
+
+      if (luckyDrawPrizeImage) {
+        if (luckyDrawPrizeImageDataInput && luckyDrawPrizeImageDataInput.value && luckyDrawPrizeImageDataInput.value.startsWith('data:image/')) {
+          luckyDrawPrizeImage.src = luckyDrawPrizeImageDataInput.value;
+        } else {
+          luckyDrawPrizeImage.src = payload.image;
+        }
+      }
+
+      if (luckyDrawPrizeTitle) luckyDrawPrizeTitle.textContent = payload.title || 'Hadiah Giveaway';
+      if (luckyDrawPrizeDescription) luckyDrawPrizeDescription.innerText = payload.description || '';
+
+      const pretty = JSON.stringify(payload, null, 2);
+      localStorage.setItem('azobssLuckyDrawPrizeGeneratedJson', pretty);
+
+      setLuckyDrawPrizeStatus('JSON sudah dijana. Tekan Download JSON, kemudian upload gambar + giveaway-prize.json ke folder /Lucky-draw/ di GitHub.');
+    }
+
+    function downloadLuckyDrawPrizeJson() {
+      if (!isAdminUser(currentUser)) {
+        setLuckyDrawPrizeStatus('Admin sahaja boleh download JSON hadiah.');
+        return;
+      }
+
+      const payload = buildLuckyDrawPrizeJsonPayload();
+      downloadTextFile('giveaway-prize.json', JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
+
+      setLuckyDrawPrizeStatus('File giveaway-prize.json sudah download. Upload file ini ke folder /Lucky-draw/ bersama gambar hadiah.');
+    }
+
+    if (luckyDrawPrizeImageFile) {
+      luckyDrawPrizeImageFile.addEventListener('change', function () {
+        const file = luckyDrawPrizeImageFile.files && luckyDrawPrizeImageFile.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+          setLuckyDrawPrizeStatus('Sila pilih file gambar sahaja.');
+          luckyDrawPrizeImageFile.value = '';
+          return;
+        }
+
+        luckyDrawSelectedPrizeFileName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '');
+
+        const reader = new FileReader();
+        reader.onload = function () {
+          const dataUrl = reader.result;
+          if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = dataUrl;
+          if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = dataUrl;
+          setLuckyDrawPrizeStatus(`Gambar dipilih: ${luckyDrawSelectedPrizeFileName}. Upload gambar ini ke folder /Lucky-draw/ dan Download JSON.`);
+        };
+        reader.readAsDataURL(file);
+      }, true);
+    }
+
+    if (saveLuckyDrawPrizeButton) {
+      saveLuckyDrawPrizeButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        generateLuckyDrawPrizeJson();
+      }, true);
+    }
+
+    if (downloadLuckyDrawPrizeJsonButton) {
+      downloadLuckyDrawPrizeJsonButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        downloadLuckyDrawPrizeJson();
+      }, true);
+    }
+
+    if (refreshLuckyDrawPrizeButton) {
+      refreshLuckyDrawPrizeButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        loadLuckyDrawPrizeFromGithubFolder();
+      }, true);
     }
 
 
