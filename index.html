@@ -4073,6 +4073,34 @@ body.is-admin .lucky-draw-prize-admin{
   align-items:center;
 }
 
+
+/* =========================================================
+   FIX MISSING / UNCLEAR SAVE PRIZE BUTTON
+========================================================= */
+#saveLuckyDrawPrizeButton{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:46px !important;
+  padding:12px 22px !important;
+  border-radius:14px !important;
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  color:#fff !important;
+  font-weight:1000 !important;
+  box-shadow:0 10px 26px rgba(34,197,94,.24) !important;
+}
+
+#downloadLuckyDrawPrizeJsonButton{
+  display:none !important;
+}
+
+.lucky-draw-prize-actions{
+  display:flex !important;
+  gap:10px !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+}
+
 </style>
 
 
@@ -5429,7 +5457,7 @@ display:none !important;
             <textarea id="luckyDrawPrizeDescriptionInput" placeholder="Description hadiah / barang giveaway"></textarea>
 
             <div class="lucky-draw-prize-actions">
-              <button class="btn blue" id="saveLuckyDrawPrizeButton" type="button">Generate JSON</button>
+              <button class="btn blue save-prize-main-btn" id="saveLuckyDrawPrizeButton" type="button">💾 Save Prize</button>
               <button class="btn orange" id="downloadLuckyDrawPrizeJsonButton" type="button">Download JSON</button>
               <button class="btn orange" id="refreshLuckyDrawPrizeButton" type="button">Refresh Prize</button>
             </div>
@@ -6687,7 +6715,7 @@ display:none !important;
           const dataUrl = reader.result;
           if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = dataUrl;
           if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = dataUrl;
-          setLuckyDrawPrizeStatus('Gambar sudah dipilih. Tekan Save Prize untuk simpan.');
+          setLuckyDrawPrizeStatus('Gambar sudah dipilih. Tekan Save Prize untuk simpan ke backend.');
         };
         reader.readAsDataURL(file);
       });
@@ -6924,7 +6952,7 @@ display:none !important;
       const pretty = JSON.stringify(payload, null, 2);
       localStorage.setItem('azobssLuckyDrawPrizeGeneratedJson', pretty);
 
-      setLuckyDrawPrizeStatus('JSON sudah dijana. Tekan Download JSON, kemudian upload gambar + giveaway-prize.json ke folder /Lucky-draw/ di GitHub.');
+      setLuckyDrawPrizeStatus('Tekan Save Prize untuk simpan hadiah ke backend Render.');
     }
 
     function downloadLuckyDrawPrizeJson() {
@@ -6936,7 +6964,7 @@ display:none !important;
       const payload = buildLuckyDrawPrizeJsonPayload();
       downloadTextFile('giveaway-prize.json', JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
 
-      setLuckyDrawPrizeStatus('File giveaway-prize.json sudah download. Upload file ini ke folder /Lucky-draw/ bersama gambar hadiah.');
+      setLuckyDrawPrizeStatus('JSON download dinyahaktifkan. Gunakan Save Prize untuk simpan ke backend Render.');
     }
 
     if (luckyDrawPrizeImageFile) {
@@ -6957,7 +6985,7 @@ display:none !important;
           const dataUrl = reader.result;
           if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = dataUrl;
           if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = dataUrl;
-          setLuckyDrawPrizeStatus(`Gambar dipilih: ${luckyDrawSelectedPrizeFileName}. Upload gambar ini ke folder /Lucky-draw/ dan Download JSON.`);
+          setLuckyDrawPrizeStatus(`Gambar dipilih: ${luckyDrawSelectedPrizeFileName}. Tekan Save Prize untuk simpan ke backend.`);
         };
         reader.readAsDataURL(file);
       }, true);
