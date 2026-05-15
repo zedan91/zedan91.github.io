@@ -153,7 +153,6 @@
     qs('#affiliateCategoryInput').value = product ? product.category : 'computer';
     qs('#affiliateMetaInput').value = product ? product.meta : '';
     qs('#affiliateLinkInput').value = product ? product.link : '';
-    if(qs('#affiliateFullLinkInput')) qs('#affiliateFullLinkInput').value = product ? product.link : '';
     if(qs('#affiliateManualTitleInput')) qs('#affiliateManualTitleInput').value = product ? product.title : '';
     setDetectStatus('Paste full Shopee product link, click Auto Detect. Jika Shopee block, tekan Open dan copy tajuk produk ke backup.', false);
     setTitleFillStatus('Backup paling stabil: paste tajuk produk Shopee, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.', false);
@@ -334,17 +333,6 @@
     if(data.meta) qs('#affiliateMetaInput').value = data.meta;
     if(data.finalUrl) qs('#affiliateLinkInput').value = data.finalUrl;
   }
-
-
-  function openAffiliateProductLink(){
-    if(!adminDetected()) return;
-    const fullInput = qs('#affiliateFullLinkInput');
-    const affiliateInput = qs('#affiliateLinkInput');
-    const link = (fullInput?.value || affiliateInput?.value || '').trim();
-    if(!link){
-      setDetectStatus('Sila paste Shopee product link dahulu sebelum Open.', true);
-      return;
-    }
     if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = link;
     window.open(link, '_blank', 'noopener');
     const manual = qs('#affiliateManualTitleInput');
@@ -357,9 +345,7 @@
   async function autoDetectAffiliateProduct(){
     if(!adminDetected()) return;
 
-    const fullInput = qs('#affiliateFullLinkInput');
     const affiliateInput = qs('#affiliateLinkInput');
-    const btn = qs('#affiliateAutoDetectButton');
     const link = (fullInput?.value || affiliateInput?.value || '').trim();
 
     if(!link){
@@ -713,7 +699,6 @@
     // Link yang dipaste di Affiliate Link ialah link affiliate/product utama.
     // Auto isi Affiliate Link jika masih kosong, tetapi jangan overwrite jika user sudah edit manual.
     const affiliateInput = qs('#affiliateLinkInput');
-    const fullInput = qs('#affiliateFullLinkInput');
     if(affiliateInput) affiliateInput.value = url;
     if(fullInput) fullInput.value = url;
 
@@ -874,7 +859,6 @@
       // Link dari Affiliate Link ialah link yang user mahu simpan sebagai Affiliate Link.
       // Isi hanya jika Affiliate Link masih kosong supaya link yang user edit manual tidak hilang.
       const affiliateInput = qs('#affiliateLinkInput');
-      const full = qs('#affiliateFullLinkInput');
       if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = preferredLink;
       if(full && !full.value.trim()) full.value = preferredLink;
     }
@@ -922,8 +906,6 @@
 
     qs('#affiliateAdminClose')?.addEventListener('click', closeModal);
 
-    qs('#affiliateAutoDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
-    qs('#affiliateOpenProductButton')?.addEventListener('click', openAffiliateProductLink);
     qs('#affiliateTitleAutoFillButton')?.addEventListener('click', autoFillAffiliateFromTitle);
     qs('#affiliateCopyJsonExtractorButton')?.addEventListener('click', copyShopeeJsonExtractorScript);
     qs('#affiliateJsonOpenLinkButton')?.addEventListener('click', openShopeeForJsonExtension);
