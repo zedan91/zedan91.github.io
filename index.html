@@ -4196,6 +4196,185 @@ button[class*="signup" i]{
   }
 }
 
+
+/* FINAL FIX: one-row floating topbar, no wrap */
+.hero-actions{
+  position: fixed !important;
+  top: 14px !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+  width: max-content !important;
+  max-width: calc(100vw - 28px) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border-radius: 22px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+  background: rgba(7,13,27,.78) !important;
+  border: 1px solid rgba(148,163,184,.22) !important;
+  box-shadow: 0 18px 52px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(18px) !important;
+  animation: none !important;
+}
+
+.hero-actions::-webkit-scrollbar{
+  display:none !important;
+}
+
+.hero-actions .btn{
+  flex: 0 0 138px !important;
+  width: 138px !important;
+  min-width: 138px !important;
+  max-width: 138px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  margin: 0 !important;
+  padding: 7px 9px !important;
+  border-radius: 15px !important;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  font-size: 11px !important;
+  line-height: 1.05 !important;
+  font-weight: 800 !important;
+}
+
+.hero-actions .btn.purple{
+  flex-basis: 150px !important;
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+.hero-action-icon{
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 16px !important;
+}
+
+.hero-actions .btn span:last-child{
+  display: block !important;
+  max-width: 86px !important;
+  font-size: 11px !important;
+  line-height: 1.05 !important;
+}
+
+.hero-actions .btn small{
+  font-size: 8.5px !important;
+}
+
+/* auth buttons inside same row */
+.hero-actions .top-auth-btn{
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 72px !important;
+  max-width: 78px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  margin: 0 !important;
+  padding: 7px 9px !important;
+  border-radius: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+/* WhatsApp icon one fixed circle, no drop below */
+.hero-actions .hero-whatsapp{
+  flex: 0 0 50px !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  margin: 0 !important;
+  padding: 5px !important;
+  border-radius: 15px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.hero-whatsapp-icon{
+  flex: 0 0 36px !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+}
+
+.hero-whatsapp-icon svg{
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.hero-whatsapp-text{
+  display:none !important;
+}
+
+/* Hide old separate login/user/guest widget so it does not disturb topbar */
+.user-status,
+.user-panel,
+.visitor-widget,
+.online-widget,
+.traffic-widget,
+#userStatus,
+#visitorWidget,
+#loginStatus,
+#authStatus,
+[id*="visitor" i],
+[class*="visitor" i],
+[class*="guest" i]{
+  display:none !important;
+}
+
+/* hide old floating sign buttons outside topbar */
+body > .floating-auth,
+body > .auth-floating,
+body > .auth-buttons,
+body > .login-floating,
+#authFloating,
+#floatingAuth,
+#loginFloating,
+#authButtons{
+  display:none !important;
+}
+
+.hero{
+  padding-top: 128px !important;
+}
+
+@media(max-width: 950px){
+  .hero-actions{
+    left: 8px !important;
+    right: 8px !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    justify-content: flex-start !important;
+  }
+}
+
 </style>
 
 
