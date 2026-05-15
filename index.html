@@ -4005,6 +4005,13 @@ display:none !important;
       <label>
         Affiliate Link
         <input id="affiliateLinkInput" type="url" placeholder="https://s.shopee.com.my/..." required>
+        <div class="affiliate-detect-row" style="margin-top:8px">
+          <button class="affiliate-admin-btn" id="affiliateJsonOpenLinkButton" type="button">✅ Accept & Open Shop</button>
+          <button class="affiliate-admin-btn" id="affiliateCopyJsonExtractorButton" type="button">📋 Copy Console Script</button>
+          <button class="affiliate-admin-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
+          <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
+        </div>
+        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Paste link Shopee dalam Affiliate Link → Accept & Open Shop. Sistem akan copy console script dulu, kemudian buka Shopee. Di Shopee: F12 → Console → Ctrl+V → Enter untuk auto download JSON.</small>
       </label>
 
       <label>
@@ -4024,20 +4031,6 @@ display:none !important;
           <button class="affiliate-admin-btn" id="affiliateTitleAutoFillButton" type="button">✨ Auto Fill</button>
         </div>
         <small id="affiliateTitleFillStatus" class="affiliate-detect-status">Backup paling stabil: paste tajuk produk Shopee, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.</small>
-      </label>
-
-      <label>
-        Shopee JSON Auto Import
-        <div class="affiliate-detect-row">
-          <input id="affiliateJsonShopeeLinkInput" type="url" placeholder="Paste Shopee link untuk buka dengan extension">
-          <button class="affiliate-admin-btn" id="affiliateJsonOpenLinkButton" type="button">✅ Accept & Open Shopee</button>
-        </div>
-        <div class="affiliate-detect-row" style="margin-top:8px">
-          <button class="affiliate-admin-btn" id="affiliateCopyJsonExtractorButton" type="button">📋 Copy Console Script</button>
-          <button class="affiliate-admin-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
-          <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
-        </div>
-        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Paste link Shopee → Accept & Open Shopee. Sistem akan copy console script dulu, kemudian buka Shopee. Di Shopee: F12 → Console → Ctrl+V → Enter untuk auto download JSON. Jika extension dipasang, JSON boleh auto download tanpa console.</small>
       </label>
 
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>

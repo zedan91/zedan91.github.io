@@ -695,10 +695,10 @@
 
   async function openShopeeForJsonExtension(){
     if(!adminDetected()) return;
-    const input = qs('#affiliateJsonShopeeLinkInput');
+    const input = getShopeeJsonSourceInput();
     let url = (input?.value || '').trim();
     if(!url){
-      setJsonImportStatus('Paste link Shopee dalam ruang Shopee JSON Auto Import dahulu sebelum tekan Accept & Open.', true);
+      setJsonImportStatus('Paste link Shopee dalam kotak Affiliate Link dahulu sebelum tekan Accept & Open.', true);
       input?.focus();
       return;
     }
@@ -710,7 +710,7 @@
     }
     if(input) input.value = url;
 
-    // Link yang dipaste di Shopee JSON Auto Import ialah link affiliate/product utama.
+    // Link yang dipaste di Affiliate Link ialah link affiliate/product utama.
     // Auto isi Affiliate Link jika masih kosong, tetapi jangan overwrite jika user sudah edit manual.
     const affiliateInput = qs('#affiliateLinkInput');
     const fullInput = qs('#affiliateFullLinkInput');
@@ -868,10 +868,10 @@
     qs('#affiliateCategoryInput').value = category;
     qs('#affiliateMetaInput').value = mapped.meta;
     qs('#affiliateDescInput').value = shortenShopeeDescription(data.description, cleanTitle, category);
-    const jsonSourceLink = (qs('#affiliateJsonShopeeLinkInput')?.value || '').trim();
+    const jsonSourceLink = (qs('#affiliateLinkInput')?.value || '').trim();
     const preferredLink = jsonSourceLink || data.link;
     if(preferredLink){
-      // Link dari Shopee JSON Auto Import ialah link yang user mahu simpan sebagai Affiliate Link.
+      // Link dari Affiliate Link ialah link yang user mahu simpan sebagai Affiliate Link.
       // Isi hanya jika Affiliate Link masih kosong supaya link yang user edit manual tidak hilang.
       const affiliateInput = qs('#affiliateLinkInput');
       const full = qs('#affiliateFullLinkInput');
@@ -905,22 +905,7 @@
 
 
   function syncJsonImportBoxToAffiliateLinkBox(){
-    const jsonBox = qs('#affiliateJsonShopeeLinkInput');
-    const affiliateBox = qs('#affiliateLinkInput');
-    const fullBox = qs('#affiliateFullLinkInput');
-    if(!jsonBox || !affiliateBox) return;
-
-    const doSync = () => {
-      const value = (jsonBox.value || '').trim();
-      affiliateBox.value = value;
-      if(fullBox) fullBox.value = value;
-    };
-
-    jsonBox.removeEventListener('input', jsonBox._azobssSyncAffiliateLink || (()=>{}));
-    jsonBox._azobssSyncAffiliateLink = doSync;
-    jsonBox.addEventListener('input', doSync);
-    jsonBox.addEventListener('change', doSync);
-    jsonBox.addEventListener('paste', () => setTimeout(doSync, 0));
+    // JSON import link now uses Affiliate Link box directly.
   }
 
   function closeModal(){
