@@ -6981,6 +6981,57 @@ body.has-pa-access #heroRequestButton{
     }
 }
 
+
+/* ===== FIX PA TEXT DROPPING AFTER LOGIN ===== */
+
+#heroRequestButton{
+    align-items:center !important;
+    overflow:hidden !important;
+}
+
+#heroRequestButton .hero-action-icon{
+    align-self:center !important;
+}
+
+#heroRequestButton span:last-child{
+    position:relative !important;
+    top:0 !important;
+    bottom:auto !important;
+
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+
+    margin:0 !important;
+    padding:0 !important;
+
+    transform:none !important;
+
+    line-height:1.05 !important;
+    white-space:normal !important;
+
+    max-height:44px !important;
+    overflow:hidden !important;
+
+    text-align:left !important;
+}
+
+/* logged in state stability */
+.azobss-topbar-logged-in #heroRequestButton{
+    min-height:76px !important;
+    max-height:76px !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    #heroRequestButton span:last-child{
+        text-align:center !important;
+        max-height:none !important;
+    }
+
+}
+
 </style>
 
 
