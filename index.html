@@ -5772,6 +5772,163 @@ body > .top-user,
     }
 }
 
+
+/* =========================================================
+   FIX PA/BM CARD TEXT + USERNAME PILL CLIPPING
+========================================================= */
+
+/* topbar must not clip vertical content */
+.hero-actions{
+  overflow-x:auto !important;
+  overflow-y:visible !important;
+  align-items:center !important;
+  padding-top:9px !important;
+  padding-bottom:9px !important;
+  min-height:78px !important;
+}
+
+/* PA/BM card: remove ugly oversized green oval and center text properly */
+.hero-actions #heroRequestButton{
+  height:58px !important;
+  min-height:58px !important;
+  padding:8px 10px !important;
+  align-items:center !important;
+}
+
+.hero-actions #heroRequestButton .hero-action-icon{
+  width:36px !important;
+  height:36px !important;
+  min-width:36px !important;
+  flex:0 0 36px !important;
+  border-radius:50% !important;
+  background:linear-gradient(135deg,#2563eb,#22c55e) !important;
+  box-shadow:0 8px 20px rgba(37,99,235,.25) !important;
+  overflow:hidden !important;
+}
+
+/* force icon content not to stretch */
+.hero-actions #heroRequestButton .hero-action-icon img,
+.hero-actions #heroRequestButton .hero-action-icon svg{
+  width:18px !important;
+  height:18px !important;
+  object-fit:contain !important;
+  max-width:18px !important;
+  max-height:18px !important;
+}
+
+/* PA/BM text never drops below card */
+.hero-actions #heroRequestButton span:last-child{
+  display:block !important;
+  max-width:96px !important;
+  font-size:11px !important;
+  line-height:1.08 !important;
+  white-space:normal !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+}
+
+/* username pill: keep fully visible inside topbar */
+.hero-actions .top-user-pill,
+.hero-actions #topbarUserPill{
+  height:58px !important;
+  min-height:58px !important;
+  max-height:58px !important;
+  margin-left:8px !important;
+  padding:0 12px !important;
+  border-radius:18px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:9px !important;
+  overflow:visible !important;
+  flex:0 0 auto !important;
+  min-width:max-content !important;
+  max-width:none !important;
+  z-index:20 !important;
+}
+
+/* avatar smaller so text and logout fit */
+.hero-actions .top-user-avatar,
+.hero-actions #topbarUserAvatar{
+  width:36px !important;
+  height:36px !important;
+  min-width:36px !important;
+  flex:0 0 36px !important;
+  font-size:14px !important;
+}
+
+/* username no clipping */
+.hero-actions .top-user-name,
+.hero-actions #topbarUserName{
+  display:block !important;
+  max-width:none !important;
+  min-width:max-content !important;
+  overflow:visible !important;
+  white-space:nowrap !important;
+  text-overflow:clip !important;
+  font-size:13px !important;
+  line-height:1 !important;
+}
+
+/* logout button no clipping */
+.hero-actions .top-user-logout,
+.hero-actions #topbarLogoutButton{
+  height:34px !important;
+  padding:0 10px !important;
+  border-radius:12px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  font-size:11px !important;
+  line-height:1 !important;
+}
+
+/* hide old background user widget leaking behind topbar */
+body > [class*="user" i]:not(.hero-actions):not(.modal):not(.popup),
+body > [id*="user" i]:not(.hero-actions):not(.modal):not(.popup){
+  display:none !important;
+}
+
+/* But do not hide actual topbar items */
+.hero-actions [class*="user" i],
+.hero-actions [id*="user" i]{
+  display:flex !important;
+}
+
+/* desktop if cramped: allow topbar to scroll instead of covering/cropping */
+@media(min-width:1000px){
+  .hero-actions{
+    width:min(1180px, calc(100vw - 34px)) !important;
+    max-width:min(1180px, calc(100vw - 34px)) !important;
+  }
+}
+
+/* phone keep PA card neat */
+@media(max-width:900px){
+  .hero-actions{
+    min-height:96px !important;
+    overflow-y:hidden !important;
+  }
+
+  .hero-actions #heroRequestButton{
+    height:78px !important;
+    min-height:78px !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+  }
+
+  .hero-actions #heroRequestButton span:last-child{
+    max-width:100% !important;
+    font-size:10.5px !important;
+    text-align:center !important;
+  }
+
+  .hero-actions #heroRequestButton .hero-action-icon{
+    width:34px !important;
+    height:34px !important;
+    min-width:34px !important;
+  }
+}
+
 </style>
 
 
