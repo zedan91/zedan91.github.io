@@ -3738,6 +3738,21 @@ body.is-admin .lucky-draw-prize-admin{
   cursor:pointer;
 }
 
+
+/* Giveaway fixes: reset participants, prize save status, countdown */
+#resetLuckyDrawParticipantsButton{
+  background:#991b1b !important;
+  color:#fff !important;
+}
+.lucky-draw-prize-save-status{
+  color:#fde68a;
+  font-weight:800;
+  margin-top:4px;
+}
+.lucky-draw-summary-box #luckyDrawCountdown{
+  font-variant-numeric:tabular-nums;
+}
+
 </style>
 
 
@@ -5052,6 +5067,7 @@ display:none !important;
             <button class="btn orange" id="exportLuckyDrawParticipantsButton" type="button">Export CSV</button>
             <button class="btn blue" id="testLuckyDrawSpinButton" type="button">Test Spin</button>
             <button class="btn orange" id="resetLuckyDrawWinnerButton" type="button">Reset Winner</button>
+            <button class="btn orange" id="resetLuckyDrawParticipantsButton" type="button">Reset Peserta Bulan Ini</button>
           </div>
         </div>
 
@@ -5062,9 +5078,9 @@ display:none !important;
             <strong id="luckyDrawTotalParticipants">0</strong>
           </div>
           <div class="lucky-draw-summary-box">
-            <span>Countdown Lucky Draw</span>
+            <span>Remaining Time</span>
             <strong id="luckyDrawCountdown">-- hari --:--:--</strong>
-            <small id="luckyDrawTargetText">Lucky Draw hujung bulan, 10:00 malam</small>
+            <small id="luckyDrawTargetText">Remaining time ke Lucky Draw hujung bulan, 10:00 malam</small>
           </div>
           <div class="lucky-draw-summary-box winner-box">
             <span id="luckyDrawWinnerMonthLabel">Pemenang Bulan Ini</span>
@@ -5096,6 +5112,7 @@ display:none !important;
               <button class="btn blue" id="saveLuckyDrawPrizeButton" type="button">Save Prize</button>
               <button class="btn orange" id="refreshLuckyDrawPrizeButton" type="button">Refresh Prize</button>
             </div>
+            <div class="lucky-draw-prize-save-status" id="luckyDrawPrizeSaveStatus"></div>
           </div>
         </div>
 
@@ -5985,7 +6002,7 @@ display:none !important;
       const diff = target - now;
 
       if (luckyDrawTargetText) {
-        luckyDrawTargetText.textContent = `Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 malam`;
+        luckyDrawTargetText.textContent = `Remaining time ke Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 malam`;
       }
 
       if (diff <= 0) {
@@ -6111,6 +6128,192 @@ display:none !important;
 
     if (testLuckyDrawSpinButton) testLuckyDrawSpinButton.addEventListener('click', testLuckyDrawSpinNow);
     if (resetLuckyDrawWinnerButton) resetLuckyDrawWinnerButton.addEventListener('click', resetLuckyDrawWinner);
+
+
+
+    const resetLuckyDrawParticipantsButton = document.getElementById('resetLuckyDrawParticipantsButton');
+
+    const luckyDrawPrizeImage = document.getElementById('luckyDrawPrizeImage');
+    const luckyDrawPrizeTitle = document.getElementById('luckyDrawPrizeTitle');
+    const luckyDrawPrizeDescription = document.getElementById('luckyDrawPrizeDescription');
+    const luckyDrawPrizeImageFile = document.getElementById('luckyDrawPrizeImageFile');
+    const luckyDrawPrizeImageDataInput = document.getElementById('luckyDrawPrizeImageDataInput');
+    const luckyDrawPrizeTitleInput = document.getElementById('luckyDrawPrizeTitleInput');
+    const luckyDrawPrizeDescriptionInput = document.getElementById('luckyDrawPrizeDescriptionInput');
+    const saveLuckyDrawPrizeButton = document.getElementById('saveLuckyDrawPrizeButton');
+    const refreshLuckyDrawPrizeButton = document.getElementById('refreshLuckyDrawPrizeButton');
+    const luckyDrawPrizeSaveStatus = document.getElementById('luckyDrawPrizeSaveStatus');
+
+    function setLuckyDrawPrizeStatus(message) {
+      if (luckyDrawPrizeSaveStatus) luckyDrawPrizeSaveStatus.textContent = message || '';
+      else if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = message || '';
+    }
+
+    function getLuckyDrawPrizePlaceholder() {
+      return 'https://placehold.co/600x400/0f172a/22c55e?text=Lucky+Draw+Prize';
+    }
+
+    function applyLuckyDrawPrize(data = {}) {
+      const image = data.imageData || data.imageUrl || getLuckyDrawPrizePlaceholder();
+      const title = data.title || 'Hadiah belum diumumkan';
+      const desc = data.description || 'Admin boleh browse gambar dan isi description hadiah giveaway.';
+
+      if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = image;
+      if (luckyDrawPrizeTitle) luckyDrawPrizeTitle.textContent = title;
+      if (luckyDrawPrizeDescription) luckyDrawPrizeDescription.textContent = desc;
+
+      if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = data.imageData || data.imageUrl || '';
+      if (luckyDrawPrizeTitleInput) luckyDrawPrizeTitleInput.value = data.title || '';
+      if (luckyDrawPrizeDescriptionInput) luckyDrawPrizeDescriptionInput.value = data.description || '';
+    }
+
+    async function loadLuckyDrawPrize() {
+      const monthKey = getLuckyDrawMonthKey();
+
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+        const snap = await getDoc(doc(db, 'luckyDrawPrizes', monthKey));
+
+        if (snap.exists()) {
+          const data = snap.data();
+          applyLuckyDrawPrize(data);
+          setLuckyDrawPrizeStatus('');
+          return data;
+        }
+      } catch (error) {
+        try {
+          const all = JSON.parse(localStorage.getItem('azobssLuckyDrawPrizes') || '{}');
+          if (all[monthKey]) {
+            applyLuckyDrawPrize(all[monthKey]);
+            return all[monthKey];
+          }
+        } catch(storageError){}
+      }
+
+      applyLuckyDrawPrize({});
+      return null;
+    }
+
+    if (luckyDrawPrizeImageFile) {
+      luckyDrawPrizeImageFile.addEventListener('change', function () {
+        const file = luckyDrawPrizeImageFile.files && luckyDrawPrizeImageFile.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+          setLuckyDrawPrizeStatus('Sila pilih file gambar sahaja.');
+          luckyDrawPrizeImageFile.value = '';
+          return;
+        }
+
+        if (file.size > 650000) {
+          setLuckyDrawPrizeStatus('Gambar terlalu besar. Sila guna gambar bawah 650KB supaya boleh save stabil ke Firebase.');
+          luckyDrawPrizeImageFile.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function () {
+          const dataUrl = reader.result;
+          if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = dataUrl;
+          if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = dataUrl;
+          setLuckyDrawPrizeStatus('Gambar sudah dipilih. Tekan Save Prize untuk simpan.');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function saveLuckyDrawPrize() {
+      if (!isAdminUser(currentUser)) {
+        setLuckyDrawPrizeStatus('Admin sahaja boleh save hadiah.');
+        return;
+      }
+
+      const monthKey = getLuckyDrawMonthKey();
+      const payload = {
+        monthKey,
+        imageData: luckyDrawPrizeImageDataInput ? luckyDrawPrizeImageDataInput.value.trim() : '',
+        title: luckyDrawPrizeTitleInput ? luckyDrawPrizeTitleInput.value.trim() : '',
+        description: luckyDrawPrizeDescriptionInput ? luckyDrawPrizeDescriptionInput.value.trim() : '',
+        updatedAtMs: Date.now(),
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser.usernameKey || currentUser.name || 'admin'
+      };
+
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+        await setDoc(doc(db, 'luckyDrawPrizes', monthKey), payload, { merge:true });
+        setLuckyDrawPrizeStatus('Hadiah berjaya disimpan ke Firebase.');
+      } catch(error) {
+        const all = JSON.parse(localStorage.getItem('azobssLuckyDrawPrizes') || '{}');
+        all[monthKey] = { ...payload, updatedAt: Date.now() };
+        localStorage.setItem('azobssLuckyDrawPrizes', JSON.stringify(all));
+        setLuckyDrawPrizeStatus('Firebase gagal/disekat. Hadiah disimpan local sementara.');
+      }
+
+      applyLuckyDrawPrize(payload);
+    }
+
+    if (saveLuckyDrawPrizeButton) saveLuckyDrawPrizeButton.addEventListener('click', saveLuckyDrawPrize);
+    if (refreshLuckyDrawPrizeButton) refreshLuckyDrawPrizeButton.addEventListener('click', loadLuckyDrawPrize);
+
+    async function resetLuckyDrawParticipantsThisMonth() {
+      if (!isAdminUser(currentUser)) return;
+
+      const monthKey = getLuckyDrawMonthKey();
+      const ok = confirm(`Reset semua peserta yang join bulan ${getLuckyDrawMonthName(monthKey)}?`);
+      if (!ok) return;
+
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+
+        const snapshot = await getDocs(collection(db, 'luckyDrawEntries'));
+        const updates = [];
+        snapshot.forEach(function (item) {
+          const data = item.data();
+          if (data.monthKey === monthKey && !data.deleted) {
+            updates.push(setDoc(doc(db, 'luckyDrawEntries', item.id), {
+              deleted: true,
+              resetBy: currentUser.usernameKey || currentUser.name || 'admin',
+              resetAtMs: Date.now(),
+              resetAt: serverTimestamp()
+            }, { merge: true }));
+          }
+        });
+
+        await Promise.all(updates);
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = `Reset peserta selesai. Jumlah reset: ${updates.length}`;
+      } catch(error) {
+        try {
+          const localEntries = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]');
+          localEntries.forEach(function (entry) {
+            if (entry.monthKey === monthKey) entry.deleted = true;
+          });
+          localStorage.setItem('azobssLuckyDrawEntries', JSON.stringify(localEntries));
+          if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Peserta bulan ini di-reset daripada local data.';
+        } catch(storageError) {
+          if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Gagal reset peserta.';
+        }
+      }
+
+      allLuckyDrawParticipants = allLuckyDrawParticipants.filter(function (entry) {
+        return entry.monthKey !== monthKey;
+      });
+      renderLuckyDrawParticipants();
+      updateLuckyDrawParticipantCount();
+      if (luckyDrawSpinnerName) luckyDrawSpinnerName.textContent = 'Peserta bulan ini sudah di-reset.';
+    }
+
+    if (resetLuckyDrawParticipantsButton) {
+      resetLuckyDrawParticipantsButton.addEventListener('click', resetLuckyDrawParticipantsThisMonth);
+    }
+
+    function startLuckyDrawCountdownFixed() {
+      if (luckyDrawCountdownTimer) clearInterval(luckyDrawCountdownTimer);
+      updateLuckyDrawCountdown();
+      luckyDrawCountdownTimer = setInterval(updateLuckyDrawCountdown, 1000);
+      loadLuckyDrawWinner();
+      loadLuckyDrawPrize();
+    }
 
 
     async function resolveInviterByCode(inviteCode, newUsernameKey) {
@@ -9062,6 +9265,7 @@ display:none !important;
     copyLuckyDrawInviteButton.addEventListener('click', copyLuckyDrawInviteLink);
     shareLuckyDrawButton.addEventListener('click', shareLuckyDrawWebsite);
     joinLuckyDrawButton.addEventListener('click', joinLuckyDrawContest);
+    startLuckyDrawCountdownFixed();
 
     copyAccountButton.addEventListener('click', async function () {
       try {
