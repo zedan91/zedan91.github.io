@@ -6929,6 +6929,58 @@ body.has-pa-access #heroRequestButton{
   display:inline-flex !important;
 }
 
+
+/* ===== ALIGN PA/BM CARD SAME AS OTHER TOPBAR CARDS ===== */
+
+#heroRequestButton{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+
+    height:76px !important;
+    min-height:76px !important;
+
+    padding:0 18px !important;
+    gap:14px !important;
+
+    box-sizing:border-box !important;
+}
+
+#heroRequestButton .hero-action-icon{
+    margin:0 !important;
+    flex-shrink:0 !important;
+}
+
+#heroRequestButton span:last-child{
+    display:flex !important;
+    align-items:center !important;
+
+    height:100% !important;
+
+    line-height:1.15 !important;
+    margin:0 !important;
+    padding:0 !important;
+
+    text-align:left !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    #heroRequestButton{
+        justify-content:center !important;
+        flex-direction:column !important;
+        gap:8px !important;
+        padding:10px !important;
+    }
+
+    #heroRequestButton span:last-child{
+        text-align:center !important;
+        justify-content:center !important;
+        height:auto !important;
+    }
+}
+
 </style>
 
 
