@@ -3480,6 +3480,131 @@ body.is-admin .lucky-draw-public-list{
   }
 }
 
+
+/* =========================================================
+   GIVEAWAY COUNTDOWN + AUTO SPIN WINNER
+========================================================= */
+.lucky-draw-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:12px;
+  margin:16px 0;
+}
+
+.lucky-draw-summary-box{
+  border:1px solid rgba(34,197,94,.26);
+  border-radius:16px;
+  background:rgba(2,6,23,.42);
+  padding:15px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.lucky-draw-summary-box span{
+  display:block;
+  color:#94a3b8;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  font-size:11px;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.lucky-draw-summary-box strong{
+  display:block;
+  color:#22c55e;
+  font-size:24px;
+  line-height:1.1;
+  font-weight:1000;
+}
+
+.lucky-draw-summary-box small{
+  display:block;
+  margin-top:7px;
+  color:#cbd5e1;
+  font-size:12px;
+}
+
+.lucky-draw-summary-box.winner-box{
+  border-color:rgba(250,204,21,.38);
+  background:linear-gradient(135deg,rgba(113,63,18,.32),rgba(2,6,23,.50));
+}
+
+.lucky-draw-summary-box.winner-box strong{
+  color:#fde047;
+  text-shadow:0 0 16px rgba(250,204,21,.22);
+}
+
+.lucky-draw-spin-stage{
+  margin:14px 0 16px;
+  min-height:86px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border:1px dashed rgba(34,197,94,.32);
+  border-radius:18px;
+  background:radial-gradient(circle at center,rgba(34,197,94,.13),rgba(2,6,23,.45));
+  overflow:hidden;
+  position:relative;
+}
+
+.lucky-draw-spinner-name{
+  color:#e5e7eb;
+  font-size:22px;
+  font-weight:1000;
+  text-align:center;
+  transition:.12s ease;
+}
+
+.lucky-draw-spin-stage.is-spinning .lucky-draw-spinner-name{
+  color:#22c55e;
+  transform:scale(1.04);
+  text-shadow:0 0 18px rgba(34,197,94,.55);
+}
+
+.lucky-draw-spin-stage.has-winner{
+  border-color:rgba(250,204,21,.65);
+  background:
+    radial-gradient(circle at center,rgba(250,204,21,.18),rgba(2,6,23,.45)),
+    linear-gradient(135deg,rgba(34,197,94,.10),rgba(59,130,246,.08));
+}
+
+.lucky-draw-spin-stage.has-winner .lucky-draw-spinner-name{
+  color:#fde047;
+  font-size:28px;
+  text-shadow:
+    0 0 18px rgba(250,204,21,.68),
+    0 0 32px rgba(34,197,94,.22);
+  animation:winnerPulse 1.2s ease-in-out infinite;
+}
+
+.lucky-draw-winner-effect{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+}
+
+.lucky-draw-spin-stage.has-winner .lucky-draw-winner-effect{
+  opacity:1;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(250,204,21,.55) 0 3px,transparent 4px),
+    radial-gradient(circle at 80% 30%,rgba(34,197,94,.55) 0 3px,transparent 4px),
+    radial-gradient(circle at 50% 80%,rgba(59,130,246,.50) 0 3px,transparent 4px),
+    radial-gradient(circle at 35% 55%,rgba(236,72,153,.45) 0 3px,transparent 4px);
+  animation:confettiBlink .9s linear infinite;
+}
+
+@keyframes winnerPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.08)}
+}
+
+@keyframes confettiBlink{
+  0%,100%{filter:hue-rotate(0deg);opacity:.65}
+  50%{filter:hue-rotate(90deg);opacity:1}
+}
+
 </style>
 
 
@@ -4795,6 +4920,29 @@ display:none !important;
           </div>
         </div>
 
+        
+        <div class="lucky-draw-summary-grid">
+          <div class="lucky-draw-summary-box">
+            <span>Jumlah Peserta Join</span>
+            <strong id="luckyDrawTotalParticipants">0</strong>
+          </div>
+          <div class="lucky-draw-summary-box">
+            <span>Countdown Lucky Draw</span>
+            <strong id="luckyDrawCountdown">-- hari --:--:--</strong>
+            <small id="luckyDrawTargetText">Lucky Draw hujung bulan, 10:00 malam</small>
+          </div>
+          <div class="lucky-draw-summary-box winner-box">
+            <span id="luckyDrawWinnerMonthLabel">Pemenang Bulan Ini</span>
+            <strong id="luckyDrawWinnerName">Belum dipilih</strong>
+          </div>
+        </div>
+
+        <div class="lucky-draw-spin-stage" id="luckyDrawSpinStage">
+          <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Menunggu countdown...</div>
+          <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
+        </div>
+
+
         <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus">Loading peserta...</div>
 
         <div class="lucky-draw-public-list" id="luckyDrawPublicList">
@@ -5303,6 +5451,8 @@ display:none !important;
           : '<div class="lucky-draw-empty">Belum ada peserta Giveaway.</div>';
       }
 
+      updateLuckyDrawParticipantCount();
+
       if (luckyDrawAdminTableBody) {
         luckyDrawAdminTableBody.innerHTML = rows.length
           ? rows.map(function (entry, index) {
@@ -5467,6 +5617,233 @@ display:none !important;
         if (button.dataset.action === 'save') saveLuckyDrawParticipant(row);
         if (button.dataset.action === 'hide') hideLuckyDrawParticipant(row);
       });
+    }
+
+
+
+    const luckyDrawTotalParticipants = document.getElementById('luckyDrawTotalParticipants');
+    const luckyDrawCountdown = document.getElementById('luckyDrawCountdown');
+    const luckyDrawTargetText = document.getElementById('luckyDrawTargetText');
+    const luckyDrawWinnerMonthLabel = document.getElementById('luckyDrawWinnerMonthLabel');
+    const luckyDrawWinnerName = document.getElementById('luckyDrawWinnerName');
+    const luckyDrawSpinStage = document.getElementById('luckyDrawSpinStage');
+    const luckyDrawSpinnerName = document.getElementById('luckyDrawSpinnerName');
+    let luckyDrawCountdownTimer = null;
+    let luckyDrawSpinRunning = false;
+    let currentLuckyDrawWinner = null;
+
+    function getLuckyDrawMonthName(monthKey = getLuckyDrawMonthKey()) {
+      const parts = String(monthKey).split('-');
+      const year = Number(parts[0]);
+      const monthIndex = Number(parts[1]) - 1;
+      const date = new Date(year || new Date().getFullYear(), Number.isFinite(monthIndex) ? monthIndex : new Date().getMonth(), 1);
+      return date.toLocaleDateString('ms-MY', { month: 'long', year: 'numeric' });
+    }
+
+    function getLuckyDrawTargetDate(monthKey = getLuckyDrawMonthKey()) {
+      const parts = String(monthKey).split('-');
+      const year = Number(parts[0]) || new Date().getFullYear();
+      const month = Number(parts[1]) || (new Date().getMonth() + 1);
+      return new Date(year, month, 0, 22, 0, 0, 0);
+    }
+
+    function getLuckyDrawWinnerDocId(monthKey = getLuckyDrawMonthKey()) {
+      return monthKey;
+    }
+
+    function updateLuckyDrawParticipantCount() {
+      const activeRows = allLuckyDrawParticipants.filter(function (entry) {
+        return !entry.deleted;
+      });
+      if (luckyDrawTotalParticipants) luckyDrawTotalParticipants.textContent = String(activeRows.length);
+    }
+
+    function getWinnerDisplayName(entry) {
+      return entry ? (entry.name || entry.usernameKey || 'User') : 'Belum dipilih';
+    }
+
+    function showLuckyDrawWinner(winner) {
+      currentLuckyDrawWinner = winner || null;
+      const monthName = getLuckyDrawMonthName(winner && winner.monthKey ? winner.monthKey : getLuckyDrawMonthKey());
+
+      if (luckyDrawWinnerMonthLabel) luckyDrawWinnerMonthLabel.textContent = `Pemenang Bulan ${monthName}`;
+      if (luckyDrawWinnerName) luckyDrawWinnerName.textContent = winner ? getWinnerDisplayName(winner) : 'Belum dipilih';
+
+      if (luckyDrawSpinnerName) {
+        luckyDrawSpinnerName.textContent = winner
+          ? `🎉 ${getWinnerDisplayName(winner)} 🎉`
+          : 'Menunggu countdown...';
+      }
+
+      if (luckyDrawSpinStage) {
+        luckyDrawSpinStage.classList.toggle('has-winner', !!winner);
+        luckyDrawSpinStage.classList.remove('is-spinning');
+      }
+    }
+
+    async function loadLuckyDrawWinner(monthKey = getLuckyDrawMonthKey()) {
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+        const winnerSnap = await getDoc(doc(db, 'luckyDrawWinners', getLuckyDrawWinnerDocId(monthKey)));
+        if (winnerSnap.exists()) {
+          showLuckyDrawWinner({ id: winnerSnap.id, ...winnerSnap.data() });
+          return winnerSnap.data();
+        }
+      } catch (error) {
+        try {
+          const winners = JSON.parse(localStorage.getItem('azobssLuckyDrawWinners') || '{}');
+          if (winners[monthKey]) {
+            showLuckyDrawWinner(winners[monthKey]);
+            return winners[monthKey];
+          }
+        } catch (storageError) {}
+      }
+
+      showLuckyDrawWinner(null);
+      return null;
+    }
+
+    function chooseLuckyDrawWinner(participants, monthKey) {
+      const active = participants.filter(function (entry) {
+        return !entry.deleted && entry.usernameKey;
+      }).sort(function (a, b) {
+        return String(a.usernameKey).localeCompare(String(b.usernameKey));
+      });
+
+      if (!active.length) return null;
+
+      let seed = 0;
+      const seedText = monthKey + '|' + active.map(function (entry) { return entry.usernameKey; }).join('|');
+      for (let i = 0; i < seedText.length; i += 1) {
+        seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
+      }
+
+      return active[seed % active.length];
+    }
+
+    async function saveLuckyDrawWinner(monthKey, winner) {
+      if (!winner) return null;
+
+      const payload = {
+        monthKey,
+        usernameKey: winner.usernameKey || '',
+        uid: winner.uid || '',
+        name: winner.name || winner.usernameKey || 'User',
+        phone: winner.phone || '',
+        contactEmail: winner.contactEmail || '',
+        inviteCode: winner.inviteCode || '',
+        selectedAtMs: Date.now(),
+        selectedAt: serverTimestamp()
+      };
+
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+
+        const winnerRef = doc(db, 'luckyDrawWinners', getLuckyDrawWinnerDocId(monthKey));
+        const existing = await getDoc(winnerRef);
+        if (existing.exists()) {
+          const existingData = { id: existing.id, ...existing.data() };
+          showLuckyDrawWinner(existingData);
+          return existingData;
+        }
+
+        await setDoc(winnerRef, payload, { merge: true });
+        showLuckyDrawWinner(payload);
+        return payload;
+      } catch (error) {
+        const winners = JSON.parse(localStorage.getItem('azobssLuckyDrawWinners') || '{}');
+        winners[monthKey] = payload;
+        localStorage.setItem('azobssLuckyDrawWinners', JSON.stringify(winners));
+        showLuckyDrawWinner(payload);
+        return payload;
+      }
+    }
+
+    function spinLuckyDrawNames(participants, finalWinner, monthKey) {
+      if (!luckyDrawSpinnerName || !luckyDrawSpinStage || luckyDrawSpinRunning) return;
+
+      const names = participants
+        .filter(function (entry) { return !entry.deleted; })
+        .map(getWinnerDisplayName);
+
+      if (!names.length || !finalWinner) return;
+
+      luckyDrawSpinRunning = true;
+      luckyDrawSpinStage.classList.add('is-spinning');
+      luckyDrawSpinStage.classList.remove('has-winner');
+
+      let tick = 0;
+      const maxTicks = 42;
+      const interval = setInterval(function () {
+        const name = names[tick % names.length];
+        luckyDrawSpinnerName.textContent = name;
+        tick += 1;
+
+        if (tick >= maxTicks) {
+          clearInterval(interval);
+          luckyDrawSpinRunning = false;
+          saveLuckyDrawWinner(monthKey, finalWinner);
+        }
+      }, 90);
+    }
+
+    async function runLuckyDrawIfDue() {
+      const monthKey = getLuckyDrawMonthKey();
+      const target = getLuckyDrawTargetDate(monthKey);
+      const now = new Date();
+
+      if (now < target) return;
+      if (currentLuckyDrawWinner) return;
+
+      await loadLuckyDrawParticipants();
+      const existing = await loadLuckyDrawWinner(monthKey);
+      if (existing) return;
+
+      const winner = chooseLuckyDrawWinner(allLuckyDrawParticipants, monthKey);
+      if (!winner) {
+        if (luckyDrawSpinnerName) luckyDrawSpinnerName.textContent = 'Tiada peserta untuk spin bulan ini.';
+        return;
+      }
+
+      spinLuckyDrawNames(allLuckyDrawParticipants, winner, monthKey);
+    }
+
+    function updateLuckyDrawCountdown() {
+      if (!luckyDrawCountdown) return;
+
+      const monthKey = getLuckyDrawMonthKey();
+      const target = getLuckyDrawTargetDate(monthKey);
+      const now = new Date();
+      const diff = target - now;
+
+      if (luckyDrawTargetText) {
+        luckyDrawTargetText.textContent = `Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 malam`;
+      }
+
+      if (diff <= 0) {
+        luckyDrawCountdown.textContent = '00 hari 00:00:00';
+        runLuckyDrawIfDue();
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      luckyDrawCountdown.textContent =
+        `${String(days).padStart(2, '0')} hari ` +
+        `${String(hours).padStart(2, '0')}:` +
+        `${String(minutes).padStart(2, '0')}:` +
+        `${String(seconds).padStart(2, '0')}`;
+    }
+
+    function startLuckyDrawCountdown() {
+      if (luckyDrawCountdownTimer) clearInterval(luckyDrawCountdownTimer);
+      updateLuckyDrawCountdown();
+      luckyDrawCountdownTimer = setInterval(updateLuckyDrawCountdown, 1000);
+      loadLuckyDrawWinner();
     }
 
 
