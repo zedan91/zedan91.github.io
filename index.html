@@ -4003,7 +4003,7 @@ display:none !important;
       </div>
 
       <label>
-        Affiliate Link
+        Affiliate Link / Shopee JSON Auto Import
         <input id="affiliateLinkInput" type="url" placeholder="Paste Shopee affiliate/link sini untuk Accept & Open Shop + Import JSON" required>
         <div class="affiliate-detect-row" style="margin-top:8px">
           <button class="affiliate-admin-btn green" id="affiliateJsonOpenLinkButton" type="button">✅ Accept & Open Shop</button>
@@ -8561,10 +8561,10 @@ display:none !important;
 
   async function openShopeeForJsonExtension(){
     if(!adminDetected()) return;
-    const input = qs('#affiliateJsonShopeeLinkInput');
+    const input = qs('#affiliateLinkInput');
     let url = (input?.value || '').trim();
     if(!url){
-      setJsonImportStatus('Paste link Shopee dalam ruang Shopee JSON Auto Import dahulu sebelum tekan Accept & Open.', true);
+      setJsonImportStatus('Paste link Shopee dalam kotak Affiliate Link dahulu sebelum tekan Accept & Open.', true);
       input?.focus();
       return;
     }
