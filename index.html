@@ -6428,7 +6428,7 @@ display:none !important;
         });
 
         await Promise.all(updates);
-        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = `Reset peserta selesai. Jumlah reset: ${updates.length}`;
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = `Reset peserta selesai. User kini boleh join semula. Jumlah reset: ${updates.length}`;
       } catch(error) {
         try {
           const localEntries = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]');
@@ -6445,9 +6445,37 @@ display:none !important;
       allLuckyDrawParticipants = allLuckyDrawParticipants.filter(function (entry) {
         return entry.monthKey !== monthKey;
       });
+
+      await clearLuckyDrawJoinForReset(monthKey);
+
+      try {
+        Object.keys(localStorage).forEach(function(key){
+          if(key.includes('azobssLuckyDrawJoined_' + monthKey)){
+            localStorage.removeItem(key);
+          }
+        });
+
+        Object.keys(sessionStorage).forEach(function(key){
+          if(key.includes('azobssLuckyDrawJoined_' + monthKey)){
+            sessionStorage.removeItem(key);
+          }
+        });
+      } catch(storageError){}
+
       renderLuckyDrawParticipants();
       updateLuckyDrawParticipantCount();
-      if (luckyDrawSpinnerName) luckyDrawSpinnerName.textContent = 'Peserta bulan ini sudah di-reset.';
+
+      if (typeof updateLuckyDrawPanel === 'function') {
+        updateLuckyDrawPanel();
+      }
+
+      if (joinLuckyDrawButton) {
+        joinLuckyDrawButton.disabled = false;
+      }
+
+      if (luckyDrawSpinnerName) {
+        luckyDrawSpinnerName.textContent = 'Peserta bulan ini sudah di-reset. User boleh join semula.';
+      }
     }
 
     if (resetLuckyDrawParticipantsButton) {
@@ -6460,6 +6488,21 @@ display:none !important;
       luckyDrawCountdownTimer = setInterval(updateLuckyDrawCountdown, 1000);
       loadLuckyDrawWinner();
       loadLuckyDrawPrize();
+    }
+
+
+
+    async function clearLuckyDrawJoinForReset(monthKey = getLuckyDrawMonthKey()) {
+      try {
+        const storageKey = `azobssLuckyDrawJoined_${monthKey}`;
+        localStorage.removeItem(storageKey);
+        sessionStorage.removeItem(storageKey);
+
+        if (currentUser && currentUser.usernameKey) {
+          localStorage.removeItem(`azobssLuckyDrawJoined_${monthKey}_${currentUser.usernameKey}`);
+          sessionStorage.removeItem(`azobssLuckyDrawJoined_${monthKey}_${currentUser.usernameKey}`);
+        }
+      } catch(error){}
     }
 
 
