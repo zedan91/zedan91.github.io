@@ -425,84 +425,260 @@
 
   function buildShopeeConsoleExtractorScript(){
     return `(function(){
+  function clean(v){
+    return String(v || '').replace(/\\s+/g,' ').trim();
+  }
+
+  function unique(arr){
+    return [...new Set(arr.map(clean).filter(Boolean))];
+  }
+
   function pick(){
     for(const s of arguments){
       try{
-        const el=document.querySelector(s);
-        const v=el&&(el.content||el.innerText||el.textContent||el.getAttribute('content'));
-        if(v&&String(v).trim()) return String(v).trim();
+        const el = document.querySelector(s);
+        const v = el && (el.content || el.innerText || el.textContent || el.getAttribute('content'));
+        if(v && clean(v)) return clean(v);
       }catch(e){}
     }
     return '';
   }
-  function textClean(v){return String(v||'').replace(/\\s+/g,' ').trim();}
+
+  function pickAllText(selectors){
+    const arr = [];
+    selectors.forEach(sel=>{
+      try{
+        document.querySelectorAll(sel).forEach(el=>{
+          const t = clean(el.innerText || el.textContent || el.getAttribute('content') || '');
+          if(t) arr.push(t);
+        });
+      }catch(e){}
+    });
+    return unique(arr);
+  }
+
+  function validCategoryText(t){
+    t = clean(t);
+    return t &&
+      t.length >= 3 &&
+      t.length <= 120 &&
+      !/^(category|stock|brand|warranty|rating|sold|quantity|variation|shipping|description|product specifications)$/i.test(t) &&
+      !/shopee|homepage|search|login|cart|voucher|coins|free shipping|mall|preferred/i.test(t);
+  }
+
   function findJsonTitle(){
-    const scripts=[...document.scripts].map(s=>s.textContent||'').filter(Boolean);
-    const patterns=[/"name"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,/"title"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,/"itemName"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i];
+    const scripts = [...document.scripts].map(s=>s.textContent || '').filter(Boolean);
+    const patterns = [
+      /"name"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,
+      /"title"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,
+      /"itemName"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,
+      /"productName"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i
+    ];
+
     for(const txt of scripts){
       if(!/Shopee|product|item|name|title/i.test(txt)) continue;
       for(const re of patterns){
-        const m=txt.match(re);
-        if(m&&m[1]){
+        const m = txt.match(re);
+        if(m && m[1]){
           try{return JSON.parse('"'+m[1]+'"');}catch(e){return m[1];}
         }
       }
     }
     return '';
   }
-  const title=textClean(
+
+  function findCategoryFromVisibleSpecs(){
+    const bodyText = document.body ? document.body.innerText : '';
+    const lines = bodyText.split(/\\n+/).map(clean).filter(Boolean);
+    const found = [];
+
+    // Cara 1: cari label "Category" dalam Product Specifications
+    for(let i=0; i<lines.length; i++){
+      if(/^category$/i.test(lines[i])){
+        for(let j=i+1; j<Math.min(i+8, lines.length); j++){
+          const line = lines[j];
+          if(validCategoryText(line) && /[>›]/.test(line)){
+            found.push(...line.split(/[>›]/).map(clean).filter(validCategoryText));
+            break;
+          }
+          if(validCategoryText(line) && /mobile|accessories|wearables|smartwatch|fitness|home|appliances|computer|camera|automotive|fashion|beauty|baby|groceries|sports/i.test(line)){
+            found.push(line);
+          }
+        }
+      }
+    }
+
+    // Cara 2: cari text breadcrumb yang ada arrow
+    const breadcrumbLines = lines.filter(line =>
+      /[>›]/.test(line) &&
+      /mobile|accessories|wearables|smartwatch|fitness|home|appliances|computer|camera|automotive|fashion|beauty|baby|groceries|sports/i.test(line)
+    );
+    breadcrumbLines.forEach(line => found.push(...line.split(/[>›]/).map(clean).filter(validCategoryText)));
+
+    return unique(found);
+  }
+
+  function findCategoryFromBreadcrumb(){
+    const selectors = [
+      'a[href*="cat."]',
+      'a[href*="/cat"]',
+      'a[href*="category"]',
+      '[class*="breadcrumb"] a',
+      '[class*="Breadcrumb"] a',
+      '[data-testid*="breadcrumb"] a',
+      '[aria-label*="breadcrumb"] a',
+      '[class*="product-detail"] a',
+      '[class*="spec"] a',
+      'nav a'
+    ];
+
+    const texts = pickAllText(selectors).filter(validCategoryText);
+    return unique(texts);
+  }
+
+  function findCategoryFromJson(){
+    const scripts = [...document.scripts].map(s=>s.textContent || '').filter(Boolean);
+    const found = [];
+
+    const regexes = [
+      /"display_name"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/ig,
+      /"cat_name"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/ig,
+      /"category_name"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/ig,
+      /"categoryName"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/ig,
+      /"breadcrumb"\\s*:\\s*\\[(.*?)\\]/ig,
+      /"categories"\\s*:\\s*\\[(.*?)\\]/ig
+    ];
+
+    for(const txt of scripts){
+      if(!/category|catid|breadcrumb|display_name|cat_name|categoryName/i.test(txt)) continue;
+
+      for(const re of regexes){
+        let m;
+        while((m = re.exec(txt)) !== null){
+          const chunk = m[1] || '';
+          const names = [...chunk.matchAll(/"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/g)].map(x=>x[1]);
+          if(names.length){
+            names.forEach(v=>{
+              try{ v = JSON.parse('"'+v+'"'); }catch(e){}
+              if(validCategoryText(v)) found.push(v);
+            });
+          }else{
+            let val = chunk;
+            try{ val = JSON.parse('"'+val+'"'); }catch(e){}
+            if(validCategoryText(val)) found.push(val);
+          }
+        }
+      }
+    }
+
+    return unique(found);
+  }
+
+  function guessCategoryFromText(text){
+    const lower = clean(text).toLowerCase();
+
+    // Priority: breadcrumb/category Shopee
+    if(/mobile\\s*&\\s*accessories|mobile accessories|wearables|smartwatches?\\s*&\\s*fitness trackers?|fitness trackers?/.test(lower)){
+      return 'mobile';
+    }
+
+    if(/home appliances|kitchen appliances|oven|steam oven|microwave|air fryer|rice cooker|pressure cooker|induction cooker|kettle|toaster|blender|mixer|chopper|juicer|food processor|vacuum|washing machine|refrigerator/.test(lower)){
+      return 'home-appliances';
+    }
+
+    if(/home\\s*&\\s*living|home living|cookware|frypan|wok|pan|pot|bottle|drinkware|bedding|storage|organizer/.test(lower)){
+      return 'home-living';
+    }
+
+    if(/computer\\s*&\\s*accessories|computer accessories|ssd|nvme|ram|router|wifi|keyboard|mouse|monitor|laptop|pc|usb|hard disk|printer/.test(lower)){
+      return 'computer';
+    }
+
+    if(/cameras?\\s*&\\s*drones?|camera|cctv|drone|dashcam|lens|4k/.test(lower)){
+      return 'cameras-drones';
+    }
+
+    if(/gaming\\s*&\\s*consoles?|playstation|ps5|xbox|nintendo|console|gamepad/.test(lower)){
+      return 'gaming-consoles';
+    }
+
+    if(/automotive|car|motor|tyre|tire|jump starter|kereta/.test(lower)){
+      return 'automotive';
+    }
+
+    if(/watches|watch|smartwatch|smart watch|huawei band|mi band/.test(lower)){
+      return 'watches';
+    }
+
+    if(/baby\\s*&\\s*toys|baby|kids|toy|stroller|milk bottle|diaper/.test(lower)){
+      return 'baby-toys';
+    }
+
+    if(/groceries\\s*&\\s*pets|groceries|grocery|chocolate|snack|food|drink|pets/.test(lower)){
+      return 'groceries-pets';
+    }
+
+    if(/sports\\s*&\\s*outdoor|sports|outdoor|gym|fitness|cycling|camping/.test(lower)){
+      return 'sports-outdoor';
+    }
+
+    if(/fashion accessories|shoe|sandal|shirt|dress|bag|wallet|fashion|blouse|pants|jeans/.test(lower)){
+      return 'fashion-accessories';
+    }
+
+    return '';
+  }
+
+  const title = clean(
     pick('meta[property="og:title"]','meta[name="title"]','h1','[data-testid="pdp-product-title"]','.product-briefing h1') ||
     findJsonTitle() ||
     document.title.replace(/\\|.*$/,'')
   );
-  const description=textClean(pick('meta[property="og:description"]','meta[name="description"]'));
-  const image=pick('meta[property="og:image"]','meta[name="twitter:image"]');
-  const data={
+
+  const description = clean(pick('meta[property="og:description"]','meta[name="description"]'));
+  const image = pick('meta[property="og:image"]','meta[name="twitter:image"]');
+
+  const specCategories = findCategoryFromVisibleSpecs();
+  const breadcrumbCategories = findCategoryFromBreadcrumb();
+  const jsonCategories = findCategoryFromJson();
+
+  const categoryCandidates = unique([
+    ...specCategories,
+    ...breadcrumbCategories,
+    ...jsonCategories
+  ]);
+
+  const guessedCategory = guessCategoryFromText([
+    categoryCandidates.join(' '),
+    title,
+    description
+  ].join(' '));
+
+  const data = {
     source:'shopee-console-json',
     title:title,
     description:description,
     image:image,
     url:location.href,
+    category: guessedCategory,
+    categoryCandidates: categoryCandidates,
+    specCategories: specCategories,
+    breadcrumbCategories: breadcrumbCategories,
+    jsonCategories: jsonCategories,
     capturedAt:new Date().toISOString()
   };
+
   console.log('AZOBSS Shopee JSON:', data);
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  const safe=(title||'shopee-product').replace(/[\\\\/:*?"<>|]+/g,' ').replace(/\\s+/g,' ').trim().slice(0,80)||'shopee-product';
-  a.href=URL.createObjectURL(blob);
-  a.download=safe+'.json';
+
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  const safe = (title || 'shopee-product').replace(/[\\\\/:*?"<>|]+/g,' ').replace(/\\s+/g,' ').trim().slice(0,80) || 'shopee-product';
+  a.href = URL.createObjectURL(blob);
+  a.download = safe + '.json';
   document.body.appendChild(a);
   a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
 })();`;
-  }
-
-
-  async function copyTextToClipboardRobust(text){
-    try{
-      if(navigator.clipboard && window.isSecureContext){
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    }catch(e){}
-
-    try{
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      ta.style.top = '0';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return !!ok;
-    }catch(e){
-      return false;
-    }
   }
 
   async function copyShopeeJsonExtractorScript(){
@@ -577,7 +753,7 @@
       return { category:'computer', badge:'Computer & Accessories', icon:'🖥️', meta:'Best for PC setup and daily use' };
     }
 
-    if(/mobile|phone|smartphone|iphone|android|charger|powerbank|cable|case|screen protector|earbuds|bluetooth|vivo|samsung|xiaomi|oppo|honor|huawei/.test(text)){
+    if(/mobile|mobile accessories|wearables|smartwatch|smart watch|fitness tracker|phone|smartphone|iphone|android|charger|powerbank|cable|case|screen protector|earbuds|bluetooth|vivo|samsung|xiaomi|oppo|honor|huawei/.test(text)){
       return { category:'mobile', badge:'Mobile Accessories', icon:'📱', meta:'Best for phone and daily charging' };
     }
 
