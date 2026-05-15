@@ -488,28 +488,6 @@
     }
   }
 
-  async function openShopeeJsonExtractorWithScript(){
-    if(!adminDetected()) return;
-    const jsonInput = qs('#affiliateJsonShopeeLinkInput');
-    const fullInput = qs('#affiliateFullLinkInput');
-    const affiliateInput = qs('#affiliateLinkInput');
-    const link = (jsonInput?.value || fullInput?.value || affiliateInput?.value || '').trim();
-
-    if(!link){
-      setJsonImportStatus('Sila paste Shopee product link dahulu.', true);
-      jsonInput?.focus();
-      return;
-    }
-
-    if(fullInput && !fullInput.value.trim()) fullInput.value = link;
-    if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = link;
-
-    await copyShopeeJsonExtractorScript();
-    window.open(link, '_blank', 'noopener');
-
-    setJsonImportStatus('✅ Link Shopee dibuka dan script disalin. Browser tidak benarkan auto F12/paste. Pada tab Shopee: F12 → Console → Ctrl+V → Enter. JSON akan download. Untuk auto penuh, install extension folder azobss-shopee-json-extension.', false);
-  }
-
   function normalizeShopeeImportedData(raw){
     const data = Array.isArray(raw) ? raw[0] : (raw || {});
     const item = data.item || data.data || data.product || data.item_basic || {};
@@ -577,7 +555,6 @@
     qs('#affiliateAutoDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
     qs('#affiliateOpenProductButton')?.addEventListener('click', openAffiliateProductLink);
     qs('#affiliateTitleAutoFillButton')?.addEventListener('click', autoFillAffiliateFromTitle);
-    qs('#affiliateOpenJsonExtractorButton')?.addEventListener('click', openShopeeJsonExtractorWithScript);
     qs('#affiliateCopyJsonExtractorButton')?.addEventListener('click', copyShopeeJsonExtractorScript);
     qs('#affiliateImportJsonButton')?.addEventListener('click', () => {
       if(!adminDetected()) return;

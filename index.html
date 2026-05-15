@@ -4028,14 +4028,16 @@ display:none !important;
 
       <label>
         Shopee JSON Auto Import
-        <input id="affiliateJsonShopeeLinkInput" type="text" placeholder="Paste Shopee product link untuk buka & extract JSON">
+        <div class="affiliate-detect-row">
+          <input id="affiliateJsonShopeeLinkInput" type="url" placeholder="Paste Shopee link untuk buka dengan extension">
+          <button class="affiliate-admin-btn" id="affiliateJsonOpenLinkButton" type="button">✅ Accept & Open Shopee</button>
+        </div>
         <div class="affiliate-detect-row" style="margin-top:8px">
-          <button class="affiliate-admin-btn" id="affiliateOpenJsonExtractorButton" type="button">🚀 Open Shopee + Copy Script</button>
           <button class="affiliate-admin-btn" id="affiliateCopyJsonExtractorButton" type="button">📋 Copy Console Script</button>
           <button class="affiliate-admin-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
           <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
         </div>
-        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Auto F12/paste tidak dibenarkan browser. Button ini akan buka Shopee + copy script. Untuk auto penuh, install extension dalam folder azobss-shopee-json-extension.</small>
+        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Paling auto: install extension dalam folder azobss-shopee-json-extension → paste link → Accept & Open Shopee → JSON auto download → Import JSON di sini.</small>
       </label>
 
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
@@ -8558,10 +8560,36 @@ display:none !important;
     const script = buildShopeeConsoleExtractorScript();
     try{
       await navigator.clipboard.writeText(script);
-      setJsonImportStatus('✅ Console script copied. Tekan Open → Shopee page → F12 Console → paste → Enter. JSON akan auto download.', false);
+      setJsonImportStatus('✅ Console script copied. Manual fallback: buka Shopee → F12 Console → paste → Enter. JSON akan auto download.', false);
     }catch(e){
-      setJsonImportStatus('Copy gagal. Browser block clipboard. Sila cuba lagi atau guna manual console.', true);
+      setJsonImportStatus('Copy gagal. Browser block clipboard. Sila cuba lagi atau guna extension auto JSON.', true);
     }
+  }
+
+  function openShopeeForJsonExtension(){
+    if(!adminDetected()) return;
+    const input = qs('#affiliateJsonShopeeLinkInput');
+    const full = qs('#affiliateFullLinkInput');
+    const aff = qs('#affiliateLinkInput');
+    let url = (input?.value || full?.value || aff?.value || '').trim();
+    if(!url){
+      setJsonImportStatus('Paste link Shopee dahulu sebelum tekan Accept & Open.', true);
+      input?.focus();
+      return;
+    }
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    if(!/shopee\./i.test(url)){
+      setJsonImportStatus('Link mesti link Shopee.', true);
+      return;
+    }
+    if(input) input.value = url;
+    if(full && !full.value.trim()) full.value = url;
+    if(aff && !aff.value.trim()) aff.value = url;
+    try{
+      localStorage.setItem('azobss_pending_shopee_json_link', url);
+    }catch(e){}
+    setJsonImportStatus('Shopee dibuka. Jika extension AZOBSS dipasang, JSON akan auto download selepas page load.', false);
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   function normalizeShopeeImportedData(raw){
@@ -8633,6 +8661,7 @@ display:none !important;
 
     // Shopee JSON Auto Import buttons
     qs('#affiliateCopyJsonExtractorButton')?.addEventListener('click', copyShopeeJsonExtractorScript);
+    qs('#affiliateJsonOpenLinkButton')?.addEventListener('click', openShopeeForJsonExtension);
 
     qs('#affiliateImportJsonButton')?.addEventListener('click', () => {
       if(!adminDetected()) return;
