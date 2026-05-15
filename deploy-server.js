@@ -477,23 +477,44 @@ async function detectFromPlaywright(finalUrl) {
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process',
         '--disable-blink-features=AutomationControlled'
       ]
     });
 
-    const page = await browser.newPage({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36',
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       locale: 'en-MY',
-      viewport: { width: 1366, height: 768 }
+      timezoneId: 'Asia/Kuala_Lumpur',
+      viewport: { width: 1366, height: 768 },
+      extraHTTPHeaders: {
+        'Accept-Language': 'en-MY,en;q=0.9,ms-MY;q=0.8,ms;q=0.7',
+        'Referer': 'https://shopee.com.my/'
+      }
     });
 
-    await page.setExtraHTTPHeaders({
-      'Accept-Language': 'en-MY,en;q=0.9,ms;q=0.8',
-      'Referer': 'https://shopee.com.my/'
+    const page = await context.newPage();
+
+    // Reduce heavy resources but keep scripts/styles because Shopee renders product data with JS.
+    await page.route('**/*', route => {
+      const type = route.request().resourceType();
+      if (['font', 'media'].includes(type)) return route.abort().catch(() => {});
+      return route.continue().catch(() => {});
     });
 
-    await page.goto(finalUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
-    await page.waitForTimeout(4500);
+    await page.goto(finalUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+    try { await page.waitForLoadState('networkidle', { timeout: 15000 }); } catch (e) {}
+    try { await page.waitForSelector('meta[property="og:title"], h1, [data-sqe="name"], div[class*="product"]', { timeout: 15000 }); } catch (e) {}
+
+    // Trigger lazy React rendering.
+    await page.mouse.move(300, 300).catch(() => {});
+    await page.evaluate(() => window.scrollTo(0, 650)).catch(() => {});
+    await page.waitForTimeout(7000);
+    await page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
+    await page.waitForTimeout(2500);
 
     const data = await page.evaluate(() => {
       const pickMeta = (name) => {
@@ -501,39 +522,87 @@ async function detectFromPlaywright(finalUrl) {
         return el ? (el.getAttribute('content') || '').trim() : '';
       };
 
-      const visibleText = (selector) => {
-        const el = document.querySelector(selector);
-        return el ? (el.textContent || '').trim() : '';
-      };
+      const txt = (el) => el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      const visibleText = (selector) => txt(document.querySelector(selector));
+
+      const selectors = [
+        'h1',
+        '[data-sqe="name"]',
+        'section h1',
+        'main h1',
+        'div[class*="product-briefing"] h1',
+        'div[class*="ProductBriefing"] h1',
+        'div[class*="product"] h1',
+        'div[class*="title"]',
+        'span[class*="title"]',
+        'div[class*="name"]',
+        'span[class*="name"]'
+      ];
 
       const titleCandidates = [
         pickMeta('og:title'),
         pickMeta('twitter:title'),
-        visibleText('h1'),
-        visibleText('[data-sqe="name"]'),
-        visibleText('div._44qnta'),
-        visibleText('div[class*="product-briefing"] span'),
+        ...selectors.map(visibleText),
         document.title || ''
-      ];
+      ].filter(Boolean);
+
+      // Last resort: scan visible body text for a product-like line.
+      const bodyLines = (document.body?.innerText || '')
+        .split('\n')
+        .map(s => s.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .filter(s => s.length >= 12 && s.length <= 180);
+
+      const badLine = /^(shopee|search|cart|login|sign up|free shipping|malaysia|categories|sold|rating|voucher|add to cart|buy now|chat|share|report)$/i;
+      const productLine = bodyLines.find(line => {
+        if (badLine.test(line)) return false;
+        if (/^RM\s?\d/i.test(line)) return false;
+        if (/^\d+(\.\d+)?k? sold$/i.test(line)) return false;
+        if (/^(shipping|quantity|variation|product ratings|description)$/i.test(line)) return false;
+        return /[a-zA-Z]/.test(line) && (line.includes(' ') || line.includes('-'));
+      }) || '';
 
       const descCandidates = [
         pickMeta('og:description'),
         pickMeta('description'),
         visibleText('[data-sqe="product-description"]'),
-        visibleText('div[class*="product-detail"]')
-      ];
+        visibleText('div[class*="product-detail"]'),
+        visibleText('section[class*="description"]')
+      ].filter(Boolean);
 
       return {
-        title: titleCandidates.find(Boolean) || '',
+        title: titleCandidates.find(Boolean) || productLine || '',
+        productLine,
         description: descCandidates.find(Boolean) || '',
-        image: pickMeta('og:image') || pickMeta('twitter:image') || ''
+        image: pickMeta('og:image') || pickMeta('twitter:image') || '',
+        pageTitle: document.title || '',
+        bodySample: bodyLines.slice(0, 30)
       };
     });
 
-    let title = cleanShopeeTitle(data.title || '');
-    if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^malaysia\s*\|\s*free shipping/i.test(title) || /^\d+$/.test(title)) {
-      return null;
+    const rejectTitle = (value) => {
+      const t = cleanShopeeTitle(value || '');
+      if (!t) return '';
+      if (/^product$/i.test(t)) return '';
+      if (/^shopee$/i.test(t)) return '';
+      if (/^malaysia\s*\|\s*free shipping/i.test(t)) return '';
+      if (/free shipping across malaysia/i.test(t)) return '';
+      if (/^\d+$/.test(t)) return '';
+      if (t.length < 8) return '';
+      return t;
+    };
+
+    let title = rejectTitle(data.title);
+    if (!title) title = rejectTitle(data.productLine);
+    if (!title) title = rejectTitle(data.pageTitle);
+    if (!title && Array.isArray(data.bodySample)) {
+      for (const line of data.bodySample) {
+        title = rejectTitle(line);
+        if (title) break;
+      }
     }
+
+    if (!title) return null;
 
     return {
       title,
@@ -682,7 +751,9 @@ async function detectAffiliateProduct(rawUrl) {
           ? 'Auto filled guna reader fallback. Sila semak sebelum Save.'
           : source === 'url-slug'
             ? 'Auto filled guna nama produk daripada URL slug. Sila semak sebelum Save.'
-            : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
+            : source === 'playwright-browser'
+              ? 'Auto filled guna Playwright browser mode. Sila semak sebelum Save.'
+              : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
   };
 }
 
