@@ -3753,6 +3753,72 @@ body.is-admin .lucky-draw-prize-admin{
   font-variant-numeric:tabular-nums;
 }
 
+
+/* =========================================================
+   BIGGER GIVEAWAY PRIZE IMAGE
+========================================================= */
+
+.lucky-draw-prize-preview{
+    grid-template-columns:minmax(420px, 540px) 1fr !important;
+    align-items:stretch !important;
+}
+
+.lucky-draw-prize-preview img,
+#luckyDrawPrizeImage{
+
+    width:100% !important;
+
+    height:420px !important;
+    min-height:420px !important;
+    max-height:420px !important;
+
+    object-fit:contain !important;
+
+    background:#020617 !important;
+
+    padding:12px !important;
+
+    border-right:1px solid rgba(148,163,184,.18) !important;
+}
+
+/* content sebelah gambar */
+.lucky-draw-prize-content{
+    padding:24px !important;
+
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+}
+
+.lucky-draw-prize-content h3{
+    font-size:34px !important;
+}
+
+.lucky-draw-prize-content p{
+    font-size:16px !important;
+    line-height:1.7 !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    .lucky-draw-prize-preview{
+        grid-template-columns:1fr !important;
+    }
+
+    .lucky-draw-prize-preview img,
+    #luckyDrawPrizeImage{
+
+        height:320px !important;
+        min-height:320px !important;
+        max-height:320px !important;
+
+        border-right:0 !important;
+        border-bottom:1px solid rgba(148,163,184,.18) !important;
+    }
+
+}
+
 </style>
 
 
