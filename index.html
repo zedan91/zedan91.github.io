@@ -12204,16 +12204,36 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-  function clickFirst(selectors){
-    for(const sel of selectors){
-      const el = document.querySelector(sel);
-      if(el && !el.classList.contains('top-auth-btn')){
-        el.click();
+  
+function clickFirst(selectors){
+  for(const sel of selectors){
+    const elements = document.querySelectorAll(sel);
+
+    for(const el of elements){
+      if(!el) continue;
+
+      // avoid clicking topbar button itself
+      if(el.id === 'topbarSignInButton' || el.id === 'topbarSignUpButton') continue;
+
+      try{
+        el.dispatchEvent(new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        }));
+
+        if(typeof el.click === 'function'){
+          el.click();
+        }
+
         return true;
-      }
+      }catch(e){}
     }
-    return false;
   }
+
+  return false;
+}
+
 
   const signIn = document.getElementById('topbarSignInButton');
   const signUp = document.getElementById('topbarSignUpButton');
@@ -12356,16 +12376,36 @@ document.addEventListener('DOMContentLoaded', function(){
     return '';
   }
 
-  function clickFirst(selectors){
-    for(const sel of selectors){
-      const el = document.querySelector(sel);
-      if(el && !el.classList.contains('top-auth-btn')){
-        el.click();
+  
+function clickFirst(selectors){
+  for(const sel of selectors){
+    const elements = document.querySelectorAll(sel);
+
+    for(const el of elements){
+      if(!el) continue;
+
+      // avoid clicking topbar button itself
+      if(el.id === 'topbarSignInButton' || el.id === 'topbarSignUpButton') continue;
+
+      try{
+        el.dispatchEvent(new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        }));
+
+        if(typeof el.click === 'function'){
+          el.click();
+        }
+
         return true;
-      }
+      }catch(e){}
     }
-    return false;
   }
+
+  return false;
+}
+
 
   function setAuthState(username){
     const clean = String(username || '').trim();
@@ -12387,29 +12427,61 @@ document.addEventListener('DOMContentLoaded', function(){
 
   if(signIn){
     signIn.addEventListener('click', function(){
-      clickFirst([
+      const ok = clickFirst([
         '#signInButton',
         '#loginButton',
         '#authLoginButton',
+        '#openLoginModal',
+        '#signinBtn',
+        '#btnLogin',
         '[data-auth="signin"]',
         '[data-login]',
+        '[onclick*="login"]',
+        '[onclick*="signin"]',
         '.sign-in-btn',
-        '.login-btn'
+        '.login-btn',
+        '.signin-btn',
+        '.auth-login',
+        '.open-login'
       ]);
+
+      if(!ok){
+        const modal = document.querySelector('#loginModal, .login-modal, .auth-modal');
+        if(modal){
+          modal.style.display = 'flex';
+          modal.classList.add('active','show');
+        }
+      }
     });
   }
 
   if(signUp){
     signUp.addEventListener('click', function(){
-      clickFirst([
+      const ok = clickFirst([
         '#signUpButton',
         '#registerButton',
         '#authRegisterButton',
+        '#openRegisterModal',
+        '#signupBtn',
+        '#btnSignup',
         '[data-auth="signup"]',
         '[data-signup]',
+        '[onclick*="signup"]',
+        '[onclick*="register"]',
         '.sign-up-btn',
-        '.signup-btn'
+        '.signup-btn',
+        '.register-btn',
+        '.auth-signup',
+        '.open-register'
       ]);
+
+      if(!ok){
+        const modal = document.querySelector('#registerModal, #signupModal, .signup-modal, .register-modal');
+        if(modal){
+          modal.style.display = 'flex';
+          modal.classList.add('active','show');
+        }
+      }
     });
   }
 
