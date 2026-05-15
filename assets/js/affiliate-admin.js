@@ -924,7 +924,7 @@
   }
 
   function closeModal(){
-    if(isImportingShopeeJson) return;
+    if(isImportingShopeeJson || isChoosingShopeeJsonFile) return;
     qs('#affiliateAdminModal')?.classList.remove('is-open');
   }
 
@@ -942,28 +942,64 @@
     qs('#affiliateTitleAutoFillButton')?.addEventListener('click', autoFillAffiliateFromTitle);
     qs('#affiliateCopyJsonExtractorButton')?.addEventListener('click', copyShopeeJsonExtractorScript);
     qs('#affiliateJsonOpenLinkButton')?.addEventListener('click', openShopeeForJsonExtension);
-    qs('#affiliateImportJsonButton')?.addEventListener('click', () => {
+    qs('#affiliateImportJsonButton')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       if(!adminDetected()) return;
+      if(isChoosingShopeeJsonFile) return;
+
+      const fileInput = qs('#affiliateShopeeJsonFile');
+      if(!fileInput) return;
+
+      isChoosingShopeeJsonFile = true;
       isImportingShopeeJson = true;
-      qs('#affiliateShopeeJsonFile')?.click();
+
+      // Reset value first so choosing the same JSON file still triggers change once.
+      fileInput.value = '';
+
+      // Delay click slightly to avoid modal outside-click/focus blink on Windows file picker.
       setTimeout(() => {
-        if(!qs('#affiliateShopeeJsonFile')?.value){
+        fileInput.click();
+      }, 80);
+
+      // If user cancels file picker, release lock.
+      setTimeout(() => {
+        if(isChoosingShopeeJsonFile){
+          isChoosingShopeeJsonFile = false;
           isImportingShopeeJson = false;
         }
-      }, 1500);
+      }, 4000);
     });
-    qs('#affiliateShopeeJsonFile')?.addEventListener('change', function(){
+    qs('#affiliateShopeeJsonFile')?.addEventListener('click', e => {
+      e.stopPropagation();
+    });
+
+    qs('#affiliateShopeeJsonFile')?.addEventListener('change', function(e){
+      e.stopPropagation();
       if(!adminDetected()) return;
-      isImportingShopeeJson = true;
-      importShopeeJsonFile(this.files && this.files[0]);
-      this.value = '';
-      setTimeout(() => {
+
+      const file = this.files && this.files[0];
+
+      // If user cancels picker, just unlock. Do not close/reopen modal.
+      if(!file){
+        isChoosingShopeeJsonFile = false;
         isImportingShopeeJson = false;
-      }, 700);
+        return;
+      }
+
+      isImportingShopeeJson = true;
+      importShopeeJsonFile(file);
+
+      // Keep modal open and release lock after import settles.
+      setTimeout(() => {
+        this.value = '';
+        isChoosingShopeeJsonFile = false;
+        isImportingShopeeJson = false;
+      }, 900);
     });
 
     qs('#affiliateAdminModal')?.addEventListener('click', e => {
-      if(isImportingShopeeJson) return;
+      if(isImportingShopeeJson || isChoosingShopeeJsonFile) return;
       if(e.target.id === 'affiliateAdminModal') closeModal();
     });
 
