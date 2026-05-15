@@ -6413,6 +6413,396 @@ body.azobss-logged-in .top-user-pill{
     }
 }
 
+
+/* =========================================================
+   AZOBSS BASELINE FINAL TOPBAR FIX
+   - old Sign in/Sign up removed
+   - topbar Sign in/Sign up no overlap
+   - after login: auth hidden, username only
+   - desktop + mobile stable
+========================================================= */
+
+/* hide all old auth/user blocks outside the floating topbar */
+.site-auth-actions,
+#siteAuthActions,
+.user-menu,
+#userMenu,
+.header-auth,
+.site-auth,
+.site-auth-btn,
+.auth-actions,
+.floating-auth,
+.auth-floating,
+.auth-buttons,
+.login-floating,
+#authFloating,
+#floatingAuth,
+#loginFloating,
+#authButtons,
+.user-status,
+.visitor-widget,
+.online-widget,
+.traffic-widget,
+[class*="visitor" i],
+[class*="guest" i]{
+  display:none !important;
+}
+
+/* keep actual modal usable */
+#siteAuthModal,
+.auth-modal{
+  display:none;
+}
+#siteAuthModal.is-open,
+.auth-modal.is-open,
+#siteAuthModal.active,
+.auth-modal.active,
+#siteAuthModal.show,
+.auth-modal.show{
+  display:flex !important;
+}
+
+/* clean hero spacing */
+.hero{
+  min-height:100vh !important;
+  padding-top:135px !important;
+  padding-bottom:80px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* main floating topbar */
+.hero-actions{
+  position:fixed !important;
+  top:14px !important;
+  left:50% !important;
+  right:auto !important;
+  transform:translateX(-50%) !important;
+  z-index:9999 !important;
+
+  width:min(1220px, calc(100vw - 38px)) !important;
+  max-width:min(1220px, calc(100vw - 38px)) !important;
+  min-height:78px !important;
+
+  margin:0 !important;
+  padding:10px 12px !important;
+
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+
+  border-radius:24px !important;
+  border:1px solid rgba(148,163,184,.24) !important;
+  background:linear-gradient(180deg, rgba(12,18,34,.82), rgba(7,13,27,.70)) !important;
+  backdrop-filter:blur(18px) saturate(165%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(165%) !important;
+  box-shadow:0 18px 48px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.07) !important;
+
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  scrollbar-width:none !important;
+  animation:none !important;
+}
+.hero-actions::-webkit-scrollbar{display:none !important;}
+
+/* shortcut cards */
+.hero-actions .btn{
+  order:10 !important;
+  flex:0 0 168px !important;
+  width:168px !important;
+  min-width:168px !important;
+  max-width:168px !important;
+  height:58px !important;
+  min-height:58px !important;
+  margin:0 !important;
+  padding:8px 12px !important;
+  border-radius:18px !important;
+
+  display:inline-flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+
+  text-align:left !important;
+  white-space:normal !important;
+  overflow:hidden !important;
+
+  font-size:12px !important;
+  line-height:1.1 !important;
+  font-weight:900 !important;
+  color:#f8fafc !important;
+  text-decoration:none !important;
+
+  box-shadow:0 12px 26px rgba(2,6,23,.25), inset 0 1px 0 rgba(255,255,255,.10) !important;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
+}
+.hero-actions .btn:hover{
+  transform:translateY(-2px) !important;
+  box-shadow:0 16px 32px rgba(0,0,0,.32), 0 0 18px rgba(34,197,94,.13) !important;
+}
+
+/* slightly wider giveaway */
+.hero-actions .btn.purple{
+  flex-basis:178px !important;
+  width:178px !important;
+  min-width:178px !important;
+  max-width:178px !important;
+}
+
+/* icons */
+.hero-action-icon{
+  flex:0 0 38px !important;
+  width:38px !important;
+  min-width:38px !important;
+  height:38px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:18px !important;
+  overflow:hidden !important;
+}
+.hero-actions .btn span:last-child{
+  display:block !important;
+  max-width:105px !important;
+  font-size:12px !important;
+  line-height:1.08 !important;
+  font-weight:900 !important;
+  overflow:hidden !important;
+}
+.hero-actions .btn small{
+  display:block !important;
+  font-size:8.5px !important;
+  line-height:1 !important;
+}
+
+/* PA card text fix */
+.hero-actions #heroRequestButton span:last-child{
+  max-width:102px !important;
+}
+.hero-actions #heroRequestButton .hero-action-icon{
+  background:linear-gradient(135deg,#2563eb,#22c55e) !important;
+}
+
+/* WhatsApp icon */
+.hero-actions .hero-whatsapp{
+  order:20 !important;
+  flex:0 0 58px !important;
+  width:58px !important;
+  min-width:58px !important;
+  max-width:58px !important;
+  height:58px !important;
+  min-height:58px !important;
+  margin:0 !important;
+  padding:7px !important;
+  border-radius:18px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:linear-gradient(135deg, rgba(22,163,74,.72), rgba(15,23,42,.82)) !important;
+  border:1px solid rgba(34,197,94,.62) !important;
+}
+.hero-whatsapp-icon{
+  flex:0 0 40px !important;
+  width:40px !important;
+  height:40px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:50% !important;
+  background:#25D366 !important;
+  color:#fff !important;
+  box-shadow:0 0 20px rgba(37,211,102,.32) !important;
+}
+.hero-whatsapp-icon svg{
+  width:22px !important;
+  height:22px !important;
+}
+.hero-whatsapp-text{display:none !important;}
+
+/* Topbar auth buttons */
+.hero-actions .top-auth-btn{
+  order:30 !important;
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:86px !important;
+  max-width:100px !important;
+  height:58px !important;
+  min-height:58px !important;
+  margin:0 !important;
+  padding:0 12px !important;
+  border-radius:16px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:6px !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  font-size:12px !important;
+  font-weight:900 !important;
+  cursor:pointer !important;
+  border:1px solid rgba(148,163,184,.24) !important;
+  box-sizing:border-box !important;
+}
+.hero-actions .top-auth-btn.signin{
+  color:#e5e7eb !important;
+  background:rgba(15,23,42,.82) !important;
+}
+.hero-actions .top-auth-btn.signup{
+  color:#fff !important;
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  border-color:rgba(34,197,94,.65) !important;
+}
+
+/* User pill */
+.hero-actions .top-user-pill{
+  order:40 !important;
+  margin-left:auto !important;
+  flex:0 0 auto !important;
+  min-width:max-content !important;
+  max-width:none !important;
+  height:58px !important;
+  min-height:58px !important;
+  padding:0 12px !important;
+  border-radius:18px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+  overflow:visible !important;
+  color:#fff !important;
+  background:rgba(15,23,42,.84) !important;
+  border:1px solid rgba(148,163,184,.20) !important;
+  box-shadow:0 10px 24px rgba(2,6,23,.20) !important;
+}
+.hero-actions .top-user-avatar{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  flex:0 0 38px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  border:2px solid #22c55e !important;
+  color:#22c55e !important;
+  background:rgba(2,6,23,.58) !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+}
+.hero-actions .top-user-name{
+  display:block !important;
+  max-width:none !important;
+  min-width:max-content !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+}
+.hero-actions .top-user-logout{
+  height:34px !important;
+  padding:0 10px !important;
+  border:0 !important;
+  border-radius:12px !important;
+  background:rgba(255,255,255,.10) !important;
+  color:#fff !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+  white-space:nowrap !important;
+  cursor:pointer !important;
+}
+
+/* Auth state */
+body.azobss-topbar-logged-in .hero-actions .top-auth-btn,
+body.is-authenticated .hero-actions .top-auth-btn{
+  display:none !important;
+}
+body.azobss-topbar-logged-in .hero-actions .top-user-pill,
+body.is-authenticated .hero-actions .top-user-pill{
+  display:flex !important;
+}
+body:not(.azobss-topbar-logged-in):not(.is-authenticated) .hero-actions .top-user-pill{
+  display:none !important;
+}
+body:not(.azobss-topbar-logged-in):not(.is-authenticated) .hero-actions .top-auth-btn{
+  display:inline-flex !important;
+}
+
+/* Mobile: horizontal carousel */
+@media(max-width:900px){
+  .hero{
+    padding-top:145px !important;
+  }
+  .hero-actions{
+    top:8px !important;
+    left:8px !important;
+    right:8px !important;
+    transform:none !important;
+    width:auto !important;
+    max-width:none !important;
+    min-height:96px !important;
+    padding:8px !important;
+    gap:8px !important;
+    border-radius:20px !important;
+    justify-content:flex-start !important;
+    scroll-snap-type:x mandatory !important;
+  }
+  .hero-actions .btn{
+    flex:0 0 120px !important;
+    width:120px !important;
+    min-width:120px !important;
+    max-width:120px !important;
+    height:78px !important;
+    min-height:78px !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+    align-items:center !important;
+    text-align:center !important;
+    gap:7px !important;
+    padding:8px !important;
+    scroll-snap-align:start !important;
+  }
+  .hero-actions .btn.purple{
+    flex-basis:132px !important;
+    width:132px !important;
+    min-width:132px !important;
+    max-width:132px !important;
+  }
+  .hero-action-icon{
+    width:34px !important;
+    height:34px !important;
+    min-width:34px !important;
+    flex-basis:34px !important;
+    font-size:17px !important;
+  }
+  .hero-actions .btn span:last-child{
+    max-width:100% !important;
+    font-size:10.5px !important;
+    text-align:center !important;
+  }
+  .hero-actions .top-auth-btn{
+    min-width:84px !important;
+    height:78px !important;
+    min-height:78px !important;
+    scroll-snap-align:start !important;
+  }
+  .hero-actions .top-user-pill{
+    height:78px !important;
+    min-height:78px !important;
+    scroll-snap-align:start !important;
+  }
+  .hero-actions .hero-whatsapp{
+    flex-basis:74px !important;
+    width:74px !important;
+    min-width:74px !important;
+    max-width:74px !important;
+    height:78px !important;
+    min-height:78px !important;
+    scroll-snap-align:start !important;
+  }
+}
+
 </style>
 
 
@@ -13505,6 +13895,144 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   });
 
+});
+</script>
+
+<!-- AZOBSS baseline final auth/topbar sync -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const body = document.body;
+  const topSignIn = document.getElementById('topbarSignInButton');
+  const topSignUp = document.getElementById('topbarSignUpButton');
+  const topLogout = document.getElementById('topbarLogoutButton');
+  const topUserName = document.getElementById('topbarUserName');
+  const topAvatar = document.getElementById('topbarUserAvatar');
+
+  function getStoredUser(){
+    const raw = sessionStorage.getItem('azobssCurrentUser') ||
+                localStorage.getItem('azobssCurrentUser') ||
+                sessionStorage.getItem('azobssUser') ||
+                localStorage.getItem('azobssUser') ||
+                sessionStorage.getItem('azobssUsername') ||
+                localStorage.getItem('azobssUsername');
+
+    if(raw){
+      try{
+        const obj = JSON.parse(raw);
+        return obj.name || obj.username || obj.usernameKey || obj.email || '';
+      }catch(e){
+        return raw;
+      }
+    }
+
+    const oldName = document.getElementById('signedInName');
+    if(oldName && oldName.textContent.trim()) return oldName.textContent.trim();
+
+    return '';
+  }
+
+  function syncTopbarAuth(){
+    const username = String(getStoredUser() || '').trim();
+
+    if(username && username.toLowerCase() !== 'user'){
+      body.classList.add('azobss-topbar-logged-in');
+      if(topUserName) topUserName.textContent = username;
+      if(topAvatar) topAvatar.textContent = username.charAt(0).toUpperCase();
+    }else{
+      body.classList.remove('azobss-topbar-logged-in');
+      if(topUserName) topUserName.textContent = 'User';
+      if(topAvatar) topAvatar.textContent = 'Z';
+    }
+  }
+
+  function openAuthModal(mode){
+    const modal = document.getElementById('siteAuthModal');
+    const title = document.getElementById('siteAuthTitle');
+    const signInForm = document.getElementById('siteSignInForm');
+    const signUpForm = document.getElementById('siteSignUpForm');
+
+    if(title) title.textContent = mode === 'signup' ? 'Sign up' : 'Sign in';
+    if(signInForm) signInForm.hidden = mode === 'signup';
+    if(signUpForm) signUpForm.hidden = mode !== 'signup';
+
+    if(modal){
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden','false');
+      modal.style.display = 'flex';
+      setTimeout(function(){
+        const input = mode === 'signup'
+          ? document.getElementById('siteSignupName')
+          : document.getElementById('siteLoginName');
+        if(input) input.focus();
+      }, 50);
+    }
+  }
+
+  function closeAuthModal(){
+    const modal = document.getElementById('siteAuthModal');
+    if(modal){
+      modal.classList.remove('is-open','open','active','show');
+      modal.setAttribute('aria-hidden','true');
+      modal.style.display = 'none';
+    }
+  }
+
+  if(topSignIn) topSignIn.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    openAuthModal('signin');
+  });
+
+  if(topSignUp) topSignUp.addEventListener('click', function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    openAuthModal('signup');
+  });
+
+  if(topLogout) topLogout.addEventListener('click', function(e){
+    e.preventDefault();
+    const originalLogout = document.getElementById('logoutButton');
+    if(originalLogout) originalLogout.click();
+    sessionStorage.removeItem('azobssCurrentUser');
+    sessionStorage.removeItem('azobssLoggedIn');
+    localStorage.removeItem('azobssCurrentUser');
+    localStorage.removeItem('azobssUsername');
+    body.classList.remove('azobss-topbar-logged-in','is-authenticated');
+    syncTopbarAuth();
+  });
+
+  const closeBtn = document.getElementById('siteAuthClose');
+  if(closeBtn) closeBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeAuthModal();
+  });
+
+  const modal = document.getElementById('siteAuthModal');
+  if(modal) modal.addEventListener('click', function(e){
+    if(e.target === modal) closeAuthModal();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeAuthModal();
+  });
+
+  // after sign in form submit, close modal when existing app saved session
+  const signInForm = document.getElementById('siteSignInForm');
+  if(signInForm){
+    signInForm.addEventListener('submit', function(){
+      setTimeout(function(){
+        syncTopbarAuth();
+        if(body.classList.contains('azobss-topbar-logged-in') || sessionStorage.getItem('azobssCurrentUser')){
+          closeAuthModal();
+        }
+      }, 500);
+      setTimeout(syncTopbarAuth, 1200);
+    });
+  }
+
+  syncTopbarAuth();
+  setInterval(syncTopbarAuth, 1000);
 });
 </script>
 
