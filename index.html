@@ -9892,8 +9892,20 @@ document.addEventListener('DOMContentLoaded', function(){
         btn.textContent = 'Show More';
 
         btn.addEventListener('click', function(){
+          const beforeTop = card.getBoundingClientRect().top;
           const expanded = card.classList.toggle('is-expanded');
           btn.textContent = expanded ? 'Hide' : 'Show More';
+
+          // Bila tekan Hide, card mengecil dan browser boleh lompat ke bawah.
+          // Ini kekalkan kedudukan card supaya view tak lari.
+          requestAnimationFrame(function(){
+            const afterTop = card.getBoundingClientRect().top;
+            window.scrollBy({
+              top: afterTop - beforeTop,
+              left: 0,
+              behavior: 'auto'
+            });
+          });
         });
 
         desc.insertAdjacentElement('afterend', btn);
