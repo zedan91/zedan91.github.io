@@ -7032,6 +7032,79 @@ body.has-pa-access #heroRequestButton{
 
 }
 
+
+/* ===== CLEAN SIGN IN / SIGN UP LAYOUT ===== */
+
+/* container */
+.topbar-auth-buttons,
+.auth-buttons,
+.topbar-right-auth{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+}
+
+/* sign in smaller */
+#topbarSignInBtn,
+.topbar-signin-btn,
+.signin-btn{
+    min-width:92px !important;
+    width:92px !important;
+    height:36px !important;
+
+    font-size:13px !important;
+    font-weight:700 !important;
+
+    border-radius:12px !important;
+
+    padding:0 12px !important;
+}
+
+/* sign up under sign in */
+#topbarSignUpBtn,
+.topbar-signup-btn,
+.signup-btn{
+    min-width:92px !important;
+    width:92px !important;
+    height:36px !important;
+
+    font-size:13px !important;
+    font-weight:800 !important;
+
+    border-radius:12px !important;
+
+    padding:0 12px !important;
+}
+
+/* cleaner topbar spacing */
+.hero-actions{
+    align-items:flex-start !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    .topbar-auth-buttons,
+    .auth-buttons,
+    .topbar-right-auth{
+        flex-direction:row !important;
+        gap:6px !important;
+    }
+
+    #topbarSignInBtn,
+    #topbarSignUpBtn,
+    .topbar-signin-btn,
+    .topbar-signup-btn{
+        width:auto !important;
+        min-width:78px !important;
+        height:34px !important;
+
+        font-size:12px !important;
+    }
+}
+
 </style>
 
 
@@ -14300,6 +14373,31 @@ document.addEventListener('DOMContentLoaded', function(){
 
   updatePAButtonVisibility();
   setInterval(updatePAButtonVisibility, 1000);
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  const signIn =
+    document.getElementById('topbarSignInBtn') ||
+    document.querySelector('.topbar-signin-btn') ||
+    document.querySelector('.signin-btn');
+
+  const signUp =
+    document.getElementById('topbarSignUpBtn') ||
+    document.querySelector('.topbar-signup-btn') ||
+    document.querySelector('.signup-btn');
+
+  if(signIn && signUp){
+      let wrap = signIn.parentElement;
+
+      if(wrap && wrap === signUp.parentElement){
+          wrap.classList.add('topbar-auth-buttons');
+      }
+  }
+
 });
 </script>
 
