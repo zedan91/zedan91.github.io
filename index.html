@@ -5693,6 +5693,85 @@ body > .profile-pill,
   }
 }
 
+
+/* =========================================================
+   FIX TOP RIGHT OVERLAP / DUPLICATE USER PANEL
+========================================================= */
+
+/* hide ALL old user/login panels outside topbar */
+body > .user-panel,
+body > .user-box,
+body > .account-box,
+body > .profile-box,
+body > .top-right-user,
+body > .header-user,
+body > .user-info,
+body > .auth-user,
+body > .logged-user,
+body > .login-user,
+body > .profile-pill,
+body > .user-pill,
+body > .top-user,
+#userPanel,
+#accountPanel,
+#profilePanel,
+#headerUser,
+#topRightUser{
+    display:none !important;
+}
+
+/* only keep the one INSIDE topbar */
+.hero-actions .top-user-pill{
+    display:flex !important;
+    margin-left:auto !important;
+    position:relative !important;
+    z-index:5 !important;
+
+    min-width:max-content !important;
+    max-width:none !important;
+
+    padding:0 14px !important;
+    height:58px !important;
+
+    border-radius:18px !important;
+    background:rgba(15,23,42,.88) !important;
+    border:1px solid rgba(148,163,184,.18) !important;
+
+    overflow:visible !important;
+}
+
+/* ensure logout fully visible */
+.hero-actions .top-user-logout{
+    white-space:nowrap !important;
+    overflow:visible !important;
+}
+
+/* prevent clipping */
+.hero-actions{
+    overflow-x:auto !important;
+    overflow-y:visible !important;
+    padding-right:14px !important;
+}
+
+/* desktop spacing */
+@media(min-width:1100px){
+    .hero-actions{
+        gap:8px !important;
+    }
+
+    .hero-actions .btn{
+        flex:0 0 145px !important;
+        width:145px !important;
+        min-width:145px !important;
+    }
+
+    .hero-actions .btn.purple{
+        flex:0 0 160px !important;
+        width:160px !important;
+        min-width:160px !important;
+    }
+}
+
 </style>
 
 
