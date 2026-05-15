@@ -488,6 +488,49 @@
     }
   }
 
+
+  async function openShopeeForJsonExtension(){
+    if(!adminDetected()) return;
+    const input = qs('#affiliateJsonShopeeLinkInput');
+    const full = qs('#affiliateFullLinkInput');
+    const aff = qs('#affiliateLinkInput');
+    let url = (input?.value || full?.value || aff?.value || '').trim();
+    if(!url){
+      setJsonImportStatus('Paste link Shopee dahulu sebelum tekan Accept & Open.', true);
+      input?.focus();
+      return;
+    }
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    if(!/shopee\./i.test(url)){
+      setJsonImportStatus('Link mesti link Shopee.', true);
+      return;
+    }
+    if(input) input.value = url;
+    if(full && !full.value.trim()) full.value = url;
+    if(aff && !aff.value.trim()) aff.value = url;
+
+    const script = buildShopeeConsoleExtractorScript();
+    let copied = false;
+    try{
+      await navigator.clipboard.writeText(script);
+      copied = true;
+    }catch(e){
+      copied = false;
+    }
+
+    try{ localStorage.setItem('azobss_pending_shopee_json_link', url); }catch(e){}
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+
+    if(copied){
+      setJsonImportStatus('✅ Console script copied + Shopee dibuka. Di Shopee: tekan F12 → Console → Ctrl+V → Enter. JSON akan auto download. Jika extension dipasang, JSON boleh auto download tanpa console.', false);
+    }else{
+      setJsonImportStatus('Shopee dibuka, tetapi browser block copy script. Tekan button Copy Console Script dahulu, kemudian F12 → Console → Ctrl+V → Enter.', true);
+    }
+    if(!win){
+      setJsonImportStatus('Popup diblock browser. Script ' + (copied ? 'sudah copied. ' : 'belum copied. ') + 'Allow popup dan tekan semula.', true);
+    }
+  }
+
   function normalizeShopeeImportedData(raw){
     const data = Array.isArray(raw) ? raw[0] : (raw || {});
     const item = data.item || data.data || data.product || data.item_basic || {};
@@ -556,6 +599,7 @@
     qs('#affiliateOpenProductButton')?.addEventListener('click', openAffiliateProductLink);
     qs('#affiliateTitleAutoFillButton')?.addEventListener('click', autoFillAffiliateFromTitle);
     qs('#affiliateCopyJsonExtractorButton')?.addEventListener('click', copyShopeeJsonExtractorScript);
+    qs('#affiliateJsonOpenLinkButton')?.addEventListener('click', openShopeeForJsonExtension);
     qs('#affiliateImportJsonButton')?.addEventListener('click', () => {
       if(!adminDetected()) return;
       qs('#affiliateShopeeJsonFile')?.click();

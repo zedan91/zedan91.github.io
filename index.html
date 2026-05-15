@@ -4037,7 +4037,7 @@ display:none !important;
           <button class="affiliate-admin-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
           <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
         </div>
-        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Paling auto: install extension dalam folder azobss-shopee-json-extension → paste link → Accept & Open Shopee → JSON auto download → Import JSON di sini.</small>
+        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Paste link Shopee → Accept & Open Shopee. Sistem akan copy console script dulu, kemudian buka Shopee. Di Shopee: F12 → Console → Ctrl+V → Enter untuk auto download JSON. Jika extension dipasang, JSON boleh auto download tanpa console.</small>
       </label>
 
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
@@ -8566,7 +8566,7 @@ display:none !important;
     }
   }
 
-  function openShopeeForJsonExtension(){
+  async function openShopeeForJsonExtension(){
     if(!adminDetected()) return;
     const input = qs('#affiliateJsonShopeeLinkInput');
     const full = qs('#affiliateFullLinkInput');
@@ -8585,11 +8585,29 @@ display:none !important;
     if(input) input.value = url;
     if(full && !full.value.trim()) full.value = url;
     if(aff && !aff.value.trim()) aff.value = url;
+
+    const script = buildShopeeConsoleExtractorScript();
+    let copied = false;
+    try{
+      await navigator.clipboard.writeText(script);
+      copied = true;
+    }catch(e){
+      copied = false;
+    }
+
     try{
       localStorage.setItem('azobss_pending_shopee_json_link', url);
     }catch(e){}
-    setJsonImportStatus('Shopee dibuka. Jika extension AZOBSS dipasang, JSON akan auto download selepas page load.', false);
-    window.open(url, '_blank', 'noopener,noreferrer');
+
+    const win = window.open(url, '_blank', 'noopener,noreferrer');
+    if(copied){
+      setJsonImportStatus('✅ Console script copied + Shopee dibuka. Di Shopee: tekan F12 → Console → Ctrl+V → Enter. JSON akan auto download. Jika extension dipasang, JSON boleh auto download tanpa console.', false);
+    }else{
+      setJsonImportStatus('Shopee dibuka, tetapi browser block copy script. Tekan button Copy Console Script dahulu, kemudian F12 → Console → Ctrl+V → Enter.', true);
+    }
+    if(!win){
+      setJsonImportStatus('Popup diblock browser. Script ' + (copied ? 'sudah copied. ' : 'belum copied. ') + 'Allow popup dan tekan semula.', true);
+    }
   }
 
   function normalizeShopeeImportedData(raw){
