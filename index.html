@@ -3900,6 +3900,160 @@ body.is-admin .lucky-draw-prize-admin{
     resize:vertical !important;
 }
 
+
+/* =========================================================
+   RANDOM NAME PICKER STYLE EFFECT + SOUND
+========================================================= */
+.lucky-draw-spin-stage{
+  min-height:220px !important;
+  padding:24px !important;
+  perspective:900px;
+  position:relative;
+  isolation:isolate;
+}
+
+.lucky-draw-rolling-window{
+  width:min(680px, 100%);
+  height:94px;
+  margin:0 auto 14px;
+  border-radius:22px;
+  border:1px solid rgba(34,197,94,.35);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+    rgba(2,6,23,.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 45px rgba(0,0,0,.25),
+    0 0 24px rgba(34,197,94,.10);
+  overflow:hidden;
+  position:relative;
+}
+
+.lucky-draw-rolling-window::before,
+.lucky-draw-rolling-window::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  height:30px;
+  z-index:4;
+  pointer-events:none;
+}
+
+.lucky-draw-rolling-window::before{
+  top:0;
+  background:linear-gradient(180deg, rgba(2,6,23,.95), transparent);
+}
+
+.lucky-draw-rolling-window::after{
+  bottom:0;
+  background:linear-gradient(0deg, rgba(2,6,23,.95), transparent);
+}
+
+.lucky-draw-rolling-list{
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  transform:translateY(0);
+  will-change:transform;
+}
+
+.lucky-draw-rolling-list span{
+  height:94px;
+  display:grid;
+  place-items:center;
+  padding:0 18px;
+  color:#e5e7eb;
+  font-size:30px;
+  line-height:1.05;
+  font-weight:1000;
+  text-align:center;
+  letter-spacing:.02em;
+  text-shadow:0 0 16px rgba(34,197,94,.18);
+}
+
+.lucky-draw-spin-stage.is-spinning{
+  border-style:solid;
+  border-color:rgba(34,197,94,.56) !important;
+  background:
+    radial-gradient(circle at center,rgba(34,197,94,.18),rgba(2,6,23,.50)),
+    linear-gradient(135deg,rgba(59,130,246,.10),rgba(34,197,94,.08)) !important;
+}
+
+.lucky-draw-spin-stage.is-spinning .lucky-draw-rolling-window{
+  animation:pickerGlow .45s ease-in-out infinite alternate;
+}
+
+.lucky-draw-spin-stage.is-spinning .lucky-draw-spinner-name{
+  opacity:.82;
+  font-size:16px !important;
+  color:#bbf7d0 !important;
+}
+
+.lucky-draw-spin-stage.has-winner .lucky-draw-rolling-window{
+  border-color:rgba(250,204,21,.70);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 0 28px rgba(250,204,21,.20),
+    0 0 42px rgba(34,197,94,.14);
+}
+
+.lucky-draw-spin-stage.has-winner .lucky-draw-rolling-list span:first-child,
+.lucky-draw-spin-stage.has-winner .lucky-draw-spinner-name{
+  color:#fde047 !important;
+  text-shadow:
+    0 0 18px rgba(250,204,21,.74),
+    0 0 36px rgba(34,197,94,.22);
+}
+
+.lucky-draw-confetti{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:10;
+}
+
+.lucky-draw-confetti i{
+  position:absolute;
+  top:-20px;
+  width:8px;
+  height:14px;
+  border-radius:2px;
+  animation:confettiFall 1.9s linear forwards;
+}
+
+@keyframes pickerGlow{
+  from{box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 0 18px rgba(34,197,94,.12)}
+  to{box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 0 34px rgba(34,197,94,.30)}
+}
+
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg); opacity:1}
+  100%{transform:translateY(260px) rotate(720deg); opacity:0}
+}
+
+@media(max-width:760px){
+  .lucky-draw-spin-stage{
+    min-height:190px !important;
+    padding:16px !important;
+  }
+
+  .lucky-draw-rolling-window{
+    height:76px;
+    border-radius:18px;
+  }
+
+  .lucky-draw-rolling-list span{
+    height:76px;
+    font-size:22px;
+  }
+}
+
 </style>
 
 
@@ -5265,8 +5419,14 @@ display:none !important;
 
 
         <div class="lucky-draw-spin-stage" id="luckyDrawSpinStage">
+          <div class="lucky-draw-rolling-window" id="luckyDrawRollingWindow">
+            <div class="lucky-draw-rolling-list" id="luckyDrawRollingList">
+              <span>Menunggu countdown...</span>
+            </div>
+          </div>
           <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Menunggu countdown...</div>
           <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
+          <div class="lucky-draw-confetti" id="luckyDrawConfetti"></div>
         </div>
 
 
@@ -6091,6 +6251,113 @@ display:none !important;
       }
     }
 
+
+    const luckyDrawRollingList = document.getElementById('luckyDrawRollingList');
+    const luckyDrawConfetti = document.getElementById('luckyDrawConfetti');
+    let luckyDrawAudioContext = null;
+
+    function getLuckyDrawAudioContext() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (!luckyDrawAudioContext) luckyDrawAudioContext = new AudioCtx();
+      if (luckyDrawAudioContext.state === 'suspended') luckyDrawAudioContext.resume();
+      return luckyDrawAudioContext;
+    }
+
+    function playLuckyDrawTickSound(step = 0) {
+      const ctx = getLuckyDrawAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(520 + ((step % 7) * 34), ctx.currentTime);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.045, ctx.currentTime + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.055);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.06);
+    }
+
+    function playLuckyDrawWinnerSound() {
+      const ctx = getLuckyDrawAudioContext();
+      if (!ctx) return;
+
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      notes.forEach(function(freq, index){
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = ctx.currentTime + (index * 0.12);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.09, start + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.38);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.42);
+      });
+    }
+
+    function renderLuckyDrawRollingItems(names, selectedIndex = 0) {
+      if (!luckyDrawRollingList) return;
+
+      const safeNames = names.length ? names : ['Menunggu peserta...'];
+      const items = [];
+
+      for (let i = 0; i < 9; i += 1) {
+        items.push(safeNames[(selectedIndex + i) % safeNames.length]);
+      }
+
+      luckyDrawRollingList.innerHTML = items.map(function(name){
+        return `<span>${escapeLuckyDrawText ? escapeLuckyDrawText(name) : String(name)}</span>`;
+      }).join('');
+
+      luckyDrawRollingList.style.transition = 'none';
+      luckyDrawRollingList.style.transform = 'translateY(0)';
+    }
+
+    function animateLuckyDrawRolling(names, step, itemHeight = 94) {
+      if (!luckyDrawRollingList) return;
+
+      renderLuckyDrawRollingItems(names, step);
+      luckyDrawRollingList.style.transition = 'none';
+      luckyDrawRollingList.style.transform = 'translateY(0)';
+
+      requestAnimationFrame(function(){
+        luckyDrawRollingList.style.transition = 'transform 80ms cubic-bezier(.2,.9,.2,1)';
+        luckyDrawRollingList.style.transform = `translateY(-${itemHeight}px)`;
+      });
+    }
+
+    function createLuckyDrawConfetti() {
+      if (!luckyDrawConfetti) return;
+
+      luckyDrawConfetti.innerHTML = '';
+      const colors = ['#22c55e', '#fde047', '#3b82f6', '#f97316', '#ec4899', '#a855f7'];
+
+      for (let i = 0; i < 42; i += 1) {
+        const piece = document.createElement('i');
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.background = colors[i % colors.length];
+        piece.style.animationDelay = `${Math.random() * 0.42}s`;
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        luckyDrawConfetti.appendChild(piece);
+      }
+
+      setTimeout(function(){
+        luckyDrawConfetti.innerHTML = '';
+      }, 2600);
+    }
+
+
     function spinLuckyDrawNames(participants, finalWinner, monthKey) {
       if (!luckyDrawSpinnerName || !luckyDrawSpinStage || luckyDrawSpinRunning) return;
 
@@ -6100,23 +6367,46 @@ display:none !important;
 
       if (!names.length || !finalWinner) return;
 
+      const itemHeight = window.matchMedia('(max-width: 760px)').matches ? 76 : 94;
+
       luckyDrawSpinRunning = true;
       luckyDrawSpinStage.classList.add('is-spinning');
       luckyDrawSpinStage.classList.remove('has-winner');
+      luckyDrawSpinnerName.textContent = 'Spinning...';
 
       let tick = 0;
-      const maxTicks = 42;
-      const interval = setInterval(function () {
+      const maxTicks = 54;
+      let delay = 45;
+
+      function nextTick() {
         const name = names[tick % names.length];
+        animateLuckyDrawRolling(names, tick, itemHeight);
         luckyDrawSpinnerName.textContent = name;
+        playLuckyDrawTickSound(tick);
         tick += 1;
 
         if (tick >= maxTicks) {
-          clearInterval(interval);
           luckyDrawSpinRunning = false;
+          luckyDrawSpinStage.classList.remove('is-spinning');
+          luckyDrawSpinStage.classList.add('has-winner');
+
+          renderLuckyDrawRollingItems([getWinnerDisplayName(finalWinner)], 0);
+          luckyDrawSpinnerName.textContent = `🎉 ${getWinnerDisplayName(finalWinner)} 🎉`;
+          playLuckyDrawWinnerSound();
+          createLuckyDrawConfetti();
           saveLuckyDrawWinner(monthKey, finalWinner);
+          return;
         }
-      }, 90);
+
+        if (tick > 34) delay += 18;
+        else if (tick > 22) delay += 8;
+        else delay = Math.max(42, delay - 1);
+
+        setTimeout(nextTick, delay);
+      }
+
+      renderLuckyDrawRollingItems(names, 0);
+      nextTick();
     }
 
     async function runLuckyDrawIfDue() {
@@ -6199,38 +6489,51 @@ display:none !important;
       }
 
       const randomWinner = active[Math.floor(Math.random() * active.length)];
+      const names = active.map(getWinnerDisplayName);
+      const itemHeight = window.matchMedia('(max-width: 760px)').matches ? 76 : 94;
 
       if (luckyDrawParticipantsStatus) {
         luckyDrawParticipantsStatus.textContent = 'Test spin sedang berjalan...';
       }
 
-      // Test spin sahaja: tak save sebagai winner sebenar
-      if (luckyDrawSpinnerName && luckyDrawSpinStage) {
-        luckyDrawSpinRunning = true;
-        luckyDrawSpinStage.classList.add('is-spinning');
-        luckyDrawSpinStage.classList.remove('has-winner');
+      luckyDrawSpinRunning = true;
+      luckyDrawSpinStage.classList.add('is-spinning');
+      luckyDrawSpinStage.classList.remove('has-winner');
 
-        let tick = 0;
-        const maxTicks = 36;
-        const names = active.map(getWinnerDisplayName);
+      let tick = 0;
+      const maxTicks = 48;
+      let delay = 45;
 
-        const interval = setInterval(function () {
-          luckyDrawSpinnerName.textContent = names[tick % names.length];
-          tick += 1;
+      function testTick() {
+        const name = names[tick % names.length];
+        animateLuckyDrawRolling(names, tick, itemHeight);
+        luckyDrawSpinnerName.textContent = name;
+        playLuckyDrawTickSound(tick);
+        tick += 1;
 
-          if (tick >= maxTicks) {
-            clearInterval(interval);
-            luckyDrawSpinRunning = false;
-            luckyDrawSpinStage.classList.remove('is-spinning');
-            luckyDrawSpinStage.classList.add('has-winner');
-            luckyDrawSpinnerName.textContent = `TEST 🎉 ${getWinnerDisplayName(randomWinner)} 🎉`;
+        if (tick >= maxTicks) {
+          luckyDrawSpinRunning = false;
+          luckyDrawSpinStage.classList.remove('is-spinning');
+          luckyDrawSpinStage.classList.add('has-winner');
+          renderLuckyDrawRollingItems([`TEST 🎉 ${getWinnerDisplayName(randomWinner)} 🎉`], 0);
+          luckyDrawSpinnerName.textContent = `TEST 🎉 ${getWinnerDisplayName(randomWinner)} 🎉`;
+          playLuckyDrawWinnerSound();
+          createLuckyDrawConfetti();
 
-            if (luckyDrawParticipantsStatus) {
-              luckyDrawParticipantsStatus.textContent = 'Test spin selesai. Pemenang test tidak disimpan.';
-            }
+          if (luckyDrawParticipantsStatus) {
+            luckyDrawParticipantsStatus.textContent = 'Test spin selesai. Pemenang test tidak disimpan.';
           }
-        }, 90);
+          return;
+        }
+
+        if (tick > 30) delay += 18;
+        else if (tick > 18) delay += 8;
+
+        setTimeout(testTick, delay);
       }
+
+      renderLuckyDrawRollingItems(names, 0);
+      testTick();
     }
 
     async function resetLuckyDrawWinner() {
