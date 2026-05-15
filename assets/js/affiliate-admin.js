@@ -538,8 +538,8 @@
     // Auto isi Affiliate Link jika masih kosong, tetapi jangan overwrite jika user sudah edit manual.
     const affiliateInput = qs('#affiliateLinkInput');
     const fullInput = qs('#affiliateFullLinkInput');
-    if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = url;
-    if(fullInput && !fullInput.value.trim()) fullInput.value = url;
+    if(affiliateInput) affiliateInput.value = url;
+    if(fullInput) fullInput.value = url;
 
     const script = buildShopeeConsoleExtractorScript();
     const copied = await copyTextToClipboardRobust(script);
@@ -614,11 +614,29 @@
     reader.readAsText(file);
   }
 
+
+  function syncJsonImportLinkToAffiliateLink(){
+    const jsonInput = qs('#affiliateJsonShopeeLinkInput');
+    const affiliateInput = qs('#affiliateLinkInput');
+    const fullInput = qs('#affiliateFullLinkInput');
+    if(!jsonInput || !affiliateInput) return;
+
+    const syncNow = () => {
+      const val = (jsonInput.value || '').trim();
+      affiliateInput.value = val;
+      if(fullInput) fullInput.value = val;
+    };
+
+    jsonInput.addEventListener('input', syncNow);
+    jsonInput.addEventListener('change', syncNow);
+  }
+
   function closeModal(){
     qs('#affiliateAdminModal')?.classList.remove('is-open');
   }
 
   function bindAdmin(){
+    syncJsonImportLinkToAffiliateLink();
     qs('#affiliateAddButton')?.addEventListener('click', () => {
       if(!adminDetected()) return;
       openModal(null);
