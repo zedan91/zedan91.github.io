@@ -328,71 +328,223 @@ function cleanShopeeTitle(title) {
     .trim();
 }
 
+
+function extractShopeeIds(productUrl) {
+  const u = String(productUrl || '');
+  let m = u.match(/\/product\/(\d+)\/(\d+)/i);
+  if (m) return { shopid: m[1], itemid: m[2] };
+  m = u.match(/-i\.(\d+)\.(\d+)/i) || u.match(/i\.(\d+)\.(\d+)/i);
+  if (m) return { shopid: m[1], itemid: m[2] };
+  m = u.match(/[?&]shopid=(\d+).*?[?&]itemid=(\d+)/i);
+  if (m) return { shopid: m[1], itemid: m[2] };
+  m = u.match(/[?&]itemid=(\d+).*?[?&]shopid=(\d+)/i);
+  if (m) return { shopid: m[2], itemid: m[1] };
+  return null;
+}
+
+function normalizeShopeeImage(img) {
+  if (!img) return '';
+  const v = Array.isArray(img) ? img[0] : img;
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v;
+  return `https://down-my.img.susercontent.com/file/${v}`;
+}
+
+function makeShopeeDescription(title, rawDesc) {
+  const d = decodeHtmlEntities(rawDesc || '').replace(/\s+/g, ' ').trim();
+  if (d && d.length > 20) return d.slice(0, 280);
+  const t = title || 'Produk ini';
+  return `${t} sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.`;
+}
+
+async function fetchJsonSafe(apiUrl, refererUrl) {
+  try {
+    const r = await fetch(apiUrl, {
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+        'Accept': 'application/json,text/plain,*/*',
+        'Accept-Language': 'en-US,en;q=0.9,ms;q=0.8',
+        'Referer': refererUrl || 'https://shopee.com.my/',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    const text = await r.text();
+    if (!text || text.trim().startsWith('<')) return null;
+    return JSON.parse(text);
+  } catch (e) {
+    return null;
+  }
+}
+
+function unwrapShopeeItemJson(json) {
+  if (!json) return null;
+  // /api/v4/item/get usually: { data: { name, description, image, categories... } }
+  if (json.data && (json.data.name || json.data.item)) return json.data.item || json.data;
+  // /api/v4/pdp/get_pc variants
+  if (json.data && json.data.item) return json.data.item;
+  if (json.item) return json.item;
+  if (json.name) return json;
+  return null;
+}
+
+async function detectFromShopeeApi(finalUrl, ids) {
+  if (!ids) return null;
+  const { shopid, itemid } = ids;
+  const apis = [
+    `https://shopee.com.my/api/v4/item/get?itemid=${encodeURIComponent(itemid)}&shopid=${encodeURIComponent(shopid)}`,
+    `https://shopee.com.my/api/v4/pdp/get_pc?shop_id=${encodeURIComponent(shopid)}&item_id=${encodeURIComponent(itemid)}`,
+    `https://shopee.com.my/api/v2/item/get?itemid=${encodeURIComponent(itemid)}&shopid=${encodeURIComponent(shopid)}`
+  ];
+
+  for (const api of apis) {
+    const json = await fetchJsonSafe(api, finalUrl);
+    const item = unwrapShopeeItemJson(json);
+    if (!item) continue;
+    const title = cleanShopeeTitle(item.name || item.title || item.item_name || '');
+    if (!title || /^product$/i.test(title)) continue;
+    const description = makeShopeeDescription(title, item.description || item.desc || '');
+    const categoryText = Array.isArray(item.categories)
+      ? item.categories.map(c => c.display_name || c.name || '').filter(Boolean).join(' > ')
+      : '';
+    const image = normalizeShopeeImage(item.image || item.images || item.image_url);
+    return { title, description, image, categoryText, source: 'shopee-api' };
+  }
+  return null;
+}
+
+async function detectFromJinaReader(finalUrl) {
+  try {
+    const readerUrl = 'https://r.jina.ai/http://r.jina.ai/http://' + finalUrl.replace(/^https?:\/\//i, '');
+    const r = await fetch(readerUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 AZOBSS Product Detector',
+        'Accept': 'text/plain,*/*'
+      }
+    });
+    const text = await r.text();
+    if (!text || text.trim().startsWith('<')) return null;
+    const titleLine = (text.match(/^Title:\s*(.+)$/mi) || [])[1] || '';
+    let title = cleanShopeeTitle(titleLine);
+    if (!title || /Shopee Malaysia/i.test(title)) {
+      const h1 = (text.match(/^#\s+(.+)$/mi) || [])[1] || '';
+      title = cleanShopeeTitle(h1);
+    }
+    if (!title || /^product$/i.test(title)) return null;
+    return {
+      title,
+      description: makeShopeeDescription(title, ''),
+      image: '',
+      categoryText: '',
+      source: 'reader'
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
 async function detectAffiliateProduct(rawUrl) {
   const targetUrl = normalizeAffiliateUrl(rawUrl);
   if (!targetUrl) throw new Error('Missing URL');
 
-  const response = await fetch(targetUrl, {
-    redirect: 'follow',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9,ms;q=0.8',
-      'Cache-Control': 'no-cache',
-      'Referer': 'https://shopee.com.my/'
-    }
-  });
+  let finalUrl = targetUrl;
+  let html = '';
 
-  const finalUrl = response.url || targetUrl;
-  const html = await response.text();
-  let title = cleanShopeeTitle(pickTitleFromHtml(html));
-  let description = shortenDescription(pickMeta(html, 'og:description') || pickMeta(html, 'description'), title);
-  let image = pickMeta(html, 'og:image') || pickMeta(html, 'twitter:image');
-  let source = title ? 'meta' : 'fallback';
-
-  const ldMatches = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
-  for (const m of ldMatches) {
-    try {
-      const json = JSON.parse(m[1]);
-      const arr = Array.isArray(json) ? json : [json];
-      for (const obj of arr) {
-        if (obj && obj.name && (!title || title.toLowerCase() === 'shopee')) {
-          title = cleanShopeeTitle(obj.name);
-          source = 'jsonld';
-        }
-        if (obj && obj.description && (!description || description.includes('Semak detail'))) {
-          description = shortenDescription(obj.description, title);
-        }
-        if (obj && obj.image && !image) image = Array.isArray(obj.image) ? obj.image[0] : obj.image;
+  // First request is mainly to resolve Shopee shortlink and get meta if available.
+  try {
+    const response = await fetch(targetUrl, {
+      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,ms;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Referer': 'https://shopee.com.my/'
       }
-    } catch(e) {}
+    });
+    finalUrl = response.url || targetUrl;
+    html = await response.text();
+  } catch (e) {}
+
+  const ids = extractShopeeIds(finalUrl) || extractShopeeIds(targetUrl);
+
+  // Stronger detection: Shopee item APIs by shop_id + item_id.
+  const apiResult = await detectFromShopeeApi(finalUrl, ids);
+  let title = apiResult?.title || '';
+  let description = apiResult?.description || '';
+  let image = apiResult?.image || '';
+  let source = apiResult?.source || '';
+  let categoryText = apiResult?.categoryText || '';
+
+  // Fallback: HTML metadata if Shopee allows it.
+  if (!title && html) {
+    title = cleanShopeeTitle(pickTitleFromHtml(html));
+    description = shortenDescription(pickMeta(html, 'og:description') || pickMeta(html, 'description'), title);
+    image = pickMeta(html, 'og:image') || pickMeta(html, 'twitter:image');
+    source = title ? 'meta' : '';
+
+    const ldMatches = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const m of ldMatches) {
+      try {
+        const json = JSON.parse(m[1]);
+        const arr = Array.isArray(json) ? json : [json];
+        for (const obj of arr) {
+          if (obj && obj.name && (!title || title.toLowerCase() === 'shopee')) {
+            title = cleanShopeeTitle(obj.name);
+            source = 'jsonld';
+          }
+          if (obj && obj.description && (!description || description.includes('Semak detail'))) {
+            description = shortenDescription(obj.description, title);
+          }
+          if (obj && obj.image && !image) image = Array.isArray(obj.image) ? obj.image[0] : obj.image;
+        }
+      } catch(e) {}
+    }
   }
 
-  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title)) {
-    const parts = decodeURIComponent(finalUrl).split('/').filter(Boolean);
-    const maybe = parts.find(p => p.includes('-i.') || p.length > 20) || parts[parts.length - 1] || 'Affiliate Product';
-    title = cleanShopeeTitle(maybe.replace(/-i\..*$/i, '').replace(/[-_]+/g, ' '));
-    source = 'url-fallback';
+  // Last external fallback: reader service can sometimes read JS-heavy pages as markdown.
+  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^\d+$/.test(title)) {
+    const reader = await detectFromJinaReader(finalUrl);
+    if (reader?.title && !/^\d+$/.test(reader.title)) {
+      title = reader.title;
+      description = reader.description;
+      image = image || reader.image;
+      source = reader.source;
+    }
   }
 
-  const category = titleToCategory(title);
+  // Clean fallback: do NOT use item id as a fake title. Let user know if Shopee blocks.
+  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^\d+$/.test(title)) {
+    title = '';
+    description = 'Shopee tidak benarkan sistem baca nama produk penuh. Paste tajuk produk atau isi manual sebelum Save.';
+    source = 'blocked';
+  }
+
+  const category = titleToCategory((categoryText ? categoryText + ' ' : '') + title);
   return {
     ok: true,
     url: targetUrl,
     finalUrl,
+    shopid: ids?.shopid || '',
+    itemid: ids?.itemid || '',
     source,
     title,
     description,
     category,
-    badge: titleToBadge(title, category),
-    icon: titleToIcon(title),
-    meta: titleToMeta(title, category),
+    badge: title ? titleToBadge(title, category) : 'Useful Item',
+    icon: title ? titleToIcon(title) : '🛒',
+    meta: title ? titleToMeta(title, category) : 'Semak manual sebelum Save',
     image: image || '',
-    note: source === 'url-fallback'
-      ? 'Shopee tidak bagi metadata lengkap. Sistem guna URL/keyword fallback. Sila semak sebelum Save.'
-      : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
+    note: source === 'shopee-api'
+      ? 'Auto filled daripada Shopee item API. Sila semak sebelum Save.'
+      : source === 'blocked'
+        ? 'Shopee block metadata produk. Sistem tidak guna ID sebagai title. Paste tajuk produk atau isi manual.'
+        : source === 'reader'
+          ? 'Auto filled guna reader fallback. Sila semak sebelum Save.'
+          : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
   };
 }
+
 
 async function handler(req, res) {
 
