@@ -3299,6 +3299,187 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   word-break: break-word;
 }
 
+
+/* =========================================================
+   LUCKY DRAW PARTICIPANTS VIEW + ADMIN EDIT
+========================================================= */
+.lucky-draw-participants-panel{
+  margin-top:22px;
+  padding:20px;
+  border-radius:18px;
+  border:1px solid rgba(34,197,94,.28);
+  background:rgba(15,23,42,.62);
+  box-shadow:0 16px 42px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.lucky-draw-participants-head{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
+  margin-bottom:14px;
+}
+
+.lucky-draw-participants-head h3{
+  margin:8px 0 6px;
+  color:#fff;
+  font-size:22px;
+}
+
+.lucky-draw-participants-head p{
+  margin:0;
+  color:#cbd5e1;
+}
+
+.lucky-draw-admin-tools{
+  display:none;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  min-width:min(520px,100%);
+}
+
+body.is-admin .lucky-draw-admin-tools{
+  display:flex;
+}
+
+.lucky-draw-admin-tools input{
+  min-width:260px;
+  flex:1;
+  border:1px solid rgba(148,163,184,.28);
+  border-radius:12px;
+  background:rgba(2,6,23,.54);
+  color:#fff;
+  padding:11px 12px;
+  outline:none;
+}
+
+.lucky-draw-admin-tools input:focus{
+  border-color:rgba(34,197,94,.65);
+  box-shadow:0 0 0 3px rgba(34,197,94,.12);
+}
+
+.lucky-draw-participants-status{
+  color:#fde68a;
+  font-weight:800;
+  margin:8px 0 14px;
+}
+
+.lucky-draw-public-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:10px;
+}
+
+.lucky-draw-participant-card{
+  border:1px solid rgba(148,163,184,.16);
+  border-radius:14px;
+  background:rgba(2,6,23,.42);
+  padding:12px;
+}
+
+.lucky-draw-participant-card strong{
+  display:block;
+  color:#22c55e;
+  font-size:15px;
+  margin-bottom:4px;
+}
+
+.lucky-draw-participant-card span{
+  color:#cbd5e1;
+  font-size:12px;
+}
+
+.lucky-draw-empty{
+  color:#cbd5e1;
+  padding:14px;
+  border:1px dashed rgba(148,163,184,.25);
+  border-radius:14px;
+}
+
+.lucky-draw-admin-table-wrap{
+  display:none;
+  margin-top:14px;
+  overflow:auto;
+  border:1px solid rgba(148,163,184,.18);
+  border-radius:14px;
+  background:rgba(2,6,23,.34);
+}
+
+body.is-admin .lucky-draw-admin-table-wrap{
+  display:block;
+}
+
+body.is-admin .lucky-draw-public-list{
+  display:none;
+}
+
+.lucky-draw-admin-table{
+  width:100%;
+  min-width:1040px;
+  border-collapse:collapse;
+  color:#e5e7eb;
+}
+
+.lucky-draw-admin-table th,
+.lucky-draw-admin-table td{
+  padding:10px;
+  border-bottom:1px solid rgba(148,163,184,.13);
+  text-align:left;
+  vertical-align:middle;
+  font-size:13px;
+}
+
+.lucky-draw-admin-table th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:rgba(2,6,23,.76);
+  color:#22c55e;
+}
+
+.lucky-draw-admin-table input{
+  width:100%;
+  min-width:110px;
+  border:1px solid rgba(148,163,184,.26);
+  border-radius:9px;
+  background:rgba(15,23,42,.92);
+  color:#fff;
+  padding:8px 9px;
+}
+
+.lucky-draw-admin-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.lucky-draw-save-btn,
+.lucky-draw-hide-btn{
+  border:0;
+  border-radius:9px;
+  padding:8px 10px;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.lucky-draw-save-btn{ background:#2563eb; }
+.lucky-draw-hide-btn{ background:#ef4444; }
+
+@media(max-width:760px){
+  .lucky-draw-participants-head{
+    display:block;
+  }
+  .lucky-draw-admin-tools{
+    margin-top:12px;
+    justify-content:flex-start;
+  }
+  .lucky-draw-admin-tools input{
+    min-width:100%;
+  }
+}
+
 </style>
 
 
@@ -4599,6 +4780,48 @@ display:none !important;
           </div>
         </div>
       </div>
+
+      <div class="lucky-draw-participants-panel" id="luckyDrawParticipantsPanel">
+        <div class="lucky-draw-participants-head">
+          <div>
+            <span class="lucky-draw-kicker">Peserta Giveaway</span>
+            <h3>Senarai Nama Peserta</h3>
+            <p>User boleh lihat nama peserta. Admin sahaja boleh search dan edit peserta.</p>
+          </div>
+          <div class="lucky-draw-admin-tools" id="luckyDrawAdminTools">
+            <input id="luckyDrawParticipantSearch" type="search" placeholder="Search nama / username / phone / email">
+            <button class="btn blue" id="refreshLuckyDrawParticipantsButton" type="button">Refresh</button>
+            <button class="btn orange" id="exportLuckyDrawParticipantsButton" type="button">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus">Loading peserta...</div>
+
+        <div class="lucky-draw-public-list" id="luckyDrawPublicList">
+          <div class="lucky-draw-empty">Belum ada peserta.</div>
+        </div>
+
+        <div class="lucky-draw-admin-table-wrap" id="luckyDrawAdminTableWrap">
+          <table class="lucky-draw-admin-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Bulan</th>
+                <th>Username</th>
+                <th>Nama</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Invite Code</th>
+                <th>Join</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="luckyDrawAdminTableBody">
+              <tr><td colspan="9">Belum ada peserta.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -5007,6 +5230,245 @@ display:none !important;
         : 'Share website dahulu sebelum join cabutan bertuah.';
       if (joinLuckyDrawButton) joinLuckyDrawButton.disabled = hasJoined;
     }
+
+
+    const luckyDrawParticipantsPanel = document.getElementById('luckyDrawParticipantsPanel');
+    const luckyDrawParticipantsStatus = document.getElementById('luckyDrawParticipantsStatus');
+    const luckyDrawPublicList = document.getElementById('luckyDrawPublicList');
+    const luckyDrawAdminTableBody = document.getElementById('luckyDrawAdminTableBody');
+    const luckyDrawParticipantSearch = document.getElementById('luckyDrawParticipantSearch');
+    const refreshLuckyDrawParticipantsButton = document.getElementById('refreshLuckyDrawParticipantsButton');
+    const exportLuckyDrawParticipantsButton = document.getElementById('exportLuckyDrawParticipantsButton');
+    let allLuckyDrawParticipants = [];
+
+    function escapeLuckyDrawText(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function formatLuckyDrawDate(value) {
+      if (!value) return '-';
+      if (typeof value === 'number') return new Date(value).toLocaleString('en-MY');
+      if (value && typeof value.toDate === 'function') return value.toDate().toLocaleString('en-MY');
+      return String(value);
+    }
+
+    function getLuckyDrawSearchText(entry) {
+      return [
+        entry.monthKey,
+        entry.usernameKey,
+        entry.name,
+        entry.phone,
+        entry.contactEmail,
+        entry.inviteCode
+      ].join(' ').toLowerCase();
+    }
+
+    function getFilteredLuckyDrawParticipants() {
+      const keyword = (luckyDrawParticipantSearch && luckyDrawParticipantSearch.value || '').trim().toLowerCase();
+      const rows = allLuckyDrawParticipants.filter(function (entry) {
+        return !entry.deleted;
+      });
+
+      if (!keyword || !isAdminUser(currentUser)) return rows;
+
+      return rows.filter(function (entry) {
+        return getLuckyDrawSearchText(entry).includes(keyword);
+      });
+    }
+
+    function renderLuckyDrawParticipants() {
+      const rows = getFilteredLuckyDrawParticipants();
+      const admin = isAdminUser(currentUser);
+
+      if (luckyDrawParticipantsStatus) {
+        luckyDrawParticipantsStatus.textContent = admin
+          ? `Jumlah peserta dipaparkan: ${rows.length}`
+          : `Jumlah peserta Giveaway: ${rows.length}`;
+      }
+
+      if (luckyDrawPublicList) {
+        luckyDrawPublicList.innerHTML = rows.length
+          ? rows.map(function (entry, index) {
+              return `
+                <div class="lucky-draw-participant-card">
+                  <strong>${index + 1}. ${escapeLuckyDrawText(entry.name || entry.usernameKey || 'User')}</strong>
+                  <span>${escapeLuckyDrawText(entry.monthKey || 'Giveaway')} • ${escapeLuckyDrawText(entry.usernameKey || '-')}</span>
+                </div>
+              `;
+            }).join('')
+          : '<div class="lucky-draw-empty">Belum ada peserta Giveaway.</div>';
+      }
+
+      if (luckyDrawAdminTableBody) {
+        luckyDrawAdminTableBody.innerHTML = rows.length
+          ? rows.map(function (entry, index) {
+              const rowId = escapeLuckyDrawText(entry.id || '');
+              return `
+                <tr data-entry-id="${rowId}">
+                  <td>${index + 1}</td>
+                  <td>${escapeLuckyDrawText(entry.monthKey || '-')}</td>
+                  <td>${escapeLuckyDrawText(entry.usernameKey || '-')}</td>
+                  <td><input data-field="name" value="${escapeLuckyDrawText(entry.name || '')}"></td>
+                  <td><input data-field="phone" value="${escapeLuckyDrawText(entry.phone || '')}"></td>
+                  <td><input data-field="contactEmail" value="${escapeLuckyDrawText(entry.contactEmail || '')}"></td>
+                  <td><input data-field="inviteCode" value="${escapeLuckyDrawText(entry.inviteCode || '')}"></td>
+                  <td>${escapeLuckyDrawText(formatLuckyDrawDate(entry.joinedAtMs || entry.joinedAt || entry.createdAtMs))}</td>
+                  <td>
+                    <div class="lucky-draw-admin-actions">
+                      <button class="lucky-draw-save-btn" type="button" data-action="save">Save</button>
+                      <button class="lucky-draw-hide-btn" type="button" data-action="hide">Hide</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')
+          : '<tr><td colspan="9">Tiada peserta dijumpai.</td></tr>';
+      }
+    }
+
+    async function loadLuckyDrawParticipants() {
+      if (!luckyDrawParticipantsPanel) return;
+
+      if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Loading peserta Giveaway...';
+
+      try {
+        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+
+        const snapshot = await getDocs(collection(db, 'luckyDrawEntries'));
+        const rows = [];
+        snapshot.forEach(function (item) {
+          const data = item.data();
+          if (!data.deleted) rows.push({ id: item.id, ...data });
+        });
+
+        rows.sort(function (a, b) {
+          return (b.joinedAtMs || b.createdAtMs || 0) - (a.joinedAtMs || a.createdAtMs || 0);
+        });
+
+        allLuckyDrawParticipants = rows;
+      } catch (error) {
+        try {
+          allLuckyDrawParticipants = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]')
+            .map(function (entry, index) {
+              return { id: entry.id || `${entry.monthKey || 'local'}_${entry.usernameKey || index}`, ...entry };
+            })
+            .filter(function (entry) {
+              return !entry.deleted;
+            });
+        } catch (storageError) {
+          allLuckyDrawParticipants = [];
+        }
+      }
+
+      renderLuckyDrawParticipants();
+    }
+
+    async function saveLuckyDrawParticipant(row) {
+      if (!row || !isAdminUser(currentUser)) return;
+
+      const id = row.dataset.entryId;
+      const entry = allLuckyDrawParticipants.find(function (item) {
+        return item.id === id;
+      });
+
+      if (!entry) return;
+
+      const payload = {
+        name: row.querySelector('[data-field="name"]').value.trim(),
+        phone: row.querySelector('[data-field="phone"]').value.trim(),
+        contactEmail: row.querySelector('[data-field="contactEmail"]').value.trim(),
+        inviteCode: row.querySelector('[data-field="inviteCode"]').value.trim(),
+        editedBy: currentUser.usernameKey || currentUser.name || 'admin',
+        editedAtMs: Date.now(),
+        editedAt: serverTimestamp()
+      };
+
+      try {
+        await setDoc(doc(db, 'luckyDrawEntries', id), payload, { merge: true });
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Peserta berjaya dikemaskini.';
+        await loadLuckyDrawParticipants();
+      } catch (error) {
+        Object.assign(entry, payload);
+        localStorage.setItem('azobssLuckyDrawEntries', JSON.stringify(allLuckyDrawParticipants));
+        renderLuckyDrawParticipants();
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Firebase gagal save. Data local dikemaskini sementara.';
+      }
+    }
+
+    async function hideLuckyDrawParticipant(row) {
+      if (!row || !isAdminUser(currentUser)) return;
+
+      const id = row.dataset.entryId;
+      const entry = allLuckyDrawParticipants.find(function (item) {
+        return item.id === id;
+      });
+
+      if (!entry) return;
+
+      const ok = confirm(`Hide peserta ${entry.name || entry.usernameKey}?`);
+      if (!ok) return;
+
+      try {
+        await setDoc(doc(db, 'luckyDrawEntries', id), {
+          deleted: true,
+          deletedBy: currentUser.usernameKey || currentUser.name || 'admin',
+          deletedAtMs: Date.now(),
+          deletedAt: serverTimestamp()
+        }, { merge: true });
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Peserta berjaya di-hide.';
+        await loadLuckyDrawParticipants();
+      } catch (error) {
+        entry.deleted = true;
+        localStorage.setItem('azobssLuckyDrawEntries', JSON.stringify(allLuckyDrawParticipants));
+        renderLuckyDrawParticipants();
+        if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Firebase gagal hide. Data local dikemaskini sementara.';
+      }
+    }
+
+    function exportLuckyDrawParticipantsCsv() {
+      if (!isAdminUser(currentUser) || !allLuckyDrawParticipants.length) return;
+
+      const rows = getFilteredLuckyDrawParticipants();
+      const headers = ['monthKey', 'usernameKey', 'name', 'phone', 'contactEmail', 'inviteCode', 'joinedAtMs'];
+      const csv = [
+        headers.join(','),
+        ...rows.map(function (entry) {
+          return headers.map(function (key) {
+            return `"${String(entry[key] ?? '').replace(/"/g, '""')}"`;
+          }).join(',');
+        })
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `azobss-giveaway-peserta-${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    if (luckyDrawParticipantSearch) luckyDrawParticipantSearch.addEventListener('input', renderLuckyDrawParticipants);
+    if (refreshLuckyDrawParticipantsButton) refreshLuckyDrawParticipantsButton.addEventListener('click', loadLuckyDrawParticipants);
+    if (exportLuckyDrawParticipantsButton) exportLuckyDrawParticipantsButton.addEventListener('click', exportLuckyDrawParticipantsCsv);
+
+    if (luckyDrawAdminTableBody) {
+      luckyDrawAdminTableBody.addEventListener('click', function (event) {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+
+        const row = button.closest('tr[data-entry-id]');
+        if (button.dataset.action === 'save') saveLuckyDrawParticipant(row);
+        if (button.dataset.action === 'hide') hideLuckyDrawParticipant(row);
+      });
+    }
+
 
     async function resolveInviterByCode(inviteCode, newUsernameKey) {
       const code = cleanInviteCode(inviteCode);
