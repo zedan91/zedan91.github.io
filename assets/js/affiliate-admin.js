@@ -561,70 +561,97 @@
   function mapImportedCategoryToAffiliateCategory(categoryText, titleText, descText){
     const text = String([categoryText, titleText, descText].join(' ')).toLowerCase();
 
-    if(/home appliances|oven|steam oven|microwave|air fryer|rice cooker|pressure cooker|induction cooker|kettle|toaster|blender|mixer|chopper|juicer|food processor|vacuum|mop|cleaner|cookware|frypan|wok|pan|pot|tefal|spatula/.test(text)){
-      return {
-        category: 'Home Appliances',
-        badge: 'Kitchen Essentials',
-        icon: '🍳',
-        meta: 'Best for kitchen and home use'
-      };
+    if(/chocolate|coklat|candy|snack|food|grocery|groceries|minuman|drink|coffee|tea|biscuit|milk|halal|caramel/.test(text)){
+      return { category:'groceries', badge:'Groceries', icon:'🛒', meta:'Best for daily food and grocery items' };
     }
 
-    if(/computer|accessories|ssd|nvme|ram|router|wifi|keyboard|mouse|monitor|laptop|pc|usb|hard disk|printer/.test(text)){
-      return {
-        category: 'Computer & Accessories',
-        badge: 'PC Setup',
-        icon: '💻',
-        meta: 'Best for PC setup and daily use'
-      };
+    if(/oven|steam oven|microwave|air fryer|rice cooker|pressure cooker|induction cooker|kettle|toaster|air conditioner|aircond|vacuum|washing machine|fridge|refrigerator|blender|mixer|chopper|juicer|food processor/.test(text)){
+      return { category:'home-appliances', badge:'Home Appliances', icon:'🏠', meta:'Best for kitchen and home use' };
     }
 
-    if(/mobile|phone|iphone|android|charger|powerbank|cable|case|screen protector|earbuds|bluetooth/.test(text)){
-      return {
-        category: 'Mobile & Accessories',
-        badge: 'Daily Tech',
-        icon: '📱',
-        meta: 'Useful mobile gadget'
-      };
+    if(/cookware|frypan|wok|pan|pot|tefal|spatula|lunch box|food container|meal prep|bottle|drinkware|bedding|toto|narita|bed|pillow|storage|organizer|rack/.test(text)){
+      return { category:'home-living', badge:'Home & Living', icon:'🏡', meta:'Best for home and daily use' };
     }
 
-    if(/automotive|dashcam|car|motor|tyre|tire|jump starter|kereta/.test(text)){
-      return {
-        category: 'Automotive',
-        badge: 'Car Essential',
-        icon: '🚗',
-        meta: 'Useful for car and travel'
-      };
+    if(/computer|accessories|ssd|nvme|ram|router|wifi|keyboard|mouse|monitor|laptop|pc|usb|hard disk|printer|desktop|gaming pc|rig/.test(text)){
+      return { category:'computer', badge:'Computer & Accessories', icon:'🖥️', meta:'Best for PC setup and daily use' };
     }
 
-    if(/fashion|shoe|sandal|shirt|dress|bag|wallet|watch|blouse|pants|jeans/.test(text)){
-      return {
-        category: 'Fashion Accessories',
-        badge: 'Trending Fashion',
-        icon: '👜',
-        meta: 'Popular fashion item'
-      };
+    if(/mobile|phone|smartphone|iphone|android|charger|powerbank|cable|case|screen protector|earbuds|bluetooth|vivo|samsung|xiaomi|oppo|honor|huawei/.test(text)){
+      return { category:'mobile', badge:'Mobile Accessories', icon:'📱', meta:'Best for phone and daily charging' };
     }
 
-    if(/baby|kids|toy|stroller|milk bottle|diaper/.test(text)){
-      return {
-        category: 'Baby & Toys',
-        badge: 'Baby Essentials',
-        icon: '🧸',
-        meta: 'Useful for baby and kids'
-      };
+    if(/dashcam|camera|cctv|tapo|drone|gopro|lens|4k|cam/.test(text)){
+      return { category:'camera', badge:'Camera', icon:'📷', meta:'Best for recording and monitoring' };
     }
 
-    if(/sports|gym|fitness|dumbbell|cycling|outdoor|camping/.test(text)){
-      return {
-        category: 'Sports & Outdoor',
-        badge: 'Fitness',
-        icon: '🏋️',
-        meta: 'Best for workout and outdoor'
-      };
+    if(/playstation|ps5|xbox|nintendo|console|gamepad|gaming console/.test(text)){
+      return { category:'gaming', badge:'Gaming Console', icon:'🎮', meta:'Best for home gaming setup' };
     }
 
-    return null;
+    if(/automotive|dashcam|car|motor|tyre|tire|jump starter|kereta|sandal car|car mat|car vacuum/.test(text)){
+      return { category:'automotive', badge:'Car Essential', icon:'🚗', meta:'Useful for car and travel' };
+    }
+
+    if(/watch|smartwatch|band|huawei band|mi band|fitness tracker/.test(text)){
+      return { category:'watches', badge:'Smartwatch', icon:'⌚', meta:'Best for fitness and daily tracking' };
+    }
+
+    if(/baby|kids|toy|stroller|milk bottle|milk powder|bekas susu|diaper|formula/.test(text)){
+      return { category:'baby', badge:'Baby Essentials', icon:'🍼', meta:'Best for baby and kids use' };
+    }
+
+    if(/sport|sports|gym|fitness|dumbbell|cycling|outdoor|camping|exercise/.test(text)){
+      return { category:'sports-outdoor', badge:'Sports & Outdoor', icon:'🏋️', meta:'Best for workout and outdoor' };
+    }
+
+    if(/shoe|sandal|shirt|dress|bag|wallet|watch|fashion|blouse|pants|jeans|men|women/.test(text)){
+      return { category:'fashion', badge:'Fashion', icon:'👜', meta:'Popular fashion item' };
+    }
+
+    return { category:'others', badge:'Useful Item', icon:'🛒', meta:'Best for useful daily item' };
+  }
+
+  function cleanShopeeImportedTitle(title){
+    return String(title || '')
+      .replace(/\s*\|\s*Shopee\s*(Malaysia)?\s*$/i, '')
+      .replace(/^\[[^\]]+\]\s*/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function shortenShopeeDescription(desc, title, category){
+    const cleanDesc = String(desc || '').replace(/\s+/g, ' ').trim();
+    const cleanTitle = cleanShopeeImportedTitle(title);
+    if(cleanDesc && cleanDesc.length <= 280) return cleanDesc;
+
+    if(category === 'home-appliances'){
+      return cleanTitle + ' sesuai untuk kegunaan dapur dan rumah harian. Praktikal untuk memasak, penyediaan makanan dan penggunaan keluarga.';
+    }
+    if(category === 'home-living'){
+      return cleanTitle + ' sesuai untuk kegunaan rumah harian, susun atur, penyimpanan dan keselesaan ruang kediaman.';
+    }
+    if(category === 'computer'){
+      return cleanTitle + ' sesuai untuk setup PC, kerja harian, gaming dan upgrade komputer.';
+    }
+    if(category === 'mobile'){
+      return cleanTitle + ' sesuai untuk kegunaan telefon, charging, travel dan gadget harian.';
+    }
+    if(category === 'automotive'){
+      return cleanTitle + ' sesuai untuk kegunaan kereta, travel dan penjagaan kenderaan harian.';
+    }
+    if(category === 'groceries'){
+      return cleanTitle + ' sesuai untuk kegunaan harian, makanan, minuman atau barang dapur.';
+    }
+    return cleanTitle + ' sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.';
+  }
+
+  function normalizeAffiliateSlug(text){
+    return String(text || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'product';
   }
 
   function normalizeShopeeImportedData(raw){
@@ -655,15 +682,16 @@
       data.jsonCategories
     ].filter(Boolean).join(' ');
 
-    const mapped = mapImportedCategoryToAffiliateCategory(categoryText, data.title, data.description);
-    const category = mapped ? mapped.category : affiliateTitleToCategory(data.title);
+    const cleanTitle = cleanShopeeImportedTitle(data.title);
+    const mapped = mapImportedCategoryToAffiliateCategory(categoryText, cleanTitle, data.description);
+    const category = mapped.category;
 
-    qs('#affiliateTitleInput').value = data.title;
-    qs('#affiliateIcon').value = mapped ? mapped.icon : affiliateTitleToIcon(data.title);
-    qs('#affiliateBadge').value = mapped ? mapped.badge : affiliateTitleToBadge(data.title, category);
+    qs('#affiliateTitleInput').value = cleanTitle;
+    qs('#affiliateIcon').value = mapped.icon;
+    qs('#affiliateBadge').value = mapped.badge;
     qs('#affiliateCategoryInput').value = category;
-    qs('#affiliateMetaInput').value = mapped ? mapped.meta : affiliateTitleToMeta(data.title, category);
-    qs('#affiliateDescInput').value = data.description ? data.description : affiliateTitleToDescription(data.title, category);
+    qs('#affiliateMetaInput').value = mapped.meta;
+    qs('#affiliateDescInput').value = shortenShopeeDescription(data.description, cleanTitle, category);
     const jsonSourceLink = (qs('#affiliateJsonShopeeLinkInput')?.value || '').trim();
     const preferredLink = jsonSourceLink || data.link;
     if(preferredLink){
@@ -750,7 +778,9 @@
       e.preventDefault();
       if(!adminDetected()) return;
 
-      const id = qs('#affiliateEditId').value || ('aff-' + Date.now());
+      const existingId = qs('#affiliateEditId').value;
+      const titleForId = qs('#affiliateTitleInput').value.trim();
+      const id = existingId || ('aff-' + normalizeAffiliateSlug(titleForId) + '-' + Date.now());
 
       const item = {
         id,
