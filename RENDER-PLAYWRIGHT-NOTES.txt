@@ -1,0 +1,16 @@
+AZOBSS Affiliate Auto Detect - Playwright Browser Mode
+
+Perubahan dalam versi ini:
+1. Backend /api/detect-product cuba Shopee API dahulu.
+2. Jika API/metadata gagal, backend guna Playwright Chromium untuk buka halaman Shopee seperti browser sebenar.
+3. Jika masih gagal, sistem kekal selamat: tidak guna ID produk sebagai title palsu dan minta paste tajuk produk backup.
+
+Penting untuk Render:
+- Deploy semula backend selepas upload file ini.
+- Render mungkin ambil masa lebih lama masa build kerana Chromium perlu dipasang.
+- Jika Render Free lambat/sleep, klik Auto Detect mungkin ambil beberapa saat.
+- Jika build gagal sebab memory/timeout Chromium, guna fallback Product Title Backup atau upgrade plan Render.
+
+Start command kekal:
+npm start
+

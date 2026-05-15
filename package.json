@@ -14,11 +14,13 @@
   ],
   "scripts": {
     "start": "node deploy-server.js",
-    "check": "echo \"Static AZOBSS docs ready\""
+    "check": "echo \"Static AZOBSS docs ready\"",
+    "postinstall": "node -e \"console.log('Playwright Chromium ready for Render deploy')\""
   },
   "dependencies": {
     "selfsigned": "^5.5.0",
     "sharp": "^0.33.5",
-    "pdfkit": "^0.15.0"
+    "pdfkit": "^0.15.0",
+    "playwright-chromium": "^1.49.1"
   }
 }

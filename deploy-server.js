@@ -461,6 +461,97 @@ async function detectFromJinaReader(finalUrl) {
   }
 }
 
+async function detectFromPlaywright(finalUrl) {
+  let chromium;
+  try {
+    chromium = require('playwright-chromium').chromium;
+  } catch (e) {
+    try { chromium = require('playwright').chromium; } catch (e2) { return null; }
+  }
+
+  let browser;
+  try {
+    browser = await chromium.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-blink-features=AutomationControlled'
+      ]
+    });
+
+    const page = await browser.newPage({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36',
+      locale: 'en-MY',
+      viewport: { width: 1366, height: 768 }
+    });
+
+    await page.setExtraHTTPHeaders({
+      'Accept-Language': 'en-MY,en;q=0.9,ms;q=0.8',
+      'Referer': 'https://shopee.com.my/'
+    });
+
+    await page.goto(finalUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await page.waitForTimeout(4500);
+
+    const data = await page.evaluate(() => {
+      const pickMeta = (name) => {
+        const el = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
+        return el ? (el.getAttribute('content') || '').trim() : '';
+      };
+
+      const visibleText = (selector) => {
+        const el = document.querySelector(selector);
+        return el ? (el.textContent || '').trim() : '';
+      };
+
+      const titleCandidates = [
+        pickMeta('og:title'),
+        pickMeta('twitter:title'),
+        visibleText('h1'),
+        visibleText('[data-sqe="name"]'),
+        visibleText('div._44qnta'),
+        visibleText('div[class*="product-briefing"] span'),
+        document.title || ''
+      ];
+
+      const descCandidates = [
+        pickMeta('og:description'),
+        pickMeta('description'),
+        visibleText('[data-sqe="product-description"]'),
+        visibleText('div[class*="product-detail"]')
+      ];
+
+      return {
+        title: titleCandidates.find(Boolean) || '',
+        description: descCandidates.find(Boolean) || '',
+        image: pickMeta('og:image') || pickMeta('twitter:image') || ''
+      };
+    });
+
+    let title = cleanShopeeTitle(data.title || '');
+    if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^malaysia\s*\|\s*free shipping/i.test(title) || /^\d+$/.test(title)) {
+      return null;
+    }
+
+    return {
+      title,
+      description: makeShopeeDescription(title, data.description || ''),
+      image: data.image || '',
+      categoryText: '',
+      source: 'playwright-browser'
+    };
+
+  } catch (e) {
+    return null;
+  } finally {
+    if (browser) {
+      try { await browser.close(); } catch (e) {}
+    }
+  }
+}
+
 async function detectAffiliateProduct(rawUrl) {
   const targetUrl = normalizeAffiliateUrl(rawUrl);
   if (!targetUrl) throw new Error('Missing URL');
@@ -528,6 +619,18 @@ async function detectAffiliateProduct(rawUrl) {
       description = reader.description;
       image = image || reader.image;
       source = reader.source;
+    }
+  }
+
+  // Strongest fallback: Playwright opens Shopee like a real browser.
+  // Use this after API/meta/reader because it is slower but can read JS-rendered pages.
+  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^\d+$/.test(title) || /^malaysia\s*\|\s*free shipping/i.test(title)) {
+    const browserResult = await detectFromPlaywright(finalUrl);
+    if (browserResult?.title && !/^\d+$/.test(browserResult.title)) {
+      title = browserResult.title;
+      description = browserResult.description;
+      image = image || browserResult.image;
+      source = browserResult.source;
     }
   }
 
