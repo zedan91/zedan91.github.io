@@ -477,13 +477,41 @@
 })();`;
   }
 
+
+  async function copyTextToClipboardRobust(text){
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    }catch(e){}
+
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.top = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(e){
+      return false;
+    }
+  }
+
   async function copyShopeeJsonExtractorScript(){
     if(!adminDetected()) return;
     const script = buildShopeeConsoleExtractorScript();
-    try{
-      await navigator.clipboard.writeText(script);
+    const copied = await copyTextToClipboardRobust(script);
+    if(copied){
       setJsonImportStatus('✅ Console script copied. Tekan Open → Shopee page → F12 Console → paste → Enter. JSON akan auto download.', false);
-    }catch(e){
+    }else{
       setJsonImportStatus('Copy gagal. Browser block clipboard. Sila cuba lagi atau guna manual console.', true);
     }
   }
@@ -505,23 +533,22 @@
       return;
     }
     if(input) input.value = url;
-    // Jangan sync field JSON Auto Import ke Affiliate Link / Full Product Link.
-    // Field ini berdiri sendiri untuk proses buka Shopee + copy console script.
+
+    // Link yang dipaste di Shopee JSON Auto Import ialah link affiliate/product utama.
+    // Auto isi Affiliate Link jika masih kosong, tetapi jangan overwrite jika user sudah edit manual.
+    const affiliateInput = qs('#affiliateLinkInput');
+    const fullInput = qs('#affiliateFullLinkInput');
+    if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = url;
+    if(fullInput && !fullInput.value.trim()) fullInput.value = url;
 
     const script = buildShopeeConsoleExtractorScript();
-    let copied = false;
-    try{
-      await navigator.clipboard.writeText(script);
-      copied = true;
-    }catch(e){
-      copied = false;
-    }
+    const copied = await copyTextToClipboardRobust(script);
 
     try{ localStorage.setItem('azobss_pending_shopee_json_link', url); }catch(e){}
     const win = window.open(url, '_blank', 'noopener,noreferrer');
 
     if(copied){
-      setJsonImportStatus('✅ Console script copied + Shopee dibuka. Di Shopee: tekan F12 → Console → Ctrl+V → Enter. JSON akan auto download. Jika extension dipasang, JSON boleh auto download tanpa console.', false);
+      setJsonImportStatus('✅ Script auto copied + Shopee dibuka. Di Shopee: F12 → Console → Ctrl+V → Enter. JSON akan auto download.', false);
     }else{
       setJsonImportStatus('Shopee dibuka, tetapi browser block copy script. Tekan button Copy Console Script dahulu, kemudian F12 → Console → Ctrl+V → Enter.', true);
     }
@@ -554,11 +581,15 @@
     qs('#affiliateCategoryInput').value = category;
     qs('#affiliateMetaInput').value = affiliateTitleToMeta(data.title, category);
     qs('#affiliateDescInput').value = data.description ? data.description : affiliateTitleToDescription(data.title, category);
-    if(data.link){
-      // JSON import link ialah sumber produk, bukan wajib affiliate link.
-      // Jangan overwrite Affiliate Link supaya link affiliate pendek tidak hilang.
+    const jsonSourceLink = (qs('#affiliateJsonShopeeLinkInput')?.value || '').trim();
+    const preferredLink = jsonSourceLink || data.link;
+    if(preferredLink){
+      // Link dari Shopee JSON Auto Import ialah link yang user mahu simpan sebagai Affiliate Link.
+      // Isi hanya jika Affiliate Link masih kosong supaya link yang user edit manual tidak hilang.
+      const affiliateInput = qs('#affiliateLinkInput');
       const full = qs('#affiliateFullLinkInput');
-      if(full && !full.value.trim()) full.value = data.link;
+      if(affiliateInput && !affiliateInput.value.trim()) affiliateInput.value = preferredLink;
+      if(full && !full.value.trim()) full.value = preferredLink;
     }
     const manual = qs('#affiliateManualTitleInput');
     if(manual) manual.value = data.title;
