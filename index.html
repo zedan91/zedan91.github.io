@@ -12515,5 +12515,62 @@ function clickFirst(selectors){
 });
 </script>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  function closeModal(modal){
+    if(!modal) return;
+
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  // universal close buttons
+  document.querySelectorAll(
+    '.close, .close-btn, .modal-close, .auth-close, [data-close], .popup-close'
+  ).forEach(function(btn){
+
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+
+      const modal =
+        btn.closest('.modal') ||
+        btn.closest('.popup') ||
+        btn.closest('.auth-modal') ||
+        document.querySelector('#loginModal') ||
+        document.querySelector('#signupModal') ||
+        document.querySelector('.login-modal') ||
+        document.querySelector('.signup-modal');
+
+      closeModal(modal);
+    });
+
+  });
+
+  // click outside modal closes it
+  document.querySelectorAll('.modal, .popup, .auth-modal').forEach(function(modal){
+    modal.addEventListener('click', function(e){
+      if(e.target === modal){
+        closeModal(modal);
+      }
+    });
+  });
+
+  // ESC key closes modal
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.modal, .popup, .auth-modal').forEach(function(modal){
+        closeModal(modal);
+      });
+    }
+  });
+
+});
+</script>
+
 </body>
 </html>
