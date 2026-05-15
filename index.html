@@ -4536,6 +4536,503 @@ body > .login-floating,
   }
 }
 
+
+/* =========================================================
+   AZOBSS FINAL RESPONSIVE TOPBAR + HERO POLISH
+   Based on approved desktop/mobile mockup
+========================================================= */
+
+/* hide old duplicated auth/sign buttons outside the new topbar */
+body > .auth-actions,
+body > .floating-auth,
+body > .auth-floating,
+body > .login-floating,
+body > .auth-buttons,
+#authButtons,
+#authFloating,
+#floatingAuth,
+#loginFloating,
+.header-auth,
+.site-auth,
+.login-actions,
+.signup-actions,
+.user-status,
+.visitor-widget,
+.online-widget,
+.traffic-widget,
+[class*="visitor" i],
+[class*="guest" i]{
+  display:none !important;
+}
+
+/* Hide loose sign in/sign up buttons that are NOT inside topbar */
+body > button[id*="sign" i],
+body > a[id*="sign" i],
+body > button[class*="sign" i],
+body > a[class*="sign" i]{
+  display:none !important;
+}
+
+/* keep hero clean */
+.hero{
+  min-height: 100vh !important;
+  padding-top: 150px !important;
+  padding-bottom: 92px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+/* main floating topbar */
+.hero-actions{
+  position:fixed !important;
+  top:14px !important;
+  left:50% !important;
+  right:auto !important;
+  transform:translateX(-50%) !important;
+  z-index:9999 !important;
+
+  width:max-content !important;
+  max-width:calc(100vw - 28px) !important;
+
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+
+  margin:0 !important;
+  padding:9px 11px !important;
+
+  border-radius:24px !important;
+  background:rgba(8,12,28,.68) !important;
+  border:1px solid rgba(148,163,184,.22) !important;
+
+  backdrop-filter:blur(18px) saturate(170%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%) !important;
+
+  box-shadow:
+    0 18px 52px rgba(0,0,0,.36),
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 0 24px rgba(34,197,94,.08) !important;
+
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  scrollbar-width:none !important;
+  animation:none !important;
+  transition:all .25s ease, transform .25s ease !important;
+}
+
+.hero-actions::-webkit-scrollbar{
+  display:none !important;
+}
+
+/* shrink topbar when scroll */
+.hero-actions.scrolled{
+  top:8px !important;
+  padding:6px 9px !important;
+  transform:translateX(-50%) scale(.96) !important;
+}
+
+/* shortcut cards */
+.hero-actions .btn{
+  flex:0 0 154px !important;
+  width:154px !important;
+  min-width:154px !important;
+  max-width:154px !important;
+  height:56px !important;
+  min-height:56px !important;
+
+  margin:0 !important;
+  padding:8px 10px !important;
+
+  border-radius:17px !important;
+
+  display:inline-flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:9px !important;
+
+  text-align:left !important;
+  white-space:normal !important;
+  overflow:hidden !important;
+
+  color:#f8fafc !important;
+  font-size:11.5px !important;
+  font-weight:900 !important;
+  line-height:1.08 !important;
+  text-decoration:none !important;
+
+  border:1px solid rgba(59,130,246,.55) !important;
+  background:linear-gradient(135deg, rgba(37,99,235,.90), rgba(15,23,42,.84)) !important;
+
+  box-shadow:
+    0 12px 28px rgba(2,6,23,.26),
+    inset 0 1px 0 rgba(255,255,255,.10) !important;
+
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
+}
+
+.hero-actions .btn:hover{
+  transform:translateY(-2px) !important;
+  border-color:rgba(34,197,94,.38) !important;
+  box-shadow:
+    0 16px 34px rgba(0,0,0,.34),
+    0 0 18px rgba(34,197,94,.16) !important;
+}
+
+.hero-actions .btn:active{
+  transform:scale(.98) !important;
+}
+
+.hero-actions .btn.orange{
+  border-color:rgba(249,115,22,.75) !important;
+  background:linear-gradient(135deg, rgba(249,115,22,.90), rgba(15,23,42,.84)) !important;
+}
+
+.hero-actions .btn.purple{
+  flex-basis:166px !important;
+  width:166px !important;
+  min-width:166px !important;
+  max-width:166px !important;
+  border-color:rgba(168,85,247,.75) !important;
+  background:linear-gradient(135deg, rgba(109,40,217,.92), rgba(15,23,42,.84)) !important;
+}
+
+.hero-actions .btn:not(.blue):not(.orange):not(.purple){
+  border-color:rgba(34,197,94,.62) !important;
+  background:linear-gradient(135deg, rgba(22,163,74,.85), rgba(15,23,42,.84)) !important;
+}
+
+.hero-action-icon{
+  flex:0 0 36px !important;
+  width:36px !important;
+  min-width:36px !important;
+  height:36px !important;
+
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+
+  font-size:17px !important;
+  color:#fff !important;
+
+  background:linear-gradient(135deg, #2563eb, #22c55e) !important;
+
+  box-shadow:
+    0 8px 20px rgba(37,99,235,.28),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.btn.orange .hero-action-icon{
+  background:linear-gradient(135deg, #fb923c, #f97316) !important;
+}
+
+.btn.purple .hero-action-icon{
+  background:linear-gradient(135deg, #a855f7, #7c3aed) !important;
+}
+
+.hero-actions .btn span:last-child{
+  display:block !important;
+  max-width:98px !important;
+  color:#f8fafc !important;
+  font-size:11.5px !important;
+  line-height:1.08 !important;
+  font-weight:900 !important;
+}
+
+.hero-actions .btn small{
+  display:block !important;
+  margin-top:1px !important;
+  color:#e9d5ff !important;
+  font-size:8.5px !important;
+  line-height:1 !important;
+  opacity:.9 !important;
+}
+
+.hero-actions .btn.active-section{
+  border-color:rgba(34,197,94,.45) !important;
+  box-shadow:
+    0 0 22px rgba(34,197,94,.20),
+    0 10px 24px rgba(0,0,0,.30) !important;
+}
+
+/* topbar auth buttons */
+.hero-actions .top-auth-btn{
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:72px !important;
+  max-width:82px !important;
+  height:56px !important;
+  min-height:56px !important;
+
+  margin:0 !important;
+  padding:0 10px !important;
+
+  border-radius:16px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  white-space:nowrap !important;
+  font-size:11px !important;
+  font-weight:900 !important;
+
+  cursor:pointer !important;
+  transition:transform .2s ease, box-shadow .2s ease !important;
+}
+
+.hero-actions .top-auth-btn:hover{
+  transform:translateY(-2px) !important;
+}
+
+.hero-actions .top-auth-btn.signin{
+  color:#e5e7eb !important;
+  background:rgba(15,23,42,.80) !important;
+  border:1px solid rgba(148,163,184,.24) !important;
+}
+
+.hero-actions .top-auth-btn.signup{
+  color:#fff !important;
+  background:linear-gradient(135deg, #22c55e, #16a34a) !important;
+  border:1px solid rgba(34,197,94,.65) !important;
+}
+
+.hero-actions .top-auth-btn.signup:hover{
+  box-shadow:0 0 16px rgba(34,197,94,.28) !important;
+}
+
+/* logged-in pill if already exists */
+.top-user-pill{
+  flex:0 0 auto !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  height:56px !important;
+  padding:0 12px !important;
+  border-radius:18px !important;
+  background:rgba(15,23,42,.84) !important;
+  border:1px solid rgba(148,163,184,.22) !important;
+  color:#fff !important;
+}
+
+.top-user-avatar{
+  width:36px !important;
+  height:36px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  border:2px solid #22c55e !important;
+  color:#22c55e !important;
+  font-weight:900 !important;
+}
+
+.top-user-name{
+  font-size:12px !important;
+  white-space:nowrap !important;
+  font-weight:800 !important;
+}
+
+.top-user-logout{
+  border:0 !important;
+  border-radius:12px !important;
+  padding:7px 10px !important;
+  background:rgba(255,255,255,.10) !important;
+  color:#fff !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+}
+
+/* WhatsApp icon in topbar */
+.hero-actions .hero-whatsapp{
+  flex:0 0 56px !important;
+  width:56px !important;
+  min-width:56px !important;
+  max-width:56px !important;
+  height:56px !important;
+  min-height:56px !important;
+
+  margin:0 !important;
+  padding:6px !important;
+
+  border-radius:18px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  background:rgba(15,23,42,.82) !important;
+  border:1px solid rgba(34,197,94,.70) !important;
+
+  box-shadow:0 12px 28px rgba(2,6,23,.24) !important;
+
+  transition:transform .2s ease, box-shadow .2s ease !important;
+}
+
+.hero-actions .hero-whatsapp:hover{
+  transform:translateY(-2px) scale(1.04) !important;
+  box-shadow:0 0 18px rgba(37,211,102,.30) !important;
+}
+
+.hero-whatsapp-icon{
+  flex:0 0 40px !important;
+  width:40px !important;
+  height:40px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:50% !important;
+  background:#25D366 !important;
+  color:#fff !important;
+  box-shadow:0 0 24px rgba(37,211,102,.35) !important;
+}
+
+.hero-whatsapp-icon svg{
+  width:22px !important;
+  height:22px !important;
+}
+
+.hero-whatsapp-text{
+  display:none !important;
+}
+
+/* floating bottom WhatsApp stays clean */
+.whatsapp-float,
+.floating-whatsapp,
+.chat-float{
+  border-radius:50% !important;
+}
+
+/* mobile version - one clean horizontal carousel */
+@media(max-width:900px){
+  body{
+    padding-top:0 !important;
+  }
+
+  .hero{
+    min-height:100vh !important;
+    padding-top:148px !important;
+    justify-content:center !important;
+  }
+
+  .hero-actions{
+    top:8px !important;
+    left:8px !important;
+    right:8px !important;
+    transform:none !important;
+
+    width:auto !important;
+    max-width:none !important;
+
+    justify-content:flex-start !important;
+    gap:8px !important;
+
+    padding:9px !important;
+    border-radius:20px !important;
+
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+
+    scroll-snap-type:x mandatory !important;
+    scroll-padding-left:8px !important;
+  }
+
+  .hero-actions.scrolled{
+    transform:none !important;
+    top:6px !important;
+    padding:7px 8px !important;
+  }
+
+  .hero-actions .btn{
+    flex:0 0 118px !important;
+    width:118px !important;
+    min-width:118px !important;
+    max-width:118px !important;
+    height:78px !important;
+    min-height:78px !important;
+
+    flex-direction:column !important;
+    justify-content:center !important;
+    text-align:center !important;
+    gap:6px !important;
+
+    padding:8px !important;
+    scroll-snap-align:start !important;
+  }
+
+  .hero-actions .btn.purple{
+    flex-basis:124px !important;
+    width:124px !important;
+    min-width:124px !important;
+    max-width:124px !important;
+  }
+
+  .hero-action-icon{
+    width:32px !important;
+    height:32px !important;
+    min-width:32px !important;
+    flex-basis:32px !important;
+  }
+
+  .hero-actions .btn span:last-child{
+    max-width:100% !important;
+    font-size:10.5px !important;
+    line-height:1.08 !important;
+  }
+
+  .hero-actions .btn small{
+    font-size:8px !important;
+  }
+
+  .hero-actions .top-auth-btn{
+    display:none !important;
+  }
+
+  .hero-actions .hero-whatsapp{
+    flex:0 0 72px !important;
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+    height:78px !important;
+    min-height:78px !important;
+    scroll-snap-align:start !important;
+  }
+
+  .hero-whatsapp-icon{
+    width:44px !important;
+    height:44px !important;
+    flex-basis:44px !important;
+  }
+
+  .hero h1{
+    font-size:54px !important;
+    line-height:1 !important;
+  }
+
+  .hero > p{
+    font-size:16px !important;
+    line-height:1.45 !important;
+    max-width:330px !important;
+  }
+}
+
+@media(max-width:430px){
+  .hero{
+    padding-top:150px !important;
+  }
+
+  .hero h1{
+    font-size:48px !important;
+  }
+
+  .hero-actions{
+    max-height:112px !important;
+  }
+}
+
 </style>
 
 
@@ -11259,6 +11756,33 @@ document.addEventListener('DOMContentLoaded', function(){
         b.classList.remove('active-section');
       });
 
+      btn.classList.add('active-section');
+    });
+  });
+});
+</script>
+
+<!-- AZOBSS final topbar responsive script -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const topbar = document.querySelector('.hero-actions');
+
+  if(topbar){
+    window.addEventListener('scroll', function(){
+      if(window.scrollY > 40){
+        topbar.classList.add('scrolled');
+      }else{
+        topbar.classList.remove('scrolled');
+      }
+    });
+  }
+
+  document.querySelectorAll('.hero-actions .btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.hero-actions .btn').forEach(function(b){
+        b.classList.remove('active-section');
+      });
       btn.classList.add('active-section');
     });
   });
