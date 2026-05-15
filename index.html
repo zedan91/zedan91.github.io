@@ -7159,6 +7159,23 @@ body.has-pa-access #heroRequestButton{
     margin:0 !important;
 }
 
+
+/* ===== HIDE USER BOX BEFORE LOGIN ===== */
+
+.user-profile-topbar,
+.topbar-user-box,
+.logged-user-box,
+.user-box{
+    display:none !important;
+}
+
+body.azobss-topbar-logged-in .user-profile-topbar,
+body.azobss-topbar-logged-in .topbar-user-box,
+body.azobss-topbar-logged-in .logged-user-box,
+body.azobss-topbar-logged-in .user-box{
+    display:flex !important;
+}
+
 </style>
 
 
@@ -14451,6 +14468,38 @@ document.addEventListener('DOMContentLoaded', ()=>{
           wrap.classList.add('topbar-auth-buttons');
       }
   }
+
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+    function syncUserBox(){
+
+        let loggedIn = false;
+
+        try{
+            const s1 = sessionStorage.getItem('azobssCurrentUser');
+            const s2 = localStorage.getItem('azobssCurrentUser');
+
+            if(s1 || s2){
+                loggedIn = true;
+            }
+        }catch(e){}
+
+        const body = document.body;
+
+        if(loggedIn){
+            body.classList.add('azobss-topbar-logged-in');
+        }else{
+            body.classList.remove('azobss-topbar-logged-in');
+        }
+    }
+
+    syncUserBox();
+    setInterval(syncUserBox, 1000);
 
 });
 </script>
