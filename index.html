@@ -3605,6 +3605,104 @@ body.is-admin .lucky-draw-public-list{
   50%{filter:hue-rotate(90deg);opacity:1}
 }
 
+
+/* =========================================================
+   GIVEAWAY PRIZE PANEL
+========================================================= */
+.lucky-draw-prize-panel{
+  margin:18px 0;
+  border:1px solid rgba(34,197,94,.24);
+  border-radius:18px;
+  background:rgba(2,6,23,.42);
+  overflow:hidden;
+}
+
+.lucky-draw-prize-preview{
+  display:grid;
+  grid-template-columns:320px 1fr;
+  gap:18px;
+  align-items:stretch;
+}
+
+.lucky-draw-prize-preview img{
+  width:100%;
+  height:100%;
+  min-height:240px;
+  object-fit:cover;
+  background:#0f172a;
+}
+
+.lucky-draw-prize-content{
+  padding:20px 20px 20px 0;
+}
+
+.lucky-draw-prize-content h3{
+  margin:10px 0;
+  color:#22c55e;
+  font-size:28px;
+  line-height:1.1;
+}
+
+.lucky-draw-prize-content p{
+  margin:0;
+  color:#cbd5e1;
+  line-height:1.6;
+}
+
+.lucky-draw-prize-admin{
+  display:none;
+  padding:18px;
+  border-top:1px solid rgba(148,163,184,.16);
+  background:rgba(15,23,42,.72);
+}
+
+body.is-admin .lucky-draw-prize-admin{
+  display:grid;
+  gap:12px;
+}
+
+.lucky-draw-prize-admin input,
+.lucky-draw-prize-admin textarea{
+  width:100%;
+  border:1px solid rgba(148,163,184,.24);
+  border-radius:12px;
+  background:rgba(2,6,23,.65);
+  color:#fff;
+  padding:12px;
+  outline:none;
+}
+
+.lucky-draw-prize-admin textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.lucky-draw-prize-admin input:focus,
+.lucky-draw-prize-admin textarea:focus{
+  border-color:rgba(34,197,94,.62);
+  box-shadow:0 0 0 3px rgba(34,197,94,.12);
+}
+
+.lucky-draw-prize-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+@media(max-width:900px){
+  .lucky-draw-prize-preview{
+    grid-template-columns:1fr;
+  }
+
+  .lucky-draw-prize-content{
+    padding:0 18px 20px;
+  }
+
+  .lucky-draw-prize-preview img{
+    min-height:220px;
+  }
+}
+
 </style>
 
 
@@ -4936,6 +5034,30 @@ display:none !important;
             <strong id="luckyDrawWinnerName">Belum dipilih</strong>
           </div>
         </div>
+
+        
+        <div class="lucky-draw-prize-panel" id="luckyDrawPrizePanel">
+          <div class="lucky-draw-prize-preview">
+            <img id="luckyDrawPrizeImage" src="https://placehold.co/600x400/0f172a/22c55e?text=Lucky+Draw+Prize" alt="Lucky Draw Prize">
+            <div class="lucky-draw-prize-content">
+              <span class="lucky-draw-kicker">Hadiah Giveaway</span>
+              <h3 id="luckyDrawPrizeTitle">Hadiah belum diumumkan</h3>
+              <p id="luckyDrawPrizeDescription">Admin boleh attach gambar dan description hadiah giveaway.</p>
+            </div>
+          </div>
+
+          <div class="lucky-draw-prize-admin" id="luckyDrawPrizeAdmin">
+            <input id="luckyDrawPrizeImageInput" type="url" placeholder="Paste URL gambar hadiah">
+            <input id="luckyDrawPrizeTitleInput" type="text" placeholder="Nama hadiah giveaway">
+            <textarea id="luckyDrawPrizeDescriptionInput" placeholder="Description hadiah / barang giveaway"></textarea>
+
+            <div class="lucky-draw-prize-actions">
+              <button class="btn blue" id="saveLuckyDrawPrizeButton" type="button">Save Prize</button>
+              <button class="btn orange" id="refreshLuckyDrawPrizeButton" type="button">Refresh Prize</button>
+            </div>
+          </div>
+        </div>
+
 
         <div class="lucky-draw-spin-stage" id="luckyDrawSpinStage">
           <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Menunggu countdown...</div>
