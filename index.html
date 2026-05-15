@@ -3230,7 +3230,29 @@ body:not(.is-admin) .affiliate-card-admin-actions{
       cursor: not-allowed;
     }
 
-  </style>
+  
+.affiliate-json-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:nowrap;
+}
+
+.affiliate-json-actions .compact-btn{
+  flex:1;
+  min-width:0;
+  white-space:nowrap;
+  font-size:14px;
+  padding:10px 12px;
+}
+
+@media (max-width:700px){
+  .affiliate-json-actions .compact-btn{
+    font-size:13px;
+    padding:10px 8px;
+  }
+}
+
+</style>
 
 
 
@@ -4005,12 +4027,14 @@ display:none !important;
       <label>
         Affiliate Link / Shopee JSON Auto Import
         <input id="affiliateLinkInput" type="url" placeholder="Paste Shopee affiliate/link sini untuk Accept & Open Shop + Import JSON" required>
-        <div class="affiliate-detect-row" style="margin-top:8px">
-          <button class="affiliate-admin-btn green" id="affiliateJsonOpenLinkButton" type="button">✅ Accept & Open Shop</button>
-          <button class="affiliate-admin-btn" id="affiliateCopyJsonExtractorButton" type="button">📋 Copy Console Script</button>
-          <button class="affiliate-admin-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
-          <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
-        </div>
+        
+<div class="affiliate-detect-row affiliate-json-actions" style="margin-top:8px">
+  <button class="affiliate-admin-btn green compact-btn" id="affiliateJsonOpenLinkButton" type="button">✅ Accept & Open Shop</button>
+  <button class="affiliate-admin-btn compact-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
+  <button class="affiliate-admin-btn compact-btn" id="affiliateCopyJsonExtractorButton" type="button" style="display:none">📋 Copy Script</button>
+  <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
+</div>
+
         <small id="affiliateJsonImportStatus" class="affiliate-detect-status">2 dalam 1: kotak ini digunakan untuk Affiliate Link + Shopee JSON Auto Import. Paste link Shopee di sini → Accept & Open Shop untuk auto copy console script dan buka Shopee.</small>
       </label>
 
@@ -4018,9 +4042,7 @@ display:none !important;
         Full Product Link / Auto Detect
         <div class="affiliate-detect-row">
           <input id="affiliateFullLinkInput" type="url" placeholder="https://shopee.com.my/product/xxxx/yyyy">
-          <button class="affiliate-admin-btn" id="affiliateAutoDetectButton" type="button">🔍 Auto Detect</button>
-          <button class="affiliate-admin-btn" id="affiliateOpenProductButton" type="button">↗ Open</button>
-        </div>
+          <button class="affiliate-admin-btn" id="affiliateAutoDetectButton" type="button">🔍 Auto Detect</button></div>
         <small id="affiliateDetectStatus" class="affiliate-detect-status">Paste full Shopee product link, click Auto Detect. Jika Shopee block, tekan Open dan copy tajuk produk ke backup.</small>
       </label>
 
