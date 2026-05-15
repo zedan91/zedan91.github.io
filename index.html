@@ -4016,6 +4016,15 @@ display:none !important;
         <small id="affiliateDetectStatus" class="affiliate-detect-status">Paste full Shopee product link, then click Auto Detect.</small>
       </label>
 
+      <label>
+        Product Title Backup / Auto Fill
+        <div class="affiliate-detect-row">
+          <input id="affiliateManualTitleInput" type="text" placeholder="Paste tajuk produk jika Shopee gagal detect">
+          <button class="affiliate-admin-btn" id="affiliateTitleAutoFillButton" type="button">✨ Auto Fill</button>
+        </div>
+        <small id="affiliateTitleFillStatus" class="affiliate-detect-status">Backup: paste tajuk produk, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.</small>
+      </label>
+
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
     </form>
   </div>
@@ -8235,7 +8244,9 @@ display:none !important;
     qs('#affiliateMetaInput').value = product ? product.meta : '';
     qs('#affiliateLinkInput').value = product ? product.link : '';
     if(qs('#affiliateFullLinkInput')) qs('#affiliateFullLinkInput').value = product ? product.link : '';
+    if(qs('#affiliateManualTitleInput')) qs('#affiliateManualTitleInput').value = product ? product.title : '';
     setDetectStatus('Paste full Shopee product link, then click Auto Detect.', false);
+    setTitleFillStatus('Backup: paste tajuk produk, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.', false);
     qs('#affiliateAdminModal').classList.add('is-open');
   }
 
@@ -8246,6 +8257,121 @@ display:none !important;
     if(!status) return;
     status.textContent = message || '';
     status.classList.toggle('is-error', !!isError);
+  }
+
+  function setTitleFillStatus(message, isError){
+    const status = qs('#affiliateTitleFillStatus');
+    if(!status) return;
+    status.textContent = message || '';
+    status.classList.toggle('is-error', !!isError);
+  }
+
+  function affiliateTitleToIcon(title){
+    const t = String(title || '').toLowerCase();
+    if(/ssd|nvme|hard disk|hdd|ram|router|wifi|pc|laptop|keyboard|mouse|monitor|usb|type-c|charger|printer/.test(t)) return '💻';
+    if(/phone|iphone|android|case|screen protector|powerbank/.test(t)) return '📱';
+    if(/vacuum|mop|clean|penyapu|habuk/.test(t)) return '🧹';
+    if(/car|kereta|dashcam|tyre|tayar|automotive|motor/.test(t)) return '🚗';
+    if(/camera|drone|cctv|webcam/.test(t)) return 'CAM';
+    if(/bag|wallet|beg/.test(t)) return '👜';
+    if(/shoe|kasut|sandal|sneaker/.test(t)) return '👟';
+    if(/baju|shirt|tshirt|dress|clothes|tudung|hijab/.test(t)) return '👕';
+    if(/watch|jam tangan/.test(t)) return '⌚';
+    if(/baby|toy|mainan/.test(t)) return '🧸';
+    if(/food|coklat|chocolate|snack|kopi|coffee|grocery/.test(t)) return '🍫';
+    if(/sport|outdoor|camp|gym/.test(t)) return '🏕️';
+    if(/book|game|hobby|console|controller/.test(t)) return '🎮';
+    return '🛒';
+  }
+
+  function affiliateTitleToCategory(title){
+    const t = String(title || '').toLowerCase();
+    if(/ssd|nvme|hard disk|hdd|ram|router|wifi|pc|laptop|keyboard|mouse|monitor|usb|type-c|charger|printer/.test(t)) return 'computer';
+    if(/phone|iphone|android|case|screen protector|powerbank/.test(t)) return 'mobile';
+    if(/vacuum|mop|organizer|rack|lamp|sofa|home|rumah|clean/.test(t)) return 'home-living';
+    if(/air fryer|blender|kettle|rice cooker|appliance/.test(t)) return 'home-appliances';
+    if(/car|kereta|dashcam|tyre|tayar|automotive|motor/.test(t)) return 'automotive';
+    if(/camera|drone|cctv|webcam/.test(t)) return 'camera';
+    if(/watch|jam tangan/.test(t)) return 'watches';
+    if(/bag|handbag|tote|purse/.test(t)) return 'womens-bags';
+    if(/wallet|men bag|sling bag/.test(t)) return 'mens-bags';
+    if(/dress|women clothes|baju perempuan/.test(t)) return 'women-clothes';
+    if(/shirt|tshirt|men clothes|baju lelaki/.test(t)) return 'men-clothes';
+    if(/shoe|kasut|sneaker|sandal/.test(t)) return 'men-shoes';
+    if(/tudung|hijab|muslim/.test(t)) return 'muslim';
+    if(/beauty|skin|makeup|health|serum/.test(t)) return 'health';
+    if(/baby|toy|mainan/.test(t)) return 'baby';
+    if(/food|coklat|chocolate|snack|kopi|coffee|grocery|pet/.test(t)) return 'groceries';
+    if(/sport|outdoor|camp|gym/.test(t)) return 'sports';
+    if(/game|console|controller/.test(t)) return 'gaming';
+    if(/book|hobby/.test(t)) return 'books';
+    if(/travel|luggage|bagasi/.test(t)) return 'travel';
+    return 'others';
+  }
+
+  function affiliateTitleToBadge(title, category){
+    const t = String(title || '').toLowerCase();
+    if(/ssd|nvme|storage/.test(t)) return 'Fast Storage';
+    if(/router|wifi|5g/.test(t)) return 'Networking';
+    if(/vacuum|mop|clean/.test(t)) return 'Cleaning Gadget';
+    if(/car|kereta|dashcam/.test(t)) return 'Car Gadget';
+    if(/chocolate|coklat|snack/.test(t)) return 'Chocolate';
+    if(category === 'computer') return 'Computer & Accessories';
+    if(category === 'home-living') return 'Home Useful Item';
+    return 'Useful Item';
+  }
+
+  function affiliateTitleToMeta(title, category){
+    const t = String(title || '').toLowerCase();
+    if(/ssd|nvme/.test(t)) return 'Best for Windows and game loading';
+    if(/router|wifi/.test(t)) return 'Best for stronger home internet setup';
+    if(/vacuum|mop|clean/.test(t)) return 'Best for car and home cleaning';
+    if(/car|kereta|dashcam/.test(t)) return 'Best for daily car use';
+    if(/chocolate|coklat|snack/.test(t)) return 'Best for snack and gift idea';
+    if(category === 'computer') return 'Best for PC setup and daily use';
+    return 'Best for useful daily item';
+  }
+
+  function affiliateTitleToDescription(title, category){
+    const cleanTitle = String(title || '').replace(/\s+/g, ' ').trim();
+    const t = cleanTitle.toLowerCase();
+    if(/vacuum|mop|clean/.test(t)){
+      return cleanTitle + ' sesuai untuk pembersihan rumah atau kereta. Mudah digunakan untuk habuk, celah kecil dan kegunaan harian.';
+    }
+    if(/ssd|nvme/.test(t)){
+      return cleanTitle + ' sesuai untuk upgrade storage PC atau laptop supaya loading Windows, game dan kerja harian lebih laju.';
+    }
+    if(/router|wifi/.test(t)){
+      return cleanTitle + ' sesuai untuk setup internet rumah atau pejabat dengan sambungan WiFi yang lebih stabil.';
+    }
+    if(/car|kereta|dashcam/.test(t)){
+      return cleanTitle + ' sesuai untuk kegunaan kereta harian. Berguna sebagai aksesori tambahan yang praktikal.';
+    }
+    if(/chocolate|coklat|snack/.test(t)){
+      return cleanTitle + ' sesuai untuk kudapan harian, hadiah kecil atau stok makanan ringan di rumah.';
+    }
+    return cleanTitle + ' sesuai untuk kegunaan harian. Semak detail produk di Shopee sebelum membeli.';
+  }
+
+  function autoFillAffiliateFromTitle(){
+    if(!adminDetected()) return;
+    const manualInput = qs('#affiliateManualTitleInput');
+    const titleInput = qs('#affiliateTitleInput');
+    const rawTitle = (manualInput?.value || titleInput?.value || '').trim();
+
+    if(!rawTitle){
+      setTitleFillStatus('Sila paste tajuk produk dahulu.', true);
+      return;
+    }
+
+    const category = affiliateTitleToCategory(rawTitle);
+    qs('#affiliateTitleInput').value = rawTitle;
+    qs('#affiliateIcon').value = affiliateTitleToIcon(rawTitle);
+    qs('#affiliateBadge').value = affiliateTitleToBadge(rawTitle, category);
+    qs('#affiliateDescInput').value = affiliateTitleToDescription(rawTitle, category);
+    qs('#affiliateCategoryInput').value = category;
+    qs('#affiliateMetaInput').value = affiliateTitleToMeta(rawTitle, category);
+    setTitleFillStatus('✅ Auto filled daripada tajuk produk. Sila semak sebelum Save.', false);
   }
 
   function applyDetectedProduct(data){
@@ -8325,6 +8451,7 @@ display:none !important;
     qs('#affiliateAdminClose')?.addEventListener('click', closeModal);
 
     qs('#affiliateAutoDetectButton')?.addEventListener('click', autoDetectAffiliateProduct);
+    qs('#affiliateTitleAutoFillButton')?.addEventListener('click', autoFillAffiliateFromTitle);
 
     qs('#affiliateAdminModal')?.addEventListener('click', e => {
       if(e.target.id === 'affiliateAdminModal') closeModal();
