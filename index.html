@@ -6803,6 +6803,33 @@ body:not(.azobss-topbar-logged-in):not(.is-authenticated) .hero-actions .top-aut
   }
 }
 
+
+/* Widen topbar so all cards fit better */
+.hero-actions{
+  width:min(1380px, calc(100vw - 24px)) !important;
+  max-width:min(1380px, calc(100vw - 24px)) !important;
+  padding-left:16px !important;
+  padding-right:16px !important;
+}
+
+@media(min-width:1400px){
+  .hero-actions{
+    width:min(1480px, calc(100vw - 28px)) !important;
+    max-width:min(1480px, calc(100vw - 28px)) !important;
+  }
+}
+
+@media(max-width:900px){
+  .hero-actions{
+    width:auto !important;
+    max-width:none !important;
+    left:8px !important;
+    right:8px !important;
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+}
+
 </style>
 
 
