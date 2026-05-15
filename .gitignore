@@ -9,3 +9,8 @@ temp/
 Thumbs.db
 *.zip
 *.rar
+
+# Render backend runtime files
+backend/data/
+backend/uploads/
+backend/.env

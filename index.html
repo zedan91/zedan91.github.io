@@ -11913,5 +11913,324 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 
+
+<script>
+/* =========================================================
+   AZOBSS LUCKY DRAW RENDER BACKEND BRIDGE
+   Tukar URL ini selepas deploy backend di Render:
+========================================================= */
+window.AZOBSS_LUCKY_DRAW_API = window.AZOBSS_LUCKY_DRAW_API || 'https://azobss-lucky-draw-backend.onrender.com';
+
+(function(){
+  const api = () => (window.AZOBSS_LUCKY_DRAW_API || '').replace(/\/$/, '');
+
+  function getAdminKey(){
+    let key = localStorage.getItem('azobssLuckyDrawAdminKey') || '';
+    if(!key){
+      key = prompt('Masukkan ADMIN_KEY Render backend:') || '';
+      if(key) localStorage.setItem('azobssLuckyDrawAdminKey', key);
+    }
+    return key;
+  }
+
+  async function apiFetch(path, options = {}){
+    const headers = options.headers || {};
+    if(options.admin) headers['x-admin-key'] = getAdminKey();
+    return fetch(api() + path, { ...options, headers });
+  }
+
+  function getCurrentUserFromStorage(){
+    const raw =
+      sessionStorage.getItem('azobssCurrentUser') ||
+      localStorage.getItem('azobssCurrentUser') ||
+      sessionStorage.getItem('azobssUser') ||
+      localStorage.getItem('azobssUser');
+
+    if(!raw) return null;
+
+    try{
+      const obj = JSON.parse(raw);
+      if(obj && typeof obj === 'object') return obj;
+    }catch(e){
+      return { name: raw, usernameKey: raw };
+    }
+
+    return null;
+  }
+
+  function getMonthKey(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+  function setStatus(message){
+    const status = document.getElementById('luckyDrawParticipantsStatus') ||
+                   document.getElementById('luckyDrawPrizeSaveStatus') ||
+                   document.getElementById('luckyDrawStatus');
+    if(status) status.textContent = message || '';
+  }
+
+  async function loadPrizeFromBackend(){
+    try{
+      const res = await apiFetch('/api/lucky-draw/prize?monthKey=' + encodeURIComponent(getMonthKey()));
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'Backend prize error');
+
+      const prize = data.prize || {};
+      const img = document.getElementById('luckyDrawPrizeImage');
+      const title = document.getElementById('luckyDrawPrizeTitle');
+      const desc = document.getElementById('luckyDrawPrizeDescription');
+      const titleInput = document.getElementById('luckyDrawPrizeTitleInput');
+      const descInput = document.getElementById('luckyDrawPrizeDescriptionInput');
+
+      if(img) img.src = prize.imageUrl || 'Lucky-draw/prize-placeholder.svg';
+      if(title) title.textContent = prize.title || 'Hadiah belum diumumkan';
+      if(desc) desc.innerText = prize.description || '';
+      if(titleInput) titleInput.value = prize.title || '';
+      if(descInput) descInput.value = prize.description || '';
+    }catch(e){
+      console.warn('Lucky Draw backend prize load failed:', e);
+    }
+  }
+
+  async function savePrizeToBackend(event){
+    const btn = event.target.closest('#saveLuckyDrawPrizeButton');
+    if(!btn) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const fileInput = document.getElementById('luckyDrawPrizeImageFile');
+    const titleInput = document.getElementById('luckyDrawPrizeTitleInput');
+    const descInput = document.getElementById('luckyDrawPrizeDescriptionInput');
+    const status = document.getElementById('luckyDrawPrizeSaveStatus') || document.getElementById('luckyDrawParticipantsStatus');
+
+    try{
+      const form = new FormData();
+      if(fileInput && fileInput.files && fileInput.files[0]) form.append('image', fileInput.files[0]);
+      form.append('monthKey', getMonthKey());
+      form.append('title', titleInput ? titleInput.value : '');
+      form.append('description', descInput ? descInput.value : '');
+      const user = getCurrentUserFromStorage();
+      form.append('updatedBy', user ? (user.usernameKey || user.name || 'admin') : 'admin');
+
+      if(status) status.textContent = 'Saving prize to Render backend...';
+
+      const res = await apiFetch('/api/lucky-draw/prize', {
+        method:'POST',
+        body:form,
+        admin:true
+      });
+
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'Save prize failed');
+
+      if(status) status.textContent = 'Hadiah berjaya disimpan ke Render backend.';
+      await loadPrizeFromBackend();
+    }catch(e){
+      if(status) status.textContent = 'Backend save gagal: ' + e.message;
+    }
+  }
+
+  async function loadEntriesFromBackend(){
+    try{
+      const res = await apiFetch('/api/lucky-draw/entries?monthKey=' + encodeURIComponent(getMonthKey()));
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'Entries error');
+
+      const rows = data.entries || [];
+
+      const total = document.getElementById('luckyDrawTotalParticipants');
+      if(total) total.textContent = String(data.total || rows.length || 0);
+
+      const publicList = document.getElementById('luckyDrawPublicList');
+      if(publicList){
+        publicList.innerHTML = rows.length
+          ? rows.map((entry, i) => `<div class="lucky-draw-participant-card"><strong>${i+1}. ${(entry.name || entry.usernameKey || 'User')}</strong><span>${entry.monthKey || ''} • ${entry.usernameKey || '-'}</span></div>`).join('')
+          : '<div class="lucky-draw-empty">Belum ada peserta Giveaway.</div>';
+      }
+
+      const adminBody = document.getElementById('luckyDrawAdminTableBody');
+      if(adminBody){
+        adminBody.innerHTML = rows.length
+          ? rows.map((entry, i) => `
+              <tr data-backend-entry-id="${entry.id}">
+                <td>${i+1}</td>
+                <td>${entry.monthKey || '-'}</td>
+                <td>${entry.usernameKey || '-'}</td>
+                <td><input data-field="name" value="${entry.name || ''}"></td>
+                <td><input data-field="phone" value="${entry.phone || ''}"></td>
+                <td><input data-field="contactEmail" value="${entry.contactEmail || ''}"></td>
+                <td><input data-field="inviteCode" value="${entry.inviteCode || ''}"></td>
+                <td>${entry.joinedAt || '-'}</td>
+                <td>
+                  <div class="lucky-draw-admin-actions">
+                    <button class="lucky-draw-save-btn" type="button" data-backend-action="save">Save</button>
+                    <button class="lucky-draw-hide-btn" type="button" data-backend-action="hide">Hide</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="9">Tiada peserta.</td></tr>';
+      }
+    }catch(e){
+      console.warn('Lucky Draw backend entries load failed:', e);
+    }
+  }
+
+  async function joinEntryBackend(){
+    const user = getCurrentUserFromStorage();
+    if(!user || !(user.usernameKey || user.name)) return;
+
+    const payload = {
+      monthKey: getMonthKey(),
+      usernameKey: user.usernameKey || user.name,
+      uid: user.uid || '',
+      name: user.name || user.usernameKey,
+      phone: user.phone || '',
+      contactEmail: user.contactEmail || user.email || '',
+      inviteCode: user.inviteCode || '',
+      inviteUrl: ''
+    };
+
+    try{
+      await apiFetch('/api/lucky-draw/entries', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body:JSON.stringify(payload)
+      });
+      setTimeout(loadEntriesFromBackend, 500);
+    }catch(e){
+      console.warn('Backend join entry failed:', e);
+    }
+  }
+
+  async function saveEntryBackend(row){
+    const id = row && row.dataset.backendEntryId;
+    if(!id) return;
+
+    const payload = {
+      monthKey: getMonthKey(),
+      name: row.querySelector('[data-field="name"]')?.value || '',
+      phone: row.querySelector('[data-field="phone"]')?.value || '',
+      contactEmail: row.querySelector('[data-field="contactEmail"]')?.value || '',
+      inviteCode: row.querySelector('[data-field="inviteCode"]')?.value || ''
+    };
+
+    const res = await apiFetch('/api/lucky-draw/entries/' + encodeURIComponent(id), {
+      method:'PATCH',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify(payload),
+      admin:true
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Save entry failed');
+    await loadEntriesFromBackend();
+  }
+
+  async function hideEntryBackend(row){
+    const id = row && row.dataset.backendEntryId;
+    if(!id) return;
+    if(!confirm('Hide peserta ini?')) return;
+
+    const res = await apiFetch('/api/lucky-draw/entries/' + encodeURIComponent(id) + '?monthKey=' + encodeURIComponent(getMonthKey()), {
+      method:'DELETE',
+      admin:true
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || 'Hide entry failed');
+    await loadEntriesFromBackend();
+  }
+
+  async function resetEntriesBackend(event){
+    const btn = event.target.closest('#resetLuckyDrawParticipantsButton');
+    if(!btn) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    if(!confirm('Reset semua peserta bulan ini?')) return;
+
+    try{
+      const res = await apiFetch('/api/lucky-draw/entries?monthKey=' + encodeURIComponent(getMonthKey()), {
+        method:'DELETE',
+        admin:true
+      });
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'Reset failed');
+      setStatus(`Reset peserta selesai. Jumlah reset: ${data.reset}`);
+      await loadEntriesFromBackend();
+    }catch(e){
+      setStatus('Backend reset gagal: ' + e.message);
+    }
+  }
+
+  async function resetWinnerBackend(event){
+    const btn = event.target.closest('#resetLuckyDrawWinnerButton');
+    if(!btn) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    if(!confirm('Reset pemenang bulan ini?')) return;
+
+    try{
+      const res = await apiFetch('/api/lucky-draw/winner?monthKey=' + encodeURIComponent(getMonthKey()), {
+        method:'DELETE',
+        admin:true
+      });
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'Reset winner failed');
+
+      setStatus('Winner sudah di-reset di backend.');
+      const winner = document.getElementById('luckyDrawWinnerName');
+      if(winner) winner.textContent = 'Belum dipilih';
+    }catch(e){
+      setStatus('Backend reset winner gagal: ' + e.message);
+    }
+  }
+
+  async function backendTableActions(event){
+    const btn = event.target.closest('[data-backend-action]');
+    if(!btn) return;
+    const row = btn.closest('tr[data-backend-entry-id]');
+    if(!row) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    try{
+      if(btn.dataset.backendAction === 'save') await saveEntryBackend(row);
+      if(btn.dataset.backendAction === 'hide') await hideEntryBackend(row);
+      setStatus('Backend peserta berjaya dikemaskini.');
+    }catch(e){
+      setStatus('Backend peserta gagal: ' + e.message);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    loadPrizeFromBackend();
+    loadEntriesFromBackend();
+    setInterval(loadEntriesFromBackend, 30000);
+  });
+
+  document.addEventListener('click', savePrizeToBackend, true);
+  document.addEventListener('click', resetEntriesBackend, true);
+  document.addEventListener('click', resetWinnerBackend, true);
+  document.addEventListener('click', backendTableActions, true);
+
+  const joinBtn = document.getElementById('joinLuckyDrawButton');
+  if(joinBtn){
+    joinBtn.addEventListener('click', function(){
+      setTimeout(joinEntryBackend, 600);
+    }, false);
+  }
+})();
+</script>
+
 </body>
 </html>
