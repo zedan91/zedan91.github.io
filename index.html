@@ -3866,6 +3866,40 @@ body.is-admin .lucky-draw-prize-admin{
 
 }
 
+
+/* =========================================================
+   FIX DESCRIPTION FORMAT / PARAGRAPH
+========================================================= */
+
+.lucky-draw-prize-content p,
+#luckyDrawPrizeDescription{
+
+    white-space:pre-wrap !important;
+
+    word-break:break-word !important;
+    overflow-wrap:break-word !important;
+
+    line-height:1.75 !important;
+
+    text-align:left !important;
+
+    font-size:16px !important;
+
+    margin:0 !important;
+}
+
+/* textarea admin */
+#luckyDrawPrizeDescriptionInput{
+
+    white-space:pre-wrap !important;
+
+    line-height:1.7 !important;
+
+    font-family:inherit !important;
+
+    resize:vertical !important;
+}
+
 </style>
 
 
@@ -6273,7 +6307,7 @@ display:none !important;
 
       if (luckyDrawPrizeImage) luckyDrawPrizeImage.src = image;
       if (luckyDrawPrizeTitle) luckyDrawPrizeTitle.textContent = title;
-      if (luckyDrawPrizeDescription) luckyDrawPrizeDescription.textContent = desc;
+      if (luckyDrawPrizeDescription) luckyDrawPrizeDescription.innerText = desc;
 
       if (luckyDrawPrizeImageDataInput) luckyDrawPrizeImageDataInput.value = data.imageData || data.imageUrl || '';
       if (luckyDrawPrizeTitleInput) luckyDrawPrizeTitleInput.value = data.title || '';
