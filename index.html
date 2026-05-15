@@ -5548,6 +5548,151 @@ body:not(.azobss-logged-in) .hero-actions .top-auth-btn{
   }
 }
 
+
+/* =========================================================
+   FIX TOPBAR CUT / CLIPPED RIGHT SIDE
+========================================================= */
+
+/* Make the whole floating bar fit screen and stop cutting username */
+.hero-actions{
+  left:50% !important;
+  right:auto !important;
+  transform:translateX(-50%) !important;
+
+  width:min(1180px, calc(100vw - 34px)) !important;
+  max-width:min(1180px, calc(100vw - 34px)) !important;
+
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+
+  justify-content:flex-start !important;
+  align-items:center !important;
+
+  padding:8px 10px !important;
+  gap:8px !important;
+
+  box-sizing:border-box !important;
+}
+
+/* Allow the bar to scroll silently if screen is narrow */
+.hero-actions::-webkit-scrollbar{
+  display:none !important;
+}
+
+.hero-actions{
+  scrollbar-width:none !important;
+}
+
+/* Slightly reduce menu card width so user pill fits better */
+.hero-actions .btn{
+  flex:0 0 150px !important;
+  width:150px !important;
+  min-width:150px !important;
+  max-width:150px !important;
+
+  height:58px !important;
+  min-height:58px !important;
+}
+
+.hero-actions .btn.purple{
+  flex:0 0 162px !important;
+  width:162px !important;
+  min-width:162px !important;
+  max-width:162px !important;
+}
+
+/* User pill should not be clipped */
+.hero-actions .top-user-pill,
+.top-user-pill{
+  flex:0 0 auto !important;
+  min-width:max-content !important;
+  max-width:none !important;
+  overflow:visible !important;
+  margin-left:8px !important;
+  padding:0 12px !important;
+  box-sizing:border-box !important;
+}
+
+/* Username text must be fully visible */
+.hero-actions .top-user-name,
+.top-user-name{
+  display:block !important;
+  max-width:none !important;
+  overflow:visible !important;
+  white-space:nowrap !important;
+  text-overflow:clip !important;
+}
+
+/* If old logged-in pill outside topbar exists, hide it to avoid duplicate/cut */
+body > .top-user-pill,
+body > .user-chip,
+body > .user-pill,
+body > .account-pill,
+body > .profile-pill,
+#userChip,
+#profilePill,
+#accountPill{
+  display:none !important;
+}
+
+/* But keep topbar user pill visible */
+.hero-actions .top-user-pill{
+  display:flex !important;
+}
+
+/* Desktop: keep bar centered but not too wide */
+@media(min-width:1200px){
+  .hero-actions{
+    width:min(1140px, calc(100vw - 48px)) !important;
+    max-width:min(1140px, calc(100vw - 48px)) !important;
+  }
+}
+
+/* Smaller screens: scroll horizontally instead of clipping */
+@media(max-width:1050px){
+  .hero-actions{
+    left:8px !important;
+    right:8px !important;
+    transform:none !important;
+
+    width:auto !important;
+    max-width:none !important;
+    justify-content:flex-start !important;
+  }
+}
+
+/* Phone: make carousel clean */
+@media(max-width:700px){
+  .hero-actions{
+    top:8px !important;
+    padding:8px !important;
+    border-radius:18px !important;
+    scroll-snap-type:x mandatory !important;
+  }
+
+  .hero-actions .btn,
+  .hero-actions .hero-whatsapp,
+  .hero-actions .top-user-pill{
+    scroll-snap-align:start !important;
+  }
+
+  .hero-actions .btn{
+    flex:0 0 116px !important;
+    width:116px !important;
+    min-width:116px !important;
+    max-width:116px !important;
+    height:74px !important;
+    min-height:74px !important;
+  }
+
+  .hero-actions .btn.purple{
+    flex:0 0 124px !important;
+    width:124px !important;
+    min-width:124px !important;
+    max-width:124px !important;
+  }
+}
+
 </style>
 
 
@@ -12565,6 +12710,77 @@ document.addEventListener('DOMContentLoaded', function(){
     if(e.key === 'Escape'){
       document.querySelectorAll('.modal, .popup, .auth-modal').forEach(function(modal){
         closeModal(modal);
+      });
+    }
+  });
+
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  function closeAnyAuthModal(){
+    document.querySelectorAll(
+      '#loginModal, #signinModal, #signInModal, #authModal, #signupModal, #registerModal, .modal, .auth-modal, .login-modal, .signin-modal, .popup'
+    ).forEach(function(modal){
+      // close only visible modal-like boxes
+      const style = window.getComputedStyle(modal);
+      const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && modal.offsetParent !== null;
+
+      if(isVisible || modal.classList.contains('active') || modal.classList.contains('show') || modal.classList.contains('is-open')){
+        modal.style.display = 'none';
+        modal.classList.remove('active','show','is-open','open');
+        modal.setAttribute('aria-hidden','true');
+      }
+    });
+  }
+
+  function markLoggedInFromInputs(){
+    const nameInput =
+      document.querySelector('#loginModal input[name="username"], #loginModal input[name="name"], #loginModal input[type="text"], .login-modal input[name="username"], .login-modal input[type="text"], #authModal input[type="text"]');
+
+    const username = nameInput && nameInput.value ? nameInput.value.trim() : '';
+
+    if(username){
+      localStorage.setItem('azobssUsername', username);
+      document.body.classList.add('azobss-logged-in');
+
+      const userNameEl = document.getElementById('topbarUserName');
+      const avatarEl = document.getElementById('topbarUserAvatar');
+
+      if(userNameEl) userNameEl.textContent = username;
+      if(avatarEl) avatarEl.textContent = username.charAt(0).toUpperCase();
+    }
+  }
+
+  // close modal after successful sign in click
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button, input[type="submit"], .btn');
+    if(!btn) return;
+
+    const text = (btn.textContent || btn.value || '').trim().toLowerCase();
+    const insideLogin = btn.closest('#loginModal, #signinModal, #signInModal, #authModal, .login-modal, .signin-modal, .auth-modal');
+
+    if(insideLogin && (text === 'sign in' || text === 'signin' || text === 'login' || text === 'log in')){
+      setTimeout(function(){
+        markLoggedInFromInputs();
+        closeAnyAuthModal();
+      }, 250);
+    }
+  }, true);
+
+  // also catch form submit
+  document.querySelectorAll('form').forEach(function(form){
+    const inAuth = form.closest('#loginModal, #signinModal, #signInModal, #authModal, .login-modal, .signin-modal, .auth-modal');
+
+    if(inAuth){
+      form.addEventListener('submit', function(){
+        setTimeout(function(){
+          markLoggedInFromInputs();
+          closeAnyAuthModal();
+        }, 250);
       });
     }
   });
