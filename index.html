@@ -4026,6 +4026,16 @@ display:none !important;
         <small id="affiliateTitleFillStatus" class="affiliate-detect-status">Backup paling stabil: paste tajuk produk Shopee, kemudian Auto Fill untuk isi category, badge, icon, description dan meta.</small>
       </label>
 
+      <label>
+        Shopee JSON Auto Import
+        <div class="affiliate-detect-row">
+          <button class="affiliate-admin-btn" id="affiliateCopyJsonExtractorButton" type="button">📋 Copy Console Script</button>
+          <button class="affiliate-admin-btn" id="affiliateImportJsonButton" type="button">📥 Import JSON</button>
+          <input id="affiliateShopeeJsonFile" type="file" accept="application/json,.json" style="display:none">
+        </div>
+        <small id="affiliateJsonImportStatus" class="affiliate-detect-status">Cara paling stabil: Open Shopee → paste console script → JSON auto download → Import JSON di sini.</small>
+      </label>
+
       <button class="affiliate-admin-btn green" type="submit">Save Affiliate</button>
     </form>
   </div>
@@ -8477,6 +8487,131 @@ display:none !important;
         btn.textContent = oldText || '🔍 Auto Detect';
       }
     }
+  }
+
+
+  function setJsonImportStatus(message, isError){
+    const status = qs('#affiliateJsonImportStatus');
+    if(!status) return;
+    status.textContent = message || '';
+    status.classList.toggle('is-error', !!isError);
+  }
+
+  function buildShopeeConsoleExtractorScript(){
+    return `(function(){
+  function pick(){
+    for(const s of arguments){
+      try{
+        const el=document.querySelector(s);
+        const v=el&&(el.content||el.innerText||el.textContent||el.getAttribute('content'));
+        if(v&&String(v).trim()) return String(v).trim();
+      }catch(e){}
+    }
+    return '';
+  }
+  function textClean(v){return String(v||'').replace(/\\s+/g,' ').trim();}
+  function findJsonTitle(){
+    const scripts=[...document.scripts].map(s=>s.textContent||'').filter(Boolean);
+    const patterns=[/"name"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,/"title"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i,/"itemName"\\s*:\\s*"([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"/i];
+    for(const txt of scripts){
+      if(!/Shopee|product|item|name|title/i.test(txt)) continue;
+      for(const re of patterns){
+        const m=txt.match(re);
+        if(m&&m[1]){
+          try{return JSON.parse('"'+m[1]+'"');}catch(e){return m[1];}
+        }
+      }
+    }
+    return '';
+  }
+  const title=textClean(
+    pick('meta[property="og:title"]','meta[name="title"]','h1','[data-testid="pdp-product-title"]','.product-briefing h1') ||
+    findJsonTitle() ||
+    document.title.replace(/\\|.*$/,'')
+  );
+  const description=textClean(pick('meta[property="og:description"]','meta[name="description"]'));
+  const image=pick('meta[property="og:image"]','meta[name="twitter:image"]');
+  const data={
+    source:'shopee-console-json',
+    title:title,
+    description:description,
+    image:image,
+    url:location.href,
+    capturedAt:new Date().toISOString()
+  };
+  console.log('AZOBSS Shopee JSON:', data);
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  const safe=(title||'shopee-product').replace(/[\\\\/:*?"<>|]+/g,' ').replace(/\\s+/g,' ').trim().slice(0,80)||'shopee-product';
+  a.href=URL.createObjectURL(blob);
+  a.download=safe+'.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+})();`;
+  }
+
+  async function copyShopeeJsonExtractorScript(){
+    if(!adminDetected()) return;
+    const script = buildShopeeConsoleExtractorScript();
+    try{
+      await navigator.clipboard.writeText(script);
+      setJsonImportStatus('✅ Console script copied. Tekan Open → Shopee page → F12 Console → paste → Enter. JSON akan auto download.', false);
+    }catch(e){
+      setJsonImportStatus('Copy gagal. Browser block clipboard. Sila cuba lagi atau guna manual console.', true);
+    }
+  }
+
+  function normalizeShopeeImportedData(raw){
+    const data = Array.isArray(raw) ? raw[0] : (raw || {});
+    const item = data.item || data.data || data.product || data.item_basic || {};
+    const title = String(data.title || data.name || data.productTitle || data.product_title || item.title || item.name || item.product_name || '').replace(/\s+/g,' ').trim();
+    const description = String(data.description || data.desc || data.productDescription || item.description || item.desc || '').trim();
+    const link = String(data.url || data.link || data.finalUrl || data.affiliateLink || '').trim();
+    const image = String(data.image || data.imageUrl || data.thumbnail || item.image || '').trim();
+    return {title, description, link, image};
+  }
+
+  function applyShopeeJsonToForm(raw){
+    if(!adminDetected()) return;
+    const data = normalizeShopeeImportedData(raw);
+    if(!data.title){
+      setJsonImportStatus('JSON tiada product title. Cuba copy tajuk produk dan guna Auto Fill backup.', true);
+      return;
+    }
+    const category = affiliateTitleToCategory(data.title);
+    qs('#affiliateTitleInput').value = data.title;
+    qs('#affiliateIcon').value = affiliateTitleToIcon(data.title);
+    qs('#affiliateBadge').value = affiliateTitleToBadge(data.title, category);
+    qs('#affiliateCategoryInput').value = category;
+    qs('#affiliateMetaInput').value = affiliateTitleToMeta(data.title, category);
+    qs('#affiliateDescInput').value = data.description ? data.description : affiliateTitleToDescription(data.title, category);
+    if(data.link){
+      qs('#affiliateLinkInput').value = data.link;
+      const full = qs('#affiliateFullLinkInput');
+      if(full) full.value = data.link;
+    }
+    const manual = qs('#affiliateManualTitleInput');
+    if(manual) manual.value = data.title;
+    setJsonImportStatus('✅ JSON imported. Form auto filled daripada data Shopee. Sila semak sebelum Save.', false);
+  }
+
+  function importShopeeJsonFile(file){
+    if(!adminDetected()) return;
+    if(!file){
+      setJsonImportStatus('Sila pilih fail JSON Shopee dahulu.', true);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const raw = JSON.parse(reader.result);
+        applyShopeeJsonToForm(raw);
+      }catch(err){
+        setJsonImportStatus('Fail JSON tidak sah atau rosak.', true);
+      }
+    };
+    reader.readAsText(file);
   }
 
   function closeModal(){
