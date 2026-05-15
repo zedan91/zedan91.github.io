@@ -6830,6 +6830,93 @@ body:not(.azobss-topbar-logged-in):not(.is-authenticated) .hero-actions .top-aut
   }
 }
 
+
+/* =========================================================
+FIX PA / BM / LOT KADASTER BUTTON
+========================================================= */
+
+.hero-actions #heroRequestButton{
+    flex:0 0 190px !important;
+    width:190px !important;
+    min-width:190px !important;
+    max-width:190px !important;
+
+    height:76px !important;
+    min-height:76px !important;
+
+    padding:10px 14px !important;
+
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:12px !important;
+
+    overflow:hidden !important;
+}
+
+.hero-actions #heroRequestButton .hero-action-icon{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    flex:0 0 42px !important;
+
+    border-radius:50% !important;
+
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+
+    overflow:hidden !important;
+}
+
+/* remove broken clipping */
+.hero-actions #heroRequestButton span:last-child{
+    display:block !important;
+
+    max-width:110px !important;
+
+    font-size:12px !important;
+    line-height:1.12 !important;
+    font-weight:900 !important;
+
+    white-space:normal !important;
+    word-break:break-word !important;
+
+    overflow:visible !important;
+
+    text-align:left !important;
+}
+
+/* mobile */
+@media(max-width:900px){
+
+    .hero-actions #heroRequestButton{
+        flex:0 0 140px !important;
+        width:140px !important;
+        min-width:140px !important;
+        max-width:140px !important;
+
+        height:84px !important;
+        min-height:84px !important;
+
+        justify-content:center !important;
+        align-items:center !important;
+        flex-direction:column !important;
+
+        gap:8px !important;
+        padding:8px !important;
+    }
+
+    .hero-actions #heroRequestButton span:last-child{
+        max-width:100% !important;
+
+        text-align:center !important;
+
+        font-size:10.5px !important;
+        line-height:1.08 !important;
+    }
+}
+
 </style>
 
 
