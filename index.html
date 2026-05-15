@@ -3299,6 +3299,128 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   word-break: break-word;
 }
 
+
+/* Compact floating main shortcut cards */
+.hero-buttons,
+.cta-buttons,
+.main-buttons,
+.quick-links,
+.top-actions,
+.nav-buttons{
+  max-width: 920px !important;
+  margin: 20px auto 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 8px !important;
+}
+
+.hero-buttons .btn,
+.cta-buttons .btn,
+.main-buttons .btn,
+.quick-links .btn,
+.top-actions .btn,
+.nav-buttons .btn{
+  width: auto !important;
+  min-width: 150px !important;
+  max-width: 190px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 8px 14px !important;
+  border-radius: 18px !important;
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.22) !important;
+}
+
+.hero-buttons .btn span,
+.cta-buttons .btn span,
+.main-buttons .btn span,
+.quick-links .btn span,
+.top-actions .btn span,
+.nav-buttons .btn span{
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+}
+
+.hero-buttons .btn i,
+.cta-buttons .btn i,
+.main-buttons .btn i,
+.quick-links .btn i,
+.top-actions .btn i,
+.nav-buttons .btn i,
+.hero-buttons .btn .icon,
+.cta-buttons .btn .icon,
+.main-buttons .btn .icon,
+.quick-links .btn .icon,
+.top-actions .btn .icon,
+.nav-buttons .btn .icon{
+  font-size: 15px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* Make the WhatsApp card compact too */
+.hero-buttons .btn:first-child,
+.cta-buttons .btn:first-child,
+.main-buttons .btn:first-child,
+.quick-links .btn:first-child,
+.top-actions .btn:first-child,
+.nav-buttons .btn:first-child{
+  min-width: 150px !important;
+}
+
+/* Remove large empty gap caused by old card sizing */
+.hero-buttons::after,
+.cta-buttons::after,
+.main-buttons::after,
+.quick-links::after,
+.top-actions::after,
+.nav-buttons::after{
+  content: none !important;
+}
+
+@media (max-width: 700px){
+  .hero-buttons,
+  .cta-buttons,
+  .main-buttons,
+  .quick-links,
+  .top-actions,
+  .nav-buttons{
+    gap: 8px !important;
+    padding: 6px !important;
+  }
+
+  .hero-buttons .btn,
+  .cta-buttons .btn,
+  .main-buttons .btn,
+  .quick-links .btn,
+  .top-actions .btn,
+  .nav-buttons .btn{
+    min-width: calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    font-size: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .hero-buttons .btn span,
+  .cta-buttons .btn span,
+  .main-buttons .btn span,
+  .quick-links .btn span,
+  .top-actions .btn span,
+  .nav-buttons .btn span{
+    font-size: 12px !important;
+  }
+}
+
 </style>
 
 
