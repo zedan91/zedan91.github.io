@@ -5033,6 +5033,371 @@ body > a[class*="sign" i]{
   }
 }
 
+
+/* =========================================================
+   AZOBSS FINAL: COMPACT PREMIUM TOPBAR LIKE REFERENCE IMAGE
+========================================================= */
+
+/* hide status cards + old loose login buttons */
+.traffic-widget,
+.visitor-widget,
+.online-widget,
+.user-status,
+[class*="visitor" i],
+[class*="guest" i]{
+  display:none !important;
+}
+
+/* hide Monthly Giveaway from top floating menu to match reference image */
+.hero-actions .btn.purple{
+  display:none !important;
+}
+
+/* remove old auth buttons outside the topbar */
+body > .floating-auth,
+body > .auth-floating,
+body > .auth-buttons,
+body > .login-floating,
+#authFloating,
+#floatingAuth,
+#loginFloating,
+#authButtons,
+.header-auth,
+.site-auth,
+.login-actions,
+.signup-actions{
+  display:none !important;
+}
+
+/* hero placement */
+.hero{
+  min-height:100vh !important;
+  padding-top:118px !important;
+  padding-bottom:80px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+
+/* single glass container */
+.hero-actions{
+  position:fixed !important;
+  top:18px !important;
+  left:50% !important;
+  right:auto !important;
+  transform:translateX(-50%) !important;
+  z-index:9999 !important;
+
+  width:min(1160px, calc(100vw - 44px)) !important;
+  max-width:min(1160px, calc(100vw - 44px)) !important;
+
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+
+  margin:0 !important;
+  padding:10px 12px !important;
+
+  border-radius:24px !important;
+  background:linear-gradient(180deg, rgba(12,18,34,.78), rgba(7,13,27,.66)) !important;
+  border:1px solid rgba(148,163,184,.24) !important;
+
+  backdrop-filter:blur(18px) saturate(160%) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%) !important;
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.32),
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 0 22px rgba(34,197,94,.07) !important;
+
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  scrollbar-width:none !important;
+  animation:none !important;
+}
+
+.hero-actions::-webkit-scrollbar{
+  display:none !important;
+}
+
+/* menu cards - slim, clean, balanced */
+.hero-actions .btn{
+  flex:0 0 174px !important;
+  width:174px !important;
+  min-width:174px !important;
+  max-width:174px !important;
+  height:62px !important;
+  min-height:62px !important;
+
+  margin:0 !important;
+  padding:9px 13px !important;
+
+  border-radius:19px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:12px !important;
+
+  text-align:left !important;
+  white-space:normal !important;
+  overflow:hidden !important;
+
+  font-size:13px !important;
+  line-height:1.14 !important;
+  font-weight:900 !important;
+  color:#f8fafc !important;
+  text-decoration:none !important;
+
+  border:1px solid rgba(59,130,246,.50) !important;
+  background:linear-gradient(135deg, rgba(30,64,175,.78), rgba(15,23,42,.72)) !important;
+
+  box-shadow:
+    0 12px 24px rgba(2,6,23,.22),
+    inset 0 1px 0 rgba(255,255,255,.11) !important;
+
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
+}
+
+.hero-actions .btn:hover{
+  transform:translateY(-2px) !important;
+  border-color:rgba(34,197,94,.42) !important;
+  box-shadow:
+    0 16px 30px rgba(0,0,0,.30),
+    0 0 18px rgba(34,197,94,.13) !important;
+}
+
+.hero-actions .btn.orange{
+  border-color:rgba(249,115,22,.66) !important;
+  background:linear-gradient(135deg, rgba(249,115,22,.82), rgba(15,23,42,.74)) !important;
+}
+
+.hero-actions .btn:not(.blue):not(.orange):not(.purple){
+  border-color:rgba(34,197,94,.55) !important;
+  background:linear-gradient(135deg, rgba(22,163,74,.74), rgba(15,23,42,.74)) !important;
+}
+
+/* icons */
+.hero-action-icon{
+  flex:0 0 44px !important;
+  width:44px !important;
+  height:44px !important;
+  min-width:44px !important;
+
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+
+  font-size:20px !important;
+  color:#fff !important;
+
+  background:linear-gradient(135deg, #2563eb, #22c55e) !important;
+  box-shadow:
+    0 10px 24px rgba(37,99,235,.22),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.btn.orange .hero-action-icon{
+  background:linear-gradient(135deg, #fb923c, #f97316) !important;
+}
+
+.hero-actions .btn span:last-child{
+  display:block !important;
+  max-width:108px !important;
+  font-size:13px !important;
+  line-height:1.14 !important;
+  font-weight:900 !important;
+}
+
+/* WhatsApp icon button after Mini Tools */
+.hero-actions .hero-whatsapp{
+  flex:0 0 68px !important;
+  width:68px !important;
+  min-width:68px !important;
+  max-width:68px !important;
+  height:62px !important;
+  min-height:62px !important;
+
+  margin:0 !important;
+  padding:9px !important;
+  border-radius:22px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  background:linear-gradient(135deg, rgba(22,163,74,.66), rgba(15,23,42,.78)) !important;
+  border:1px solid rgba(34,197,94,.62) !important;
+  box-shadow:
+    0 12px 26px rgba(2,6,23,.22),
+    0 0 18px rgba(37,211,102,.12) !important;
+}
+
+.hero-whatsapp-icon{
+  flex:0 0 44px !important;
+  width:44px !important;
+  height:44px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  background:#25D366 !important;
+  color:#fff !important;
+  box-shadow:0 0 24px rgba(37,211,102,.36) !important;
+}
+
+.hero-whatsapp-icon svg{
+  width:24px !important;
+  height:24px !important;
+}
+
+.hero-whatsapp-text{
+  display:none !important;
+}
+
+/* logged in pill on right inside same container */
+.top-user-pill{
+  margin-left:auto !important;
+  flex:0 0 auto !important;
+
+  height:62px !important;
+  padding:0 14px !important;
+
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+
+  border-radius:22px !important;
+  background:rgba(15,23,42,.74) !important;
+  border:1px solid rgba(148,163,184,.18) !important;
+  box-shadow:0 10px 24px rgba(2,6,23,.20) !important;
+}
+
+.top-user-avatar{
+  width:42px !important;
+  height:42px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  border:2px solid #22c55e !important;
+  color:#22c55e !important;
+  background:rgba(2,6,23,.56) !important;
+  font-weight:900 !important;
+}
+
+.top-user-name{
+  color:#fff !important;
+  font-size:14px !important;
+  font-weight:900 !important;
+  white-space:nowrap !important;
+}
+
+.top-user-logout{
+  border:0 !important;
+  border-radius:14px !important;
+  padding:8px 12px !important;
+  background:rgba(255,255,255,.10) !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+}
+
+/* if not logged in, hide topbar sign buttons to match reference style */
+.hero-actions .top-auth-btn{
+  display:none !important;
+}
+
+/* shrink on scroll */
+.hero-actions.scrolled{
+  top:10px !important;
+  padding:7px 10px !important;
+}
+
+/* mobile: clean horizontal carousel */
+@media(max-width:900px){
+  .hero{
+    padding-top:132px !important;
+  }
+
+  .hero-actions{
+    top:8px !important;
+    left:8px !important;
+    right:8px !important;
+    transform:none !important;
+    width:auto !important;
+    max-width:none !important;
+    justify-content:flex-start !important;
+    gap:8px !important;
+    padding:8px !important;
+    border-radius:20px !important;
+    scroll-snap-type:x mandatory !important;
+  }
+
+  .hero-actions.scrolled{
+    transform:none !important;
+  }
+
+  .hero-actions .btn{
+    flex:0 0 118px !important;
+    width:118px !important;
+    min-width:118px !important;
+    max-width:118px !important;
+    height:78px !important;
+    min-height:78px !important;
+
+    flex-direction:column !important;
+    justify-content:center !important;
+    align-items:center !important;
+    text-align:center !important;
+    gap:7px !important;
+    padding:8px !important;
+    scroll-snap-align:start !important;
+  }
+
+  .hero-action-icon{
+    width:34px !important;
+    height:34px !important;
+    min-width:34px !important;
+    flex-basis:34px !important;
+    font-size:17px !important;
+  }
+
+  .hero-actions .btn span:last-child{
+    max-width:100% !important;
+    font-size:10.5px !important;
+    line-height:1.08 !important;
+  }
+
+  .hero-actions .hero-whatsapp{
+    flex:0 0 72px !important;
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+    height:78px !important;
+    min-height:78px !important;
+    scroll-snap-align:start !important;
+  }
+
+  .top-user-pill{
+    flex:0 0 auto !important;
+    height:78px !important;
+    padding:0 10px !important;
+    scroll-snap-align:start !important;
+  }
+
+  .top-user-name{
+    font-size:12px !important;
+  }
+
+  .top-user-logout{
+    font-size:11px !important;
+    padding:7px 9px !important;
+  }
+}
+
 </style>
 
 
