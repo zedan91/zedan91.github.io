@@ -4098,170 +4098,101 @@ body{
 }
 
 
-/* FINAL balanced floating dashboard topbar */
-.hero-actions{
-  top:10px !important;
-  left:50% !important;
-  transform:translateX(-50%) !important;
-  width:auto !important;
-  max-width:calc(100vw - 26px) !important;
-  padding:7px 9px !important;
-  gap:6px !important;
-  border-radius:20px !important;
-  justify-content:center !important;
-  align-items:center !important;
-  flex-wrap:nowrap !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-  scrollbar-width:none !important;
-}
-
-.hero-actions::-webkit-scrollbar{
+/* Merge old Sign in / Sign up into compact floating topbar look */
+.floating-auth,
+.auth-floating,
+.auth-buttons,
+.login-floating,
+#authFloating,
+#floatingAuth,
+#loginFloating,
+#authButtons{
   display:none !important;
 }
 
-.hero-actions .btn{
-  width:160px !important;
-  min-width:160px !important;
-  max-width:160px !important;
+/* If old auth buttons are direct visible buttons, make them compact and move near topbar */
+a[href="#login"],
+a[href="#signup"],
+button[id*="login" i],
+button[id*="signup" i],
+button[class*="login" i],
+button[class*="signup" i]{
+  font-size:12px !important;
+}
+
+/* Compact auth buttons inside topbar */
+.hero-actions .top-auth-btn{
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:82px !important;
+  max-width:92px !important;
   height:52px !important;
   min-height:52px !important;
+  padding:7px 12px !important;
   border-radius:15px !important;
-  padding:7px 10px !important;
-  gap:8px !important;
-  font-size:11.5px !important;
-}
-
-.hero-actions .btn.purple{
-  width:170px !important;
-  min-width:170px !important;
-  max-width:170px !important;
-}
-
-.hero-action-icon{
-  width:34px !important;
-  height:34px !important;
-  flex-basis:34px !important;
-  font-size:16px !important;
-}
-
-.hero-actions .btn span:last-child{
-  font-size:11.5px !important;
-  line-height:1.08 !important;
-  max-width:96px !important;
-}
-
-.hero-actions .btn small{
-  font-size:9px !important;
-}
-
-/* login pill */
-.top-user-pill{
-  flex:0 0 auto !important;
-  display:flex !important;
+  display:inline-flex !important;
   align-items:center !important;
-  gap:10px !important;
-  height:52px !important;
-  padding:0 14px !important;
-  border-radius:16px !important;
-  background:rgba(15,23,42,.88) !important;
-  border:1px solid rgba(148,163,184,.18) !important;
-  box-shadow:0 12px 28px rgba(2,6,23,.24) !important;
-  color:#fff !important;
-  font-weight:700 !important;
-}
-
-.top-user-avatar{
-  width:34px !important;
-  height:34px !important;
-  border-radius:50% !important;
-  display:grid !important;
-  place-items:center !important;
-  background:rgba(15,23,42,.92) !important;
-  border:2px solid #22c55e !important;
-  color:#22c55e !important;
-  font-size:15px !important;
-  font-weight:900 !important;
-}
-
-.top-user-name{
-  font-size:11.5px !important;
+  justify-content:center !important;
+  gap:6px !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+  text-decoration:none !important;
   white-space:nowrap !important;
 }
 
-.top-user-logout{
-  border:none !important;
-  border-radius:12px !important;
-  padding:7px 11px !important;
-  background:rgba(255,255,255,.09) !important;
+.hero-actions .top-auth-btn.signin{
+  color:#e5e7eb !important;
+  background:rgba(15,23,42,.75) !important;
+  border:1px solid rgba(148,163,184,.24) !important;
+}
+
+.hero-actions .top-auth-btn.signup{
   color:#fff !important;
-  font-size:11px !important;
-  font-weight:700 !important;
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  border:1px solid rgba(34,197,94,.65) !important;
 }
 
-.hero-whatsapp{
-  width:52px !important;
-  min-width:52px !important;
-  max-width:52px !important;
-  height:52px !important;
-  min-height:52px !important;
-  border-radius:16px !important;
-  padding:5px !important;
+.hero-actions{
+  justify-content:center !important;
+  padding-left:10px !important;
+  padding-right:10px !important;
 }
 
-.hero-whatsapp-icon{
-  width:38px !important;
-  height:38px !important;
-  flex-basis:38px !important;
+/* keep WhatsApp icon at the very end */
+.hero-actions .hero-whatsapp{
+  order:99 !important;
 }
 
-.hero-whatsapp-icon svg{
-  width:21px !important;
-  height:21px !important;
+.hero-actions .top-auth-btn{
+  order:90 !important;
 }
 
-.hero{
-  padding-top:125px !important;
+/* make cards slightly smaller so auth buttons fit */
+.hero-actions .btn{
+  width:150px !important;
+  min-width:150px !important;
+  max-width:150px !important;
 }
 
-@media(max-width:900px){
+.hero-actions .btn.purple{
+  width:160px !important;
+  min-width:160px !important;
+  max-width:160px !important;
+}
+
+@media(max-width:1100px){
   .hero-actions{
-    left:8px !important;
-    right:8px !important;
-    transform:none !important;
-    width:auto !important;
-    max-width:none !important;
     justify-content:flex-start !important;
+    overflow-x:auto !important;
   }
+}
 
-  .hero-actions .btn{
-    width:145px !important;
-    min-width:145px !important;
-    max-width:145px !important;
+@media(max-width:760px){
+  .hero-actions .top-auth-btn{
+    min-width:76px !important;
     height:48px !important;
     min-height:48px !important;
-  }
-
-  .hero-actions .btn.purple{
-    width:158px !important;
-    min-width:158px !important;
-    max-width:158px !important;
-  }
-
-  .top-user-pill{
-    height:48px !important;
-  }
-
-  .hero-whatsapp{
-    width:48px !important;
-    min-width:48px !important;
-    max-width:48px !important;
-    height:48px !important;
-    min-height:48px !important;
-  }
-
-  .hero{
-    padding-top:118px !important;
+    font-size:11px !important;
   }
 }
 
@@ -4713,6 +4644,10 @@ display:none !important;
       <a class="btn blue" href="#affiliate"><span class="hero-action-icon">🛍️</span><span>My Affiliate Shop</span></a>
       <a class="btn" href="tools/index.html"><span class="hero-action-icon">🌐</span><span>Mini Web Tools</span></a>
       <a class="btn purple" href="#monthly-giveaway"><span class="hero-action-icon">🎁</span><span>Monthly Giveaway<br><small>(Lucky Draw)</small></span></a>
+      
+      <button class="top-auth-btn signin" id="topbarSignInButton" type="button">↪ Sign in</button>
+      <button class="top-auth-btn signup" id="topbarSignUpButton" type="button">✚ Sign up</button>
+
       <a class="hero-whatsapp" href="https://alvo.chat/6nZ2" aria-label="Contact Us Now melalui WhatsApp" target="_blank" rel="noopener">
         <span class="hero-whatsapp-icon">
           <svg viewBox="0 0 32 32" aria-hidden="true">
@@ -10904,6 +10839,59 @@ document.addEventListener('DOMContentLoaded', function(){
     setupAffiliateShowMore();
   });
   obs.observe(affiliateArea, {childList:true, subtree:true});
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  function clickFirst(selectors){
+    for(const sel of selectors){
+      const el = document.querySelector(sel);
+      if(el && !el.classList.contains('top-auth-btn')){
+        el.click();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  const signIn = document.getElementById('topbarSignInButton');
+  const signUp = document.getElementById('topbarSignUpButton');
+
+  if(signIn){
+    signIn.addEventListener('click', function(){
+      if(!clickFirst([
+        '#signInButton',
+        '#loginButton',
+        '#authLoginButton',
+        '[data-auth="signin"]',
+        '[data-login]',
+        '.sign-in-btn',
+        '.login-btn'
+      ])){
+        const loginModal = document.getElementById('loginModal') || document.getElementById('authModal');
+        if(loginModal) loginModal.classList.add('is-open','open','active');
+      }
+    });
+  }
+
+  if(signUp){
+    signUp.addEventListener('click', function(){
+      if(!clickFirst([
+        '#signUpButton',
+        '#registerButton',
+        '#authRegisterButton',
+        '[data-auth="signup"]',
+        '[data-signup]',
+        '.sign-up-btn',
+        '.signup-btn'
+      ])){
+        const signupModal = document.getElementById('signupModal') || document.getElementById('authModal');
+        if(signupModal) signupModal.classList.add('is-open','open','active');
+      }
+    });
+  }
 });
 </script>
 
