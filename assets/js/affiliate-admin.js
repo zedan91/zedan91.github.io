@@ -902,20 +902,25 @@
   }
 
 
-  function syncJsonImportLinkToAffiliateLink(){
-    const jsonInput = qs('#affiliateJsonShopeeLinkInput');
-    const affiliateInput = qs('#affiliateLinkInput');
-    const fullInput = qs('#affiliateFullLinkInput');
-    if(!jsonInput || !affiliateInput) return;
 
-    const syncNow = () => {
-      const val = (jsonInput.value || '').trim();
-      affiliateInput.value = val;
-      if(fullInput) fullInput.value = val;
+
+  function syncJsonImportBoxToAffiliateLinkBox(){
+    const jsonBox = qs('#affiliateJsonShopeeLinkInput');
+    const affiliateBox = qs('#affiliateLinkInput');
+    const fullBox = qs('#affiliateFullLinkInput');
+    if(!jsonBox || !affiliateBox) return;
+
+    const doSync = () => {
+      const value = (jsonBox.value || '').trim();
+      affiliateBox.value = value;
+      if(fullBox) fullBox.value = value;
     };
 
-    jsonInput.addEventListener('input', syncNow);
-    jsonInput.addEventListener('change', syncNow);
+    jsonBox.removeEventListener('input', jsonBox._azobssSyncAffiliateLink || (()=>{}));
+    jsonBox._azobssSyncAffiliateLink = doSync;
+    jsonBox.addEventListener('input', doSync);
+    jsonBox.addEventListener('change', doSync);
+    jsonBox.addEventListener('paste', () => setTimeout(doSync, 0));
   }
 
   function closeModal(){
@@ -924,7 +929,7 @@
   }
 
   function bindAdmin(){
-    syncJsonImportLinkToAffiliateLink();
+    syncJsonImportBoxToAffiliateLinkBox();
     qs('#affiliateAddButton')?.addEventListener('click', () => {
       if(!adminDetected()) return;
       openModal(null);
