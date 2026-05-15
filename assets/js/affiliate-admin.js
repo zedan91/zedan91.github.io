@@ -919,6 +919,7 @@
   }
 
   function closeModal(){
+    if(isImportingShopeeJson) return;
     qs('#affiliateAdminModal')?.classList.remove('is-open');
   }
 
@@ -938,15 +939,26 @@
     qs('#affiliateJsonOpenLinkButton')?.addEventListener('click', openShopeeForJsonExtension);
     qs('#affiliateImportJsonButton')?.addEventListener('click', () => {
       if(!adminDetected()) return;
+      isImportingShopeeJson = true;
       qs('#affiliateShopeeJsonFile')?.click();
+      setTimeout(() => {
+        if(!qs('#affiliateShopeeJsonFile')?.value){
+          isImportingShopeeJson = false;
+        }
+      }, 1500);
     });
     qs('#affiliateShopeeJsonFile')?.addEventListener('change', function(){
       if(!adminDetected()) return;
+      isImportingShopeeJson = true;
       importShopeeJsonFile(this.files && this.files[0]);
       this.value = '';
+      setTimeout(() => {
+        isImportingShopeeJson = false;
+      }, 700);
     });
 
     qs('#affiliateAdminModal')?.addEventListener('click', e => {
+      if(isImportingShopeeJson) return;
       if(e.target.id === 'affiliateAdminModal') closeModal();
     });
 
