@@ -3299,6 +3299,485 @@ body:not(.is-admin) .affiliate-card-admin-actions{
   word-break: break-word;
 }
 
+
+/* Compact floating main shortcut cards */
+.hero-buttons,
+.cta-buttons,
+.main-buttons,
+.quick-links,
+.top-actions,
+.nav-buttons{
+  max-width: 920px !important;
+  margin: 20px auto 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 8px !important;
+}
+
+.hero-buttons .btn,
+.cta-buttons .btn,
+.main-buttons .btn,
+.quick-links .btn,
+.top-actions .btn,
+.nav-buttons .btn{
+  width: auto !important;
+  min-width: 150px !important;
+  max-width: 190px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 8px 14px !important;
+  border-radius: 18px !important;
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.22) !important;
+}
+
+.hero-buttons .btn span,
+.cta-buttons .btn span,
+.main-buttons .btn span,
+.quick-links .btn span,
+.top-actions .btn span,
+.nav-buttons .btn span{
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+}
+
+.hero-buttons .btn i,
+.cta-buttons .btn i,
+.main-buttons .btn i,
+.quick-links .btn i,
+.top-actions .btn i,
+.nav-buttons .btn i,
+.hero-buttons .btn .icon,
+.cta-buttons .btn .icon,
+.main-buttons .btn .icon,
+.quick-links .btn .icon,
+.top-actions .btn .icon,
+.nav-buttons .btn .icon{
+  font-size: 15px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* Make the WhatsApp card compact too */
+.hero-buttons .btn:first-child,
+.cta-buttons .btn:first-child,
+.main-buttons .btn:first-child,
+.quick-links .btn:first-child,
+.top-actions .btn:first-child,
+.nav-buttons .btn:first-child{
+  min-width: 150px !important;
+}
+
+/* Remove large empty gap caused by old card sizing */
+.hero-buttons::after,
+.cta-buttons::after,
+.main-buttons::after,
+.quick-links::after,
+.top-actions::after,
+.nav-buttons::after{
+  content: none !important;
+}
+
+@media (max-width: 700px){
+  .hero-buttons,
+  .cta-buttons,
+  .main-buttons,
+  .quick-links,
+  .top-actions,
+  .nav-buttons{
+    gap: 8px !important;
+    padding: 6px !important;
+  }
+
+  .hero-buttons .btn,
+  .cta-buttons .btn,
+  .main-buttons .btn,
+  .quick-links .btn,
+  .top-actions .btn,
+  .nav-buttons .btn{
+    min-width: calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    font-size: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .hero-buttons .btn span,
+  .cta-buttons .btn span,
+  .main-buttons .btn span,
+  .quick-links .btn span,
+  .top-actions .btn span,
+  .nav-buttons .btn span{
+    font-size: 12px !important;
+  }
+}
+
+
+/* AZOBSS compact premium dashboard baseline */
+.hero-actions{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+  width:min(1120px, 100%) !important;
+  margin:36px auto 0 !important;
+  animation:heroFloat 7s ease-in-out infinite;
+}
+
+.hero-actions .btn,
+.hero-actions .hero-whatsapp{
+  width:220px !important;
+  height:78px !important;
+  min-width:220px !important;
+  min-height:78px !important;
+  margin:0 !important;
+  padding:12px 18px !important;
+  border-radius:999px !important;
+  display:inline-flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+  text-align:left !important;
+  font-weight:800 !important;
+  font-size:16px !important;
+  line-height:1.15 !important;
+  text-decoration:none !important;
+  color:#f8fafc !important;
+  border:1px solid rgba(59,130,246,.55) !important;
+  background:linear-gradient(135deg, rgba(29,78,216,.88), rgba(30,64,175,.58)) !important;
+  box-shadow:0 18px 38px rgba(2,6,23,.32), inset 0 1px 0 rgba(255,255,255,.14) !important;
+  backdrop-filter:blur(12px) !important;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
+}
+
+.hero-actions .btn:hover,
+.hero-actions .hero-whatsapp:hover{
+  transform:translateY(-4px) !important;
+  box-shadow:0 22px 48px rgba(2,6,23,.42), 0 0 26px rgba(34,197,94,.16) !important;
+}
+
+.hero-actions .hero-whatsapp{
+  background:linear-gradient(135deg, rgba(6,78,59,.82), rgba(15,23,42,.72)) !important;
+  border-color:rgba(34,197,94,.62) !important;
+}
+
+.hero-actions .btn.orange{
+  background:linear-gradient(135deg, rgba(249,115,22,.98), rgba(124,45,18,.72)) !important;
+  border-color:rgba(251,146,60,.75) !important;
+}
+
+.hero-actions .btn:not(.blue):not(.orange){
+  background:linear-gradient(135deg, rgba(22,163,74,.92), rgba(6,78,59,.72)) !important;
+  border-color:rgba(34,197,94,.68) !important;
+}
+
+.hero-action-icon,
+.hero-whatsapp-icon{
+  flex:0 0 48px !important;
+  width:48px !important;
+  height:48px !important;
+  border-radius:50% !important;
+  display:grid !important;
+  place-items:center !important;
+  font-size:24px !important;
+  background:linear-gradient(135deg, rgba(34,197,94,.95), rgba(37,99,235,.9)) !important;
+  box-shadow:0 10px 24px rgba(37,99,235,.25), inset 0 1px 0 rgba(255,255,255,.2) !important;
+  color:#fff !important;
+}
+
+.hero-whatsapp-icon{
+  background:#25D366 !important;
+  box-shadow:0 10px 28px rgba(37,211,102,.34) !important;
+}
+
+.hero-whatsapp-icon svg{
+  width:28px !important;
+  height:28px !important;
+}
+
+.hero-actions .btn span:last-child,
+.hero-whatsapp-text{
+  display:block !important;
+  font-size:16px !important;
+  line-height:1.18 !important;
+  color:#f8fafc !important;
+}
+
+.traffic-widget{
+  margin:58px auto 0 !important;
+  gap:18px !important;
+  max-width:540px !important;
+}
+
+.traffic-box{
+  min-width:210px !important;
+  padding:22px 28px !important;
+  border-radius:22px !important;
+  background:rgba(15,23,42,.56) !important;
+  border:1px solid rgba(34,197,94,.32) !important;
+  box-shadow:0 18px 45px rgba(2,6,23,.22), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.traffic-number{
+  font-size:30px !important;
+}
+
+.hero{
+  padding-bottom:90px !important;
+}
+
+@media(max-width:900px){
+  .hero-actions{
+    width:min(620px,100%) !important;
+    gap:12px !important;
+  }
+
+  .hero-actions .btn,
+  .hero-actions .hero-whatsapp{
+    width:calc(50% - 8px) !important;
+    min-width:calc(50% - 8px) !important;
+    height:74px !important;
+  }
+}
+
+@media(max-width:560px){
+  .hero-actions{
+    gap:10px !important;
+    margin-top:28px !important;
+  }
+
+  .hero-actions .btn,
+  .hero-actions .hero-whatsapp{
+    width:100% !important;
+    min-width:100% !important;
+    height:66px !important;
+    justify-content:flex-start !important;
+  }
+
+  .hero-action-icon,
+  .hero-whatsapp-icon{
+    width:42px !important;
+    height:42px !important;
+    flex-basis:42px !important;
+    font-size:20px !important;
+  }
+
+  .hero-actions .btn span:last-child,
+  .hero-whatsapp-text{
+    font-size:14px !important;
+  }
+
+  .traffic-widget{
+    max-width:100% !important;
+    flex-direction:row !important;
+  }
+
+  .traffic-box{
+    min-width:0 !important;
+    flex:1 !important;
+    padding:16px 12px !important;
+  }
+}
+
+
+/* Floating top dashboard menu based on requested image */
+body{
+  padding-top: 105px;
+}
+
+.hero{
+  padding-top: 118px !important;
+}
+
+.hero-actions{
+  position: fixed !important;
+  top: 14px !important;
+  left: 18px !important;
+  right: 18px !important;
+  z-index: 9998 !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(148,163,184,.22) !important;
+  background: rgba(7, 13, 27, .72) !important;
+  box-shadow: 0 18px 52px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(18px) !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  animation: none !important;
+}
+
+.hero-actions::-webkit-scrollbar{
+  display:none;
+}
+
+.hero-actions .btn,
+.hero-actions .hero-whatsapp{
+  flex: 0 0 auto !important;
+  min-width: 148px !important;
+  max-width: 190px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  margin: 0 !important;
+  padding: 9px 14px !important;
+  border-radius: 18px !important;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  text-align: left !important;
+  font-size: 13px !important;
+  line-height: 1.12 !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(37,99,235,.55) !important;
+  background: linear-gradient(135deg, rgba(30,64,175,.78), rgba(15,23,42,.78)) !important;
+  box-shadow: 0 12px 28px rgba(2,6,23,.24), inset 0 1px 0 rgba(255,255,255,.1) !important;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
+}
+
+.hero-actions .btn:hover,
+.hero-actions .hero-whatsapp:hover{
+  transform: translateY(-2px) !important;
+  box-shadow: 0 18px 38px rgba(2,6,23,.38), 0 0 20px rgba(34,197,94,.12) !important;
+}
+
+.hero-actions .btn.orange{
+  border-color: rgba(249,115,22,.75) !important;
+  background: linear-gradient(135deg, rgba(249,115,22,.86), rgba(15,23,42,.78)) !important;
+}
+
+.hero-actions .btn.purple{
+  border-color: rgba(168,85,247,.75) !important;
+  background: linear-gradient(135deg, rgba(109,40,217,.86), rgba(15,23,42,.78)) !important;
+}
+
+.hero-actions .btn:not(.blue):not(.orange):not(.purple){
+  border-color: rgba(34,197,94,.55) !important;
+  background: linear-gradient(135deg, rgba(22,163,74,.76), rgba(15,23,42,.78)) !important;
+}
+
+.hero-action-icon,
+.hero-whatsapp-icon{
+  flex: 0 0 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 21px !important;
+  color: #fff !important;
+  background: linear-gradient(135deg, #2563eb, #22c55e) !important;
+  box-shadow: 0 8px 20px rgba(37,99,235,.28), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.btn.orange .hero-action-icon{
+  background: linear-gradient(135deg, #fb923c, #f97316) !important;
+}
+
+.btn.purple .hero-action-icon{
+  background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
+}
+
+.hero-whatsapp{
+  min-width: 62px !important;
+  max-width: 62px !important;
+  width: 62px !important;
+  padding: 9px !important;
+  justify-content: center !important;
+  margin-left: auto !important;
+  border-color: rgba(34,197,94,.7) !important;
+  background: rgba(15,23,42,.75) !important;
+}
+
+.hero-whatsapp-icon{
+  flex-basis: 42px !important;
+  background: #25D366 !important;
+  box-shadow: 0 0 24px rgba(37,211,102,.32) !important;
+}
+
+.hero-whatsapp-icon svg{
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.hero-actions .btn span:last-child{
+  display: block !important;
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+}
+
+.hero-actions .btn small{
+  color: #e9d5ff !important;
+  font-size: 11px !important;
+}
+
+.traffic-widget{
+  display: none !important;
+}
+
+@media (max-width: 900px){
+  body{
+    padding-top: 94px;
+  }
+
+  .hero{
+    padding-top: 108px !important;
+  }
+
+  .hero-actions{
+    left: 8px !important;
+    right: 8px !important;
+    top: 8px !important;
+    border-radius: 18px !important;
+    padding: 8px !important;
+  }
+
+  .hero-actions .btn,
+  .hero-actions .hero-whatsapp{
+    min-width: 132px !important;
+    max-width: 160px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    font-size: 12px !important;
+  }
+
+  .hero-action-icon,
+  .hero-whatsapp-icon{
+    width: 36px !important;
+    height: 36px !important;
+    flex-basis: 36px !important;
+    font-size: 18px !important;
+  }
+
+  .hero-whatsapp{
+    min-width: 56px !important;
+    max-width: 56px !important;
+    width: 56px !important;
+  }
+}
+
 </style>
 
 
@@ -3742,31 +4221,27 @@ display:none !important;
       <a href="https://mail.google.com/mail/?view=cm&fs=1&to=zedan9107@gmail.com" target="_blank" rel="noopener" aria-label="Gmail"><img src="images/email.svg" alt="" loading="lazy"></a>
     </div>
     <div class="hero-actions">
+      <a class="btn blue" id="heroRequestButton" href="#request"><span class="hero-action-icon">📄</span><span>PA / BM / Lot Kadaster Berdigit</span></a>
+      <a class="btn orange" href="#software"><span class="hero-action-icon">📖</span><span>Software / AutoCAD LISP / E-book</span></a>
+      <a class="btn blue" href="#affiliate"><span class="hero-action-icon">🛍️</span><span>My Affiliate Shop</span></a>
+      <a class="btn" href="tools/index.html"><span class="hero-action-icon">🌐</span><span>Mini Web Tools</span></a>
+      <a class="btn purple" href="#monthly-giveaway"><span class="hero-action-icon">🎁</span><span>Monthly Giveaway<br><small>(Lucky Draw)</small></span></a>
       <a class="hero-whatsapp" href="https://alvo.chat/6nZ2" aria-label="Contact Us Now melalui WhatsApp" target="_blank" rel="noopener">
         <span class="hero-whatsapp-icon">
           <svg viewBox="0 0 32 32" aria-hidden="true">
-            <path fill="currentColor" d="M16.04 3C9.48 3 4.16 8.29 4.16 14.8c0 2.08.55 4.11 1.59 5.9L4 27l6.46-1.69a11.96 11.96 0 0 0 5.58 1.38c6.55 0 11.88-5.29 11.88-11.79S22.59 3 16.04 3Zm0 21.68c-1.78 0-3.52-.48-5.04-1.38l-.36-.22-3.84 1 1.03-3.72-.24-.38a9.74 9.74 0 0 1-1.5-5.18c0-5.4 4.46-9.8 9.95-9.8 5.48 0 9.94 4.4 9.94 9.8s-4.46 9.88-9.94 9.88Zm5.45-7.36c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.19-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.19 5.08 4.47.71.31 1.26.49 1.69.63.71.23 1.36.2 1.88.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35Z" />
+            <path fill="currentColor" d="M16.04 3C9.48 3 4.16 8.29 4.16 14.8c0 2.08.55 4.11 1.59 5.9L4 27l6.46-1.69a11.96 11.96 0 0 0 5.58 1.38c6.55 0 11.88-5.29 11.88-11.79S22.59 3 16.04 3Zm0 21.68c-1.78 0-3.52-.48-5.04-1.38l-.36-.22-3.84 1 1.03-3.72-.24-.38a9.74 9.74 0 0 1-1.5-5.18c0-5.4 4.46-9.8 9.95-9.8 5.48 0 9.94 4.4 9.94 9.8s-4.46 9.88-9.94 9.88Zm5.45-7.31c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.19-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.19 5.08 4.47.71.31 1.26.49 1.69.63.71.23 1.36.2 1.88.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35Z" />
           </svg>
         </span>
-        <span class="hero-whatsapp-text">Contact Us Now</span>
       </a>
-  <a class="btn blue" id="heroRequestButton" href="#request"><span>PA / BM / Lot Kadaster Berdigit</span></a>
-  <a class="btn orange" href="#software"><span>Software / AutoCAD LISP / E-book</span></a>
-  <a class="btn blue" href="#affiliate"><span>My Affiliate Shop</span></a>
-  <a class="btn" href="tools/index.html"><span>Mini Web Tools</span></a>
-</div>
-
-    <div class="traffic-widget">
-      <div class="traffic-box">
-        <span class="traffic-label">Status</span>
-        <span class="traffic-number" id="liveVisitors">Online</span>
-      </div>
-
-      <div class="traffic-box">
-        <span class="traffic-label">Total Visits</span>
-        <span class="traffic-number" id="totalVisits">0</span>
-      </div>
     </div>
+  </div>
+
+
+  <div class="section" id="monthly-giveaway">
+    <h2>Monthly Giveaway</h2>
+    <p style="text-align:center;max-width:720px;margin:0 auto 18px;color:#cbd5e1">
+      Join lucky draw bulanan AZOBSS. Info hadiah dan cara masuk akan dikemaskini di sini.
+    </p>
   </div>
 
   <div class="section services-section">
