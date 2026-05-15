@@ -416,29 +416,46 @@ async function detectFromShopeeApi(finalUrl, ids) {
 
 async function detectFromJinaReader(finalUrl) {
   try {
-    const readerUrl = 'https://r.jina.ai/http://r.jina.ai/http://' + finalUrl.replace(/^https?:\/\//i, '');
-    const r = await fetch(readerUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 AZOBSS Product Detector',
-        'Accept': 'text/plain,*/*'
+    // r.jina.ai can convert public pages into readable text.  It is only a
+    // fallback because Shopee sometimes returns a generic/captcha page.
+    const cleanUrl = String(finalUrl || '').replace(/^https?:\/\//i, '');
+    const readerUrls = [
+      'https://r.jina.ai/http://' + cleanUrl,
+      'https://r.jina.ai/http://http://' + cleanUrl.replace(/^http:\/\//i, ''),
+      'https://r.jina.ai/http://https://' + cleanUrl.replace(/^https:\/\//i, '')
+    ];
+
+    for (const readerUrl of readerUrls) {
+      const r = await fetch(readerUrl, {
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 AZOBSS Product Detector',
+          'Accept': 'text/plain,*/*'
+        }
+      });
+      const text = await r.text();
+      if (!text || text.trim().startsWith('<')) continue;
+
+      const titleLine = (text.match(/^Title:\s*(.+)$/mi) || [])[1] || '';
+      let title = cleanShopeeTitle(titleLine);
+
+      if (!title || /Shopee Malaysia|Free Shipping Across Malaysia|Malaysia\s*\|\s*Free Shipping/i.test(title)) {
+        const h1 = (text.match(/^#\s+(.+)$/mi) || [])[1] || '';
+        title = cleanShopeeTitle(h1);
       }
-    });
-    const text = await r.text();
-    if (!text || text.trim().startsWith('<')) return null;
-    const titleLine = (text.match(/^Title:\s*(.+)$/mi) || [])[1] || '';
-    let title = cleanShopeeTitle(titleLine);
-    if (!title || /Shopee Malaysia/i.test(title)) {
-      const h1 = (text.match(/^#\s+(.+)$/mi) || [])[1] || '';
-      title = cleanShopeeTitle(h1);
+
+      // Reject generic Shopee reader pages. Do not use these as product title.
+      if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^malaysia\s*\|\s*free shipping/i.test(title)) continue;
+
+      return {
+        title,
+        description: makeShopeeDescription(title, ''),
+        image: '',
+        categoryText: '',
+        source: 'reader'
+      };
     }
-    if (!title || /^product$/i.test(title)) return null;
-    return {
-      title,
-      description: makeShopeeDescription(title, ''),
-      image: '',
-      categoryText: '',
-      source: 'reader'
-    };
+    return null;
   } catch (e) {
     return null;
   }
@@ -514,8 +531,26 @@ async function detectAffiliateProduct(rawUrl) {
     }
   }
 
-  // Clean fallback: do NOT use item id as a fake title. Let user know if Shopee blocks.
-  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^\d+$/.test(title)) {
+  // Fallback from old Shopee slug format: product-name-i.shopid.itemid
+  // This cannot help with /product/shopid/itemid links because they have no title,
+  // but it is useful for older/full product URLs that include the product name.
+  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^\d+$/.test(title) || /^malaysia\s*\|\s*free shipping/i.test(title)) {
+    try {
+      const pathPart = new URL(finalUrl).pathname || '';
+      const slugMatch = pathPart.match(/\/([^\/]+)-i\.\d+\.\d+/i);
+      if (slugMatch && slugMatch[1]) {
+        const slugTitle = cleanShopeeTitle(decodeURIComponent(slugMatch[1]).replace(/-/g, ' '));
+        if (slugTitle && !/^product$/i.test(slugTitle) && !/^shopee$/i.test(slugTitle)) {
+          title = slugTitle;
+          description = makeShopeeDescription(title, '');
+          source = 'url-slug';
+        }
+      }
+    } catch(e) {}
+  }
+
+  // Clean fallback: do NOT use item id or generic Shopee page as a fake title. Let user know if Shopee blocks.
+  if (!title || /^product$/i.test(title) || /^shopee$/i.test(title) || /^\d+$/.test(title) || /^malaysia\s*\|\s*free shipping/i.test(title)) {
     title = '';
     description = 'Shopee tidak benarkan sistem baca nama produk penuh. Paste tajuk produk atau isi manual sebelum Save.';
     source = 'blocked';
@@ -542,7 +577,9 @@ async function detectAffiliateProduct(rawUrl) {
         ? 'Shopee block metadata produk. Sistem tidak guna ID sebagai title. Paste tajuk produk atau isi manual.'
         : source === 'reader'
           ? 'Auto filled guna reader fallback. Sila semak sebelum Save.'
-          : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
+          : source === 'url-slug'
+            ? 'Auto filled guna nama produk daripada URL slug. Sila semak sebelum Save.'
+            : 'Auto filled daripada metadata page + keyword mapping. Sila semak sebelum Save.'
   };
 }
 
