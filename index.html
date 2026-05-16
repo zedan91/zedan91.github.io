@@ -4805,6 +4805,93 @@ a.btn.orange[href="#software"] span::first-line{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   MOBILE CARD WIDTH FIX - PA/BM + SOFTWARE
+   Make all hero cards same compact width on phone
+========================================================= */
+
+@media(max-width:768px){
+
+  .hero-actions,
+  .quick-actions,
+  .card-grid,
+  .action-grid,
+  .services-grid,
+  .service-grid{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:16px !important;
+  }
+
+  .hero-actions a.btn,
+  .quick-actions a.btn,
+  .card-grid a.btn,
+  .action-grid a.btn,
+  .services-grid a.btn,
+  .service-grid a.btn,
+  #heroRequestButton,
+  a.btn.orange[href="#software"],
+  a.btn.blue[href="#affiliate"],
+  a.btn.giveaway-btn,
+  a.btn[href*="tools/index"]{
+    width:min(310px, calc(100vw - 44px)) !important;
+    min-width:0 !important;
+    max-width:310px !important;
+
+    height:118px !important;
+    min-height:118px !important;
+    max-height:118px !important;
+
+    flex:0 0 auto !important;
+    align-self:center !important;
+
+    padding:14px 16px !important;
+    margin:0 auto !important;
+    box-sizing:border-box !important;
+  }
+
+  #heroRequestButton .forced-card-img{
+    width:72px !important;
+    height:44px !important;
+  }
+
+  a.btn.orange[href="#software"] .forced-card-img{
+    width:96px !important;
+    height:42px !important;
+  }
+
+  #heroRequestButton .forced-card-text,
+  a.btn.orange[href="#software"] .forced-card-text{
+    font-size:15px !important;
+    line-height:1.22 !important;
+  }
+
+}
+
+@media(max-width:420px){
+
+  .hero-actions a.btn,
+  .quick-actions a.btn,
+  .card-grid a.btn,
+  .action-grid a.btn,
+  .services-grid a.btn,
+  .service-grid a.btn,
+  #heroRequestButton,
+  a.btn.orange[href="#software"],
+  a.btn.blue[href="#affiliate"],
+  a.btn.giveaway-btn,
+  a.btn[href*="tools/index"]{
+    width:300px !important;
+    max-width:calc(100vw - 34px) !important;
+  }
+
+}
+</style>
+
 </head>
 
 <body>
