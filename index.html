@@ -5484,6 +5484,63 @@ body.is-admin .lucky-draw-admin-pagination{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   MOBILE WIDTH FIX
+========================================================= */
+@media (max-width: 768px){
+
+  .lucky-draw-layout,
+  .lucky-draw-grid,
+  .lucky-draw-main-grid,
+  .lucky-draw-wrapper,
+  .participants-wrapper,
+  .participants-grid{
+    display:flex !important;
+    flex-direction:column !important;
+    grid-template-columns:1fr !important;
+    width:100% !important;
+    max-width:100% !important;
+  }
+
+  .lucky-draw-layout > *,
+  .lucky-draw-grid > *,
+  .lucky-draw-main-grid > *,
+  .participants-wrapper > *,
+  .participants-grid > *{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+
+  .lucky-draw-recent-joins{
+    width:100% !important;
+    max-width:100% !important;
+  }
+
+  .lucky-draw-panel,
+  .countdown-card,
+  .winner-card,
+  .invite-card,
+  .spin-card,
+  .participants-card{
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  img{
+    max-width:100% !important;
+    height:auto !important;
+  }
+
+  body{
+    overflow-x:hidden !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6746,7 +6803,7 @@ Peraduan Cabutan Bertuah User</h2>
       <div class="lucky-draw-participants-panel" id="luckyDrawParticipantsPanel">
         <div class="lucky-draw-participants-head">
           <div>
-            <span class="lucky-draw-kicker">Peserta Giveaway</span>
+            <span class="lucky-draw-kicker">Hadiah Giveaway</span>
             
             
           </div>
