@@ -5201,179 +5201,6 @@ body.is-admin .lucky-draw-remove-participant-btn{
 }
 </style>
 
-
-<style>
-/* =========================================================
-   PARTICIPANTS LIST INSIDE SPIN ROLL PANEL
-========================================================= */
-
-.lucky-draw-top-spin-panel,
-#luckyDrawSpinStage{
-  display:grid !important;
-  grid-template-columns:minmax(185px, 240px) minmax(0,1fr) !important;
-  gap:14px !important;
-  align-items:stretch !important;
-  justify-content:stretch !important;
-  min-height:190px !important;
-  padding:14px !important;
-  box-sizing:border-box !important;
-}
-
-.spin-participants-left{
-  min-width:0 !important;
-  border:1px dashed rgba(148,163,184,.22) !important;
-  border-radius:14px !important;
-  background:rgba(2,6,23,.38) !important;
-  padding:12px !important;
-  overflow:hidden !important;
-  display:flex !important;
-  flex-direction:column !important;
-  gap:8px !important;
-}
-
-.spin-participants-left .lucky-draw-participants-status{
-  margin:0 !important;
-  color:#fde68a !important;
-  font-size:13px !important;
-  font-weight:900 !important;
-  min-height:auto !important;
-}
-
-.spin-participants-left .lucky-draw-public-list{
-  margin:0 !important;
-  max-height:155px !important;
-  overflow:auto !important;
-  display:flex !important;
-  flex-direction:column !important;
-  gap:7px !important;
-}
-
-.spin-participants-left .lucky-draw-empty{
-  padding:10px 11px !important;
-  font-size:13px !important;
-  border-radius:10px !important;
-}
-
-.spin-participants-left .lucky-draw-participant-card{
-  padding:8px 10px !important;
-  border-radius:10px !important;
-  gap:8px !important;
-}
-
-.spin-participants-left .lucky-draw-participant-card strong{
-  font-size:12px !important;
-  line-height:1.25 !important;
-}
-
-.spin-participants-left .lucky-draw-participant-card span{
-  font-size:11px !important;
-  line-height:1.2 !important;
-}
-
-.spin-participants-left .lucky-draw-remove-participant-btn{
-  padding:6px 8px !important;
-  font-size:11px !important;
-  border-radius:8px !important;
-}
-
-.spin-roll-right{
-  min-width:0 !important;
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:8px !important;
-}
-
-.spin-roll-right .lucky-draw-rolling-window{
-  width:100% !important;
-  max-width:320px !important;
-  min-height:78px !important;
-  margin:0 auto !important;
-}
-
-/* Hide old bottom participant list space if browser cache keeps duplicate wrapper empty */
-.lucky-draw-participants-panel > .lucky-draw-participants-status,
-.lucky-draw-participants-panel > .lucky-draw-public-list{
-  display:none !important;
-}
-
-@media(max-width:760px){
-  .lucky-draw-top-spin-panel,
-  #luckyDrawSpinStage{
-    grid-template-columns:1fr !important;
-    min-height:auto !important;
-  }
-
-  .spin-participants-left .lucky-draw-public-list{
-    max-height:130px !important;
-  }
-}
-</style>
-
-
-<style>
-/* PARTICIPANTS BESIDE SPIN ROLL */
-
-.spin-roll-layout{
-  display:grid !important;
-  grid-template-columns:240px minmax(0,1fr) !important;
-  gap:18px !important;
-  align-items:center !important;
-  width:100% !important;
-  margin-bottom:14px !important;
-}
-
-.spin-participants-left{
-  border:1px solid rgba(148,163,184,.22);
-  border-radius:16px;
-  background:rgba(2,6,23,.45);
-  padding:12px;
-  min-height:180px;
-}
-
-.spin-participants-left .lucky-draw-public-list{
-  max-height:145px !important;
-  overflow:auto !important;
-}
-
-.spin-roll-right{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-width:0;
-}
-
-.spin-roll-right .lucky-draw-rolling-window{
-  width:100% !important;
-  max-width:420px !important;
-}
-
-.spin-participants-left .lucky-draw-participants-status{
-  color:#fde68a;
-  font-weight:900;
-  margin-bottom:10px;
-}
-
-.spin-participants-left .lucky-draw-participant-card{
-  padding:8px 10px !important;
-}
-
-.spin-participants-left .lucky-draw-participant-card strong{
-  font-size:12px !important;
-}
-
-.spin-participants-left .lucky-draw-participant-card span{
-  font-size:11px !important;
-}
-
-@media(max-width:760px){
-  .spin-roll-layout{
-    grid-template-columns:1fr !important;
-  }
-}
-</style>
-
 </head>
 
 <body>
@@ -6615,15 +6442,7 @@ Peraduan Cabutan Bertuah User</h2>
 
 
         <div class="lucky-draw-spin-stage lucky-draw-top-spin-panel" id="luckyDrawSpinStage">
-          
-          <div class="spin-roll-layout"><div class="spin-participants-left">
-            <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus">Loading peserta...</div>
-            <div class="lucky-draw-public-list" id="luckyDrawPublicList">
-          <div class="lucky-draw-empty">Belum ada peserta.</div>
-          </div>
-
-          <div class="spin-roll-right">
-            <div class="lucky-draw-rolling-window" id="luckyDrawRollingWindow">
+          <div class="lucky-draw-rolling-window" id="luckyDrawRollingWindow">
             <div class="lucky-draw-rolling-list" id="luckyDrawRollingList">
               <span></span>
             </div>
@@ -6694,12 +6513,17 @@ Peraduan Cabutan Bertuah User</h2>
             <small class="lucky-draw-folder-note">Lucky-draw folder note: upload gambar hadiah ke <b>/Lucky-draw/</b> dan upload file <b>giveaway-prize.json</b> ke folder yang sama.</small>
           </div>
         </div></div>
-          </div></div>
           <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName"></div>
           <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
           <div class="lucky-draw-confetti" id="luckyDrawConfetti"></div>
         </div>
-</div>
+
+
+        <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus">Loading peserta...</div>
+
+        <div class="lucky-draw-public-list" id="luckyDrawPublicList">
+          <div class="lucky-draw-empty">Belum ada peserta.</div>
+        </div>
 
         <div class="lucky-draw-admin-table-wrap" id="luckyDrawAdminTableWrap">
           <table class="lucky-draw-admin-table">
