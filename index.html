@@ -4201,6 +4201,47 @@ display:none !important;
 }
 </style>
 
+
+<style>
+/* Transparent glass cards */
+.btn,
+.service-card,
+a.btn{
+    background: rgba(10,18,40,0.55) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border:1px solid rgba(255,255,255,0.10)!important;
+    box-shadow:0 0 18px rgba(0,0,0,0.25);
+    transition:all .25s ease;
+}
+
+.btn:hover,
+.service-card:hover,
+a.btn:hover{
+    transform:translateY(-4px);
+    border-color:rgba(0,255,120,.35)!important;
+    box-shadow:0 0 25px rgba(0,255,120,.18);
+}
+
+/* Keep Mini Web Tools green */
+.btn[href*="tools"],
+a[href*="tools/index"]{
+    background:linear-gradient(135deg,#14b84d,#22c55e)!important;
+}
+
+/* Keep Software orange */
+.orange,
+.btn.orange{
+    background:linear-gradient(135deg,#ff7b18,#ff8f2d)!important;
+}
+
+/* Keep Affiliate blue */
+.blue,
+.btn.blue{
+    background:linear-gradient(135deg,#2f6df6,#4a7fff)!important;
+}
+</style>
+
 </head>
 
 <body>
