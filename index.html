@@ -6473,7 +6473,7 @@ Peraduan Cabutan Bertuah User</h2>
             <small class="lucky-draw-folder-note">Lucky-draw folder note: upload gambar hadiah ke <b>/Lucky-draw/</b> dan upload file <b>giveaway-prize.json</b> ke folder yang sama.</small>
           </div>
         </div></div>
-          <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Cabutan Bertuah Akan Bermula...</div>
+          <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName"></div>
           <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
           <div class="lucky-draw-confetti" id="luckyDrawConfetti"></div>
         </div>
@@ -7208,7 +7208,7 @@ Peraduan Cabutan Bertuah User</h2>
       if (luckyDrawSpinnerName) {
         luckyDrawSpinnerName.textContent = winner
           ? `🎉 ${getWinnerDisplayName(winner)} 🎉`
-          : 'Cabutan Bertuah Akan Bermula...';
+          : '';
       }
 
       if (luckyDrawSpinStage) {
