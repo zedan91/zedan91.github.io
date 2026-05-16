@@ -304,3 +304,33 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`AZOBSS Lucky Draw Backend running on port ${PORT}`);
 });
+
+
+app.get('/api/prize', (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+
+    const prizePath = path.join(__dirname, 'data', 'prize.json');
+
+    if (!fs.existsSync(prizePath)) {
+      return res.json({
+        success: true,
+        prize: null
+      });
+    }
+
+    const prize = JSON.parse(fs.readFileSync(prizePath, 'utf8'));
+
+    res.json({
+      success: true,
+      prize
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
