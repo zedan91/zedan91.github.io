@@ -4566,6 +4566,67 @@ a.btn:has(.globe-icon):hover{ box-shadow:0 0 44px rgba(34,197,94,.25), 0 20px 50
 }
 </style>
 
+
+<style>
+/* =========================================================
+   CUSTOM PNG ICONS FIX
+========================================================= */
+
+.custom-card-icon{
+    width:72px !important;
+    height:72px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    margin:0 auto 8px !important;
+    flex-shrink:0 !important;
+}
+
+.custom-card-icon img{
+    max-width:100% !important;
+    max-height:100% !important;
+    object-fit:contain !important;
+    display:block !important;
+    filter:
+      drop-shadow(0 0 10px rgba(255,255,255,.15))
+      drop-shadow(0 0 18px rgba(255,255,255,.08));
+}
+
+.software-icon{
+    width:88px !important;
+    height:88px !important;
+    margin-bottom:4px !important;
+}
+
+/* maintain clean card size */
+.hero-actions a.btn,
+.quick-actions a.btn,
+.card-grid a.btn,
+.action-grid a.btn,
+.services-grid a.btn,
+.service-grid a.btn{
+    overflow:hidden !important;
+}
+
+/* better software spacing */
+.software-icon + .card-text{
+    margin-top:-2px !important;
+}
+
+/* mobile */
+@media(max-width:768px){
+    .custom-card-icon{
+        width:58px !important;
+        height:58px !important;
+    }
+
+    .software-icon{
+        width:70px !important;
+        height:70px !important;
+    }
+}
+</style>
+
 </head>
 
 <body>
