@@ -5100,6 +5100,67 @@ a.btn.orange[href="#software"] span::first-line{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   RESTORE LUCKY DRAW LAYOUT AFTER MOVING SPIN PANEL
+========================================================= */
+
+.lucky-draw-top{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(280px,340px) !important;
+  gap:22px !important;
+  align-items:start !important;
+}
+
+.lucky-draw-right-stack{
+  width:100% !important;
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:14px !important;
+}
+
+.lucky-draw-participants-panel{
+  width:100% !important;
+  max-width:none !important;
+  clear:both !important;
+  margin-top:24px !important;
+  box-sizing:border-box !important;
+}
+
+.lucky-draw-prize-panel,
+.lucky-draw-prize-preview{
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+
+/* Make sure spin panel is only right-column width, not layout wrapper */
+.lucky-draw-top-spin-panel{
+  width:100% !important;
+  max-width:100% !important;
+  min-height:170px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+}
+
+/* Fix accidental large blank left/right overflow */
+.lucky-draw-card{
+  overflow:hidden !important;
+}
+
+@media(max-width:760px){
+  .lucky-draw-top{
+    grid-template-columns:1fr !important;
+  }
+
+  .lucky-draw-right-stack{
+    width:100% !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6346,6 +6407,9 @@ Peraduan Cabutan Bertuah User</h2>
               <span>Cabutan Bertuah Akan Bermula...</span>
             </div>
           
+        </div>
+      </div>
+
         </div>
       </div>
 
