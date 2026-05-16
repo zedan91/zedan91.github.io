@@ -5384,6 +5384,19 @@ body.is-admin .lucky-draw-pagination{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   JOIN DATE FORMAT FIX
+========================================================= */
+.lucky-draw-participant-card span,
+.recent-join-item small{
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -13333,7 +13346,7 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
     publicList.innerHTML = pageRows.map((entry, idx) => {
       const number = start + idx + 1;
       const name = escapeLuckyDrawText(entry.name || entry.usernameKey || 'User');
-      const monthKey = escapeLuckyDrawText(entry.monthKey || '');
+      const joinedDate = escapeLuckyDrawText(formatLuckyDrawJoinDate(entry.joinedAt || entry.createdAt || entry.updatedAt));
       const username = escapeLuckyDrawText(entry.usernameKey || '-');
       const id = escapeLuckyDrawText(entry.id || '');
 
@@ -13341,7 +13354,7 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
         <div class="lucky-draw-participant-card" data-backend-entry-id="${id}">
           <div>
             <strong>${number}. ${name}</strong>
-            <span>${monthKey} • ${username}</span>
+            <span>${joinedDate}</span>
           </div>
           <button class="lucky-draw-remove-participant-btn" type="button" data-backend-action="remove-public">Buang</button>
         </div>
@@ -13385,7 +13398,7 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
               <div class="lucky-draw-participant-card" data-backend-entry-id="${escapeLuckyDrawText(entry.id || '')}">
                 <div>
                   <strong>${i+1}. ${escapeLuckyDrawText(entry.name || entry.usernameKey || 'User')}</strong>
-                  <span>${escapeLuckyDrawText(entry.monthKey || '')} • ${escapeLuckyDrawText(entry.usernameKey || '-')}</span>
+                  <span>${escapeLuckyDrawText(formatLuckyDrawJoinDate(entry.joinedAt || entry.createdAt || entry.updatedAt))}</span>
                 </div>
                 <button class="lucky-draw-remove-participant-btn" type="button" data-backend-action="remove-public">Buang</button>
               </div>
