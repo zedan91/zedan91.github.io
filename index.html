@@ -4998,6 +4998,108 @@ a.btn.orange[href="#software"] span::first-line{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   SPIN ROLL BELOW COUNTDOWN - RIGHT TOP AREA
+========================================================= */
+
+.lucky-draw-right-stack{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:14px !important;
+}
+
+.lucky-draw-top-spin-panel{
+  width:100% !important;
+  min-height:190px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+
+  border:1px solid rgba(244,114,182,.55) !important;
+  border-radius:18px !important;
+
+  background:
+    radial-gradient(circle at 50% 0%,rgba(244,114,182,.18),transparent 42%),
+    linear-gradient(145deg,rgba(15,23,42,.92),rgba(2,6,23,.72)) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 0 24px rgba(244,114,182,.10) !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+
+  padding:20px !important;
+  overflow:hidden !important;
+}
+
+.lucky-draw-top-spin-panel::before{
+  content:"🏆";
+  display:block;
+  font-size:38px;
+  line-height:1;
+  color:#f0abfc;
+  filter:drop-shadow(0 0 14px rgba(244,114,182,.55));
+}
+
+.lucky-draw-spin-title{
+  color:#f8fafc !important;
+  font-size:24px !important;
+  font-weight:1000 !important;
+  letter-spacing:.04em !important;
+  text-transform:uppercase !important;
+}
+
+.lucky-draw-spin-name{
+  width:100% !important;
+  max-width:320px !important;
+  min-height:54px !important;
+
+  border:1px solid rgba(244,114,182,.45) !important;
+  border-radius:16px !important;
+
+  background:rgba(2,6,23,.58) !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  color:#fde047 !important;
+  font-size:22px !important;
+  font-weight:1000 !important;
+  text-align:center !important;
+
+  box-shadow:
+    0 0 20px rgba(244,114,182,.18),
+    inset 0 0 18px rgba(244,114,182,.08) !important;
+}
+
+.lucky-draw-spin-note{
+  color:#cbd5e1 !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+}
+
+@media(max-width:760px){
+  .lucky-draw-top-spin-panel{
+    min-height:170px !important;
+    padding:16px !important;
+  }
+
+  .lucky-draw-spin-title{
+    font-size:20px !important;
+  }
+
+  .lucky-draw-spin-name{
+    font-size:18px !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6233,8 +6335,17 @@ Peraduan Cabutan Bertuah User</h2>
           <div class="lucky-draw-summary-box lucky-draw-top-countdown">
             <span>CABUTAN BERMULA DALAM</span>
             <strong id="luckyDrawCountdown">-- hari --:--:--</strong>
-            <small id="luckyDrawTargetText">Auto spin hujung bulan, pukul 10:00 malam</small>
+            <small id="luckyDrawTargetText">Auto spin hujung bulan, pukul 10:00 PM</small>
           </div>
+
+
+
+        <div class="lucky-draw-spin-stage lucky-draw-top-spin-panel" id="luckyDrawSpinStage">
+          <div class="lucky-draw-rolling-window" id="luckyDrawRollingWindow">
+            <div class="lucky-draw-rolling-list" id="luckyDrawRollingList">
+              <span>Cabutan Bertuah Akan Bermula...</span>
+            </div>
+          
         </div>
       </div>
 
@@ -6297,15 +6408,7 @@ Peraduan Cabutan Bertuah User</h2>
             <div class="lucky-draw-prize-save-status" id="luckyDrawPrizeSaveStatus"></div>
             <small class="lucky-draw-folder-note">Lucky-draw folder note: upload gambar hadiah ke <b>/Lucky-draw/</b> dan upload file <b>giveaway-prize.json</b> ke folder yang sama.</small>
           </div>
-        </div>
-
-
-        <div class="lucky-draw-spin-stage" id="luckyDrawSpinStage">
-          <div class="lucky-draw-rolling-window" id="luckyDrawRollingWindow">
-            <div class="lucky-draw-rolling-list" id="luckyDrawRollingList">
-              <span>Cabutan Bertuah Akan Bermula...</span>
-            </div>
-          </div>
+        </div></div>
           <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Cabutan Bertuah Akan Bermula...</div>
           <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
           <div class="lucky-draw-confetti" id="luckyDrawConfetti"></div>
@@ -7321,7 +7424,7 @@ Peraduan Cabutan Bertuah User</h2>
       const diff = target - now;
 
       if (luckyDrawTargetText) {
-        luckyDrawTargetText.textContent = `CABUTAN AKAN BERMULA ke Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 malam`;
+        luckyDrawTargetText.textContent = `CABUTAN AKAN BERMULA ke Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 PM`;
       }
 
       if (diff <= 0) {
