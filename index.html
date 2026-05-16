@@ -5397,6 +5397,47 @@ body.is-admin .lucky-draw-pagination{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   ADMIN TABLE PAGINATION
+========================================================= */
+
+.lucky-draw-admin-pagination{
+  display:none;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-top:14px;
+}
+
+body.is-admin .lucky-draw-admin-pagination{
+  display:flex;
+}
+
+.lucky-draw-admin-pagination button{
+  min-width:44px;
+  min-height:38px;
+  padding:8px 13px;
+  border:1px solid rgba(59,130,246,.65);
+  border-radius:10px;
+  background:rgba(2,6,23,.45);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.lucky-draw-admin-pagination button.is-active{
+  background:#22c55e;
+  border-color:#22c55e;
+}
+
+.lucky-draw-admin-pagination button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+</style>
+
 </head>
 
 <body>
@@ -6749,6 +6790,8 @@ Peraduan Cabutan Bertuah User</h2>
             </tbody>
           </table>
         </div>
+
+        <div class="lucky-draw-admin-pagination" id="luckyDrawAdminPagination"></div>
       </div>
     </div>
   </div>
@@ -13310,6 +13353,92 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
 
 
   const LUCKY_DRAW_PUBLIC_LIMIT = 4;
+
+  const LUCKY_DRAW_ADMIN_LIMIT = 4;
+  let luckyDrawAdminRows = [];
+  let luckyDrawAdminPage = 1;
+
+  function renderLuckyDrawAdminTable(rows){
+    const adminBody = document.getElementById('luckyDrawAdminTableBody');
+    const pagination = document.getElementById('luckyDrawAdminPagination');
+    if(!adminBody) return;
+
+    const list = Array.isArray(rows) ? rows : [];
+    const totalPages = Math.max(1, Math.ceil(list.length / LUCKY_DRAW_ADMIN_LIMIT));
+
+    if(luckyDrawAdminPage > totalPages) luckyDrawAdminPage = totalPages;
+    if(luckyDrawAdminPage < 1) luckyDrawAdminPage = 1;
+
+    if(!list.length){
+      adminBody.innerHTML = '<tr><td colspan="9">Belum ada peserta.</td></tr>';
+      if(pagination) pagination.innerHTML = '';
+      return;
+    }
+
+    const start = (luckyDrawAdminPage - 1) * LUCKY_DRAW_ADMIN_LIMIT;
+    const pageRows = list.slice(start, start + LUCKY_DRAW_ADMIN_LIMIT);
+
+    adminBody.innerHTML = pageRows.map((entry, idx) => {
+      const no = start + idx + 1;
+      return `
+        <tr data-backend-entry-id="${escapeLuckyDrawText(entry.id || '')}">
+          <td>${no}</td>
+          <td>${escapeLuckyDrawText(entry.monthKey || '-')}</td>
+          <td>${escapeLuckyDrawText(entry.usernameKey || '-')}</td>
+          <td><input data-field="name" value="${escapeLuckyDrawText(entry.name || '')}"></td>
+          <td><input data-field="phone" value="${escapeLuckyDrawText(entry.phone || '')}"></td>
+          <td><input data-field="contactEmail" value="${escapeLuckyDrawText(entry.contactEmail || '')}"></td>
+          <td><input data-field="inviteCode" value="${escapeLuckyDrawText(entry.inviteCode || '')}"></td>
+          <td>${escapeLuckyDrawText(formatLuckyDrawJoinDate(entry.joinedAt || entry.createdAt || entry.updatedAt))}</td>
+          <td>
+            <div class="lucky-draw-admin-actions">
+              <button class="lucky-draw-save-btn" type="button">Save</button>
+              <button class="lucky-draw-hide-btn" type="button">Buang</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if(!pagination) return;
+
+    const pageButtons = Array.from({length: totalPages}, (_, i) => {
+      const page = i + 1;
+      return `<button type="button" class="${page === luckyDrawAdminPage ? 'is-active' : ''}" data-admin-page="${page}">${page}</button>`;
+    }).join('');
+
+    pagination.innerHTML = `
+      <button type="button" data-admin-page="first" ${luckyDrawAdminPage === 1 ? 'disabled' : ''}>&lt;&lt;</button>
+      <button type="button" data-admin-page="prev" ${luckyDrawAdminPage === 1 ? 'disabled' : ''}>Previous</button>
+      ${pageButtons}
+      <button type="button" data-admin-page="next" ${luckyDrawAdminPage === totalPages ? 'disabled' : ''}>Next</button>
+      <button type="button" data-admin-page="last" ${luckyDrawAdminPage === totalPages ? 'disabled' : ''}>&gt;&gt;</button>
+      <button type="button" data-admin-page="show-all">Show All</button>
+    `;
+  }
+
+  document.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-admin-page]');
+    if(!btn) return;
+
+    const action = btn.dataset.adminPage;
+    const totalPages = Math.max(1, Math.ceil(luckyDrawAdminRows.length / LUCKY_DRAW_ADMIN_LIMIT));
+
+    if(action === 'first') luckyDrawAdminPage = 1;
+    else if(action === 'prev') luckyDrawAdminPage = Math.max(1, luckyDrawAdminPage - 1);
+    else if(action === 'next') luckyDrawAdminPage = Math.min(totalPages, luckyDrawAdminPage + 1);
+    else if(action === 'last') luckyDrawAdminPage = totalPages;
+    else if(action === 'show-all'){
+      renderLuckyDrawAdminTable(luckyDrawAdminRows.slice(0, luckyDrawAdminRows.length));
+      return;
+    }
+    else{
+      luckyDrawAdminPage = Number(action) || 1;
+    }
+
+    renderLuckyDrawAdminTable(luckyDrawAdminRows);
+  });
+
   let luckyDrawPublicRows = [];
   let luckyDrawPublicPage = 1;
 
@@ -13477,29 +13606,9 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
       luckyDrawPublicPage = 1;
       renderLuckyDrawPublicList(luckyDrawPublicRows);
 
-      const adminBody = document.getElementById('luckyDrawAdminTableBody');
-      if(adminBody){
-        adminBody.innerHTML = rows.length
-          ? rows.map((entry, i) => `
-              <tr data-backend-entry-id="${entry.id}">
-                <td>${i+1}</td>
-                <td>${entry.monthKey || '-'}</td>
-                <td>${entry.usernameKey || '-'}</td>
-                <td><input data-field="name" value="${entry.name || ''}"></td>
-                <td><input data-field="phone" value="${entry.phone || ''}"></td>
-                <td><input data-field="contactEmail" value="${entry.contactEmail || ''}"></td>
-                <td><input data-field="inviteCode" value="${entry.inviteCode || ''}"></td>
-                <td>${entry.joinedAt || '-'}</td>
-                <td>
-                  <div class="lucky-draw-admin-actions">
-                    <button class="lucky-draw-save-btn" type="button" data-backend-action="save">Save</button>
-                    <button class="lucky-draw-hide-btn" type="button" data-backend-action="hide">Buang</button>
-                  </div>
-                </td>
-              </tr>
-            `).join('')
-          : '<tr><td colspan="9">Tiada peserta.</td></tr>';
-      }
+      luckyDrawAdminRows = rows;
+      luckyDrawAdminPage = 1;
+      renderLuckyDrawAdminTable(luckyDrawAdminRows);
     }catch(e){
       console.warn('Lucky Draw backend entries load failed:', e);
     }
