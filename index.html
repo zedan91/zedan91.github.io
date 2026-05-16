@@ -5311,6 +5311,69 @@ body.is-admin .lucky-draw-remove-participant-btn{
 }
 </style>
 
+
+<style>
+/* PARTICIPANTS BESIDE SPIN ROLL */
+
+.spin-roll-layout{
+  display:grid !important;
+  grid-template-columns:240px minmax(0,1fr) !important;
+  gap:18px !important;
+  align-items:center !important;
+  width:100% !important;
+  margin-bottom:14px !important;
+}
+
+.spin-participants-left{
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:16px;
+  background:rgba(2,6,23,.45);
+  padding:12px;
+  min-height:180px;
+}
+
+.spin-participants-left .lucky-draw-public-list{
+  max-height:145px !important;
+  overflow:auto !important;
+}
+
+.spin-roll-right{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+}
+
+.spin-roll-right .lucky-draw-rolling-window{
+  width:100% !important;
+  max-width:420px !important;
+}
+
+.spin-participants-left .lucky-draw-participants-status{
+  color:#fde68a;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.spin-participants-left .lucky-draw-participant-card{
+  padding:8px 10px !important;
+}
+
+.spin-participants-left .lucky-draw-participant-card strong{
+  font-size:12px !important;
+}
+
+.spin-participants-left .lucky-draw-participant-card span{
+  font-size:11px !important;
+}
+
+@media(max-width:760px){
+  .spin-roll-layout{
+    grid-template-columns:1fr !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6553,7 +6616,7 @@ Peraduan Cabutan Bertuah User</h2>
 
         <div class="lucky-draw-spin-stage lucky-draw-top-spin-panel" id="luckyDrawSpinStage">
           
-          <div class="spin-participants-left">
+          <div class="spin-roll-layout"><div class="spin-participants-left">
             <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus">Loading peserta...</div>
             <div class="lucky-draw-public-list" id="luckyDrawPublicList">
           <div class="lucky-draw-empty">Belum ada peserta.</div>
@@ -6631,7 +6694,7 @@ Peraduan Cabutan Bertuah User</h2>
             <small class="lucky-draw-folder-note">Lucky-draw folder note: upload gambar hadiah ke <b>/Lucky-draw/</b> dan upload file <b>giveaway-prize.json</b> ke folder yang sama.</small>
           </div>
         </div></div>
-          </div>
+          </div></div>
           <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName"></div>
           <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
           <div class="lucky-draw-confetti" id="luckyDrawConfetti"></div>
