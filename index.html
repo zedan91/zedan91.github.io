@@ -4091,7 +4091,7 @@ body.is-admin .lucky-draw-prize-admin{
 }
 
 #downloadLuckyDrawPrizeJsonButton{
-  display:none !important;
+  display:inline-flex !important;
 }
 
 .lucky-draw-prize-actions{
@@ -5438,6 +5438,29 @@ body.is-admin .lucky-draw-admin-pagination{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   PRIZE JSON IMPORT / EXPORT
+========================================================= */
+.lucky-draw-json-import-label{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:46px !important;
+  padding:12px 22px !important;
+  border-radius:14px !important;
+  font-weight:1000 !important;
+  cursor:pointer !important;
+  user-select:none !important;
+  text-decoration:none !important;
+}
+
+#downloadLuckyDrawPrizeJsonButton{
+  display:inline-flex !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -6748,7 +6771,9 @@ Peraduan Cabutan Bertuah User</h2>
 
             <div class="lucky-draw-prize-actions">
               <button class="btn blue save-prize-main-btn" id="saveLuckyDrawPrizeButton" type="button">💾 Save Prize</button>
-              <button class="btn orange" id="downloadLuckyDrawPrizeJsonButton" type="button">Download JSON</button>
+              <button class="btn orange" id="downloadLuckyDrawPrizeJsonButton" type="button">Export JSON</button>
+              <label class="btn blue lucky-draw-json-import-label" for="importLuckyDrawPrizeJsonInput">Import JSON</label>
+              <input id="importLuckyDrawPrizeJsonInput" type="file" accept="application/json,.json" hidden>
               <button class="btn orange" id="refreshLuckyDrawPrizeButton" type="button">Refresh Prize</button>
               <button class="btn blue" id="setLuckyDrawBackendUrlButton" type="button">Set Backend URL</button>
               <button class="btn orange" id="testLuckyDrawBackendButton" type="button">Test Backend</button>
