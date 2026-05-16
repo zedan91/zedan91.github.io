@@ -4919,6 +4919,85 @@ a.btn.orange[href="#software"] span::first-line{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   COUNTDOWN CARD TOP RIGHT POSITION
+========================================================= */
+
+.lucky-draw-right-stack{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:14px !important;
+  min-width:0 !important;
+}
+
+.lucky-draw-top-countdown{
+  width:100% !important;
+  min-height:122px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+
+  border:1px solid rgba(34,197,94,.34) !important;
+  border-radius:16px !important;
+
+  background:
+    radial-gradient(circle at top left,rgba(34,197,94,.16),transparent 42%),
+    rgba(2,6,23,.46) !important;
+
+  padding:18px !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+}
+
+.lucky-draw-top-countdown span{
+  color:#94a3b8 !important;
+  text-transform:uppercase !important;
+  letter-spacing:.06em !important;
+  font-size:11px !important;
+  font-weight:900 !important;
+  margin-bottom:8px !important;
+}
+
+.lucky-draw-top-countdown strong{
+  color:#22c55e !important;
+  font-size:28px !important;
+  line-height:1.1 !important;
+  font-weight:1000 !important;
+  font-variant-numeric:tabular-nums !important;
+  text-shadow:0 0 16px rgba(34,197,94,.22) !important;
+}
+
+.lucky-draw-top-countdown small{
+  display:block !important;
+  margin-top:8px !important;
+  color:#dbeafe !important;
+  font-size:12px !important;
+  line-height:1.35 !important;
+}
+
+/* participant summary now has 2 cards only */
+.lucky-draw-participants-panel .lucky-draw-summary-grid{
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr)) !important;
+}
+
+@media(max-width:760px){
+  .lucky-draw-right-stack{
+    gap:12px !important;
+  }
+
+  .lucky-draw-top-countdown{
+    min-height:110px !important;
+  }
+
+  .lucky-draw-top-countdown strong{
+    font-size:24px !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6135,18 +6214,26 @@ Peraduan Cabutan Bertuah User</h2>
           </div>
           <div class="lucky-draw-status" id="luckyDrawStatus">Login dahulu untuk aktifkan cabutan bertuah.</div>
         </div>
-        <div class="lucky-draw-side">
-          <div>
-            <span>Invite Code Anda</span>
-            <strong id="luckyDrawInviteCode">-</strong>
+        <div class="lucky-draw-right-stack">
+          <div class="lucky-draw-side">
+            <div>
+              <span>Invite Code Anda</span>
+              <strong id="luckyDrawInviteCode">-</strong>
+            </div>
+            <div>
+              <span>Status Share</span>
+              <strong id="luckyDrawShareStatus">Belum share</strong>
+            </div>
+            <div>
+              <span>Status Join</span>
+              <strong id="luckyDrawJoinStatus">Belum join</strong>
+            </div>
           </div>
-          <div>
-            <span>Status Share</span>
-            <strong id="luckyDrawShareStatus">Belum share</strong>
-          </div>
-          <div>
-            <span>Status Join</span>
-            <strong id="luckyDrawJoinStatus">Belum join</strong>
+
+          <div class="lucky-draw-summary-box lucky-draw-top-countdown">
+            <span>CABUTAN BERMULA DALAM</span>
+            <strong id="luckyDrawCountdown">-- hari --:--:--</strong>
+            <small id="luckyDrawTargetText">Auto spin hujung bulan, pukul 10:00 malam</small>
           </div>
         </div>
       </div>
@@ -6173,11 +6260,6 @@ Peraduan Cabutan Bertuah User</h2>
           <div class="lucky-draw-summary-box">
             <span>Jumlah Peserta Join</span>
             <strong id="luckyDrawTotalParticipants">0</strong>
-          </div>
-          <div class="lucky-draw-summary-box">
-            <span>CABUTAN AKAN BERMULA</span>
-            <strong id="luckyDrawCountdown">-- hari --:--:--</strong>
-            <small id="luckyDrawTargetText">CABUTAN AKAN BERMULA ke Lucky Draw hujung bulan, 10:00 malam</small>
           </div>
           <div class="lucky-draw-summary-box winner-box">
             <span id="luckyDrawWinnerMonthLabel">Pemenang Bulan Ini</span>
