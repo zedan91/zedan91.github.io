@@ -4244,50 +4244,39 @@ a[href*="tools/index"]{
 
 
 <style>
-/* Bigger centered icons like Contact Us card */
-.btn span,
-.service-card span{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:10px !important;
-    text-align:center !important;
-    line-height:1.25 !important;
-    font-weight:700 !important;
+</style>
+
+
+<style>
+.card-icon{
+    font-size:56px;
+    line-height:1;
+    margin-bottom:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
-/* First line emoji size */
-.btn span{
-    font-size:30px;
-}
-
-/* Text size */
-.btn span small{
-    font-size:15px !important;
-    opacity:.95;
-}
-
-/* Bigger emoji look */
-.btn{
-    font-size:0;
-}
-
-.btn span{
-    font-size:0;
-}
-
-.btn span::first-line{
-    font-size:42px !important;
-}
-
-/* Card text */
-.btn span{
+.card-text{
+    font-size:16px;
+    font-weight:700;
+    line-height:1.3;
+    text-align:center;
     color:#fff;
 }
 
-.btn span{
-    font-size:15px !important;
+.card-text small{
+    font-size:13px;
+    opacity:.95;
+}
+
+.btn{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    gap:4px!important;
 }
 </style>
 
@@ -4661,13 +4650,13 @@ a[href*="tools/index"]{
       </a>
   <a class="btn blue" id="heroRequestButton" href="#request"><span>PA / BM / Lot Kadaster Berdigit</span></a>
   <a class="btn orange" href="#software"><span>Software / AutoCAD LISP / E-book</span></a>
-  <a class="btn blue" href="#affiliate"><span>🛒<br>My Affiliate Shop</span></a>
+  <a class="btn blue" href="#affiliate"><span><div class="card-icon">🛒</div><div class="card-text">My Affiliate Shop</div></span></a>
 
   <a class="btn giveaway-btn" href="#monthly-giveaway-section">
-    <span>🎁<br>Monthly Giveaway<br><small>(Lucky Draw)</small></span>
+    <span><div class="card-icon">🎁</div><div class="card-text">Monthly Giveaway<br><small>(Lucky Draw)</small></div></span>
   </a>
 
-  <a class="btn" href="tools/index.html"><span>🌐<br>Mini Web Tools</span></a>
+  <a class="btn" href="tools/index.html"><span><div class="card-icon">🌐</div><div class="card-text">Mini Web Tools</div></span></a>
 </div>
 
     <div class="traffic-widget">
