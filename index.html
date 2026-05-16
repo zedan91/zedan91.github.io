@@ -4185,98 +4185,228 @@ display:none !important;
 </style>
 
 
-<style>
-.giveaway-btn{
-  background:linear-gradient(135deg,#0d8f43,#1fd166)!important;
-  border:1px solid rgba(0,255,120,.35)!important;
-  box-shadow:0 0 20px rgba(0,255,120,.15);
-}
-.giveaway-btn:hover{
-  transform:translateY(-4px);
-  box-shadow:0 0 30px rgba(0,255,120,.35);
-}
-.giveaway-btn small{
-  font-size:12px;
-  opacity:.9;
-}
-</style>
 
 
-<style>
-/* Transparent glass cards */
-.btn,
-.service-card,
-a.btn{
-    background: rgba(10,18,40,0.55) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border:1px solid rgba(255,255,255,0.10)!important;
-    box-shadow:0 0 18px rgba(0,0,0,0.25);
-    transition:all .25s ease;
-}
 
-.btn:hover,
-.service-card:hover,
-a.btn:hover{
-    transform:translateY(-4px);
-    border-color:rgba(0,255,120,.35)!important;
-    box-shadow:0 0 25px rgba(0,255,120,.18);
-}
 
-/* Keep Mini Web Tools green */
-.btn[href*="tools"],
-a[href*="tools/index"]{
-    background:linear-gradient(135deg,#14b84d,#22c55e)!important;
-}
-
-/* Keep Software orange */
-.orange,
-.btn.orange{
-    background:linear-gradient(135deg,#ff7b18,#ff8f2d)!important;
-}
-
-/* Keep Affiliate blue */
-.blue,
-.btn.blue{
-    background:linear-gradient(135deg,#2f6df6,#4a7fff)!important;
-}
-</style>
 
 
 <style>
 </style>
 
 
+
+
+
 <style>
-.card-icon{
-    font-size:56px;
-    line-height:1;
-    margin-bottom:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+/* =========================================================
+   AZOBSS NEON DASHBOARD CARDS - FINAL
+========================================================= */
+
+/* card layout compatibility */
+.hero-actions,
+.quick-actions,
+.card-grid,
+.action-grid,
+.service-grid{
+  gap:28px !important;
+}
+
+/* Main dashboard cards */
+.hero-actions a.btn,
+.quick-actions a.btn,
+.card-grid a.btn,
+.action-grid a.btn,
+a.btn[href*="affiliate"],
+a.btn[href*="tools"],
+a.btn[href="#monthly-giveaway-section"],
+a.btn[href*="lisp"],
+a.btn[href*="software"]{
+  min-width:220px !important;
+  min-height:170px !important;
+  padding:28px 24px !important;
+  border-radius:26px !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:16px !important;
+
+  text-align:center !important;
+  text-decoration:none !important;
+  color:#f8fafc !important;
+
+  background:linear-gradient(145deg,rgba(11,18,38,.78),rgba(7,12,27,.96)) !important;
+  border:1.5px solid rgba(148,163,184,.24) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 18px 45px rgba(0,0,0,.28) !important;
+
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease,
+    filter .22s ease !important;
+  overflow:hidden !important;
+  position:relative !important;
+}
+
+/* remove old span sizing problems */
+.hero-actions a.btn span,
+.quick-actions a.btn span,
+.card-grid a.btn span,
+.action-grid a.btn span{
+  font-size:16px !important;
+  line-height:1.28 !important;
+  font-weight:800 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:12px !important;
+}
+
+/* Neon SVG icon */
+.az-neon-icon{
+  width:86px !important;
+  height:86px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  margin:0 auto 6px !important;
+  filter:drop-shadow(0 0 14px currentColor);
+}
+
+.az-neon-icon svg{
+  width:100% !important;
+  height:100% !important;
+  fill:none !important;
+  stroke:currentColor !important;
+  stroke-width:6 !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
 }
 
 .card-text{
-    font-size:16px;
-    font-weight:700;
-    line-height:1.3;
-    text-align:center;
-    color:#fff;
+  font-size:19px !important;
+  font-weight:900 !important;
+  line-height:1.35 !important;
+  color:#f8fafc !important;
+  text-align:center !important;
+  text-shadow:0 2px 10px rgba(0,0,0,.38);
 }
 
 .card-text small{
-    font-size:13px;
-    opacity:.95;
+  font-size:15px !important;
+  font-weight:800 !important;
+  opacity:.95 !important;
 }
 
-.btn{
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    text-align:center!important;
-    gap:4px!important;
+/* Contact card keeps WhatsApp icon but matches size */
+a.btn:first-child,
+.whatsapp-card,
+.contact-card{
+  background:linear-gradient(145deg,rgba(11,18,38,.78),rgba(7,12,27,.96)) !important;
+  border-color:rgba(148,163,184,.28) !important;
+}
+
+/* Per-card neon accents */
+a.btn:has(.cad-icon){
+  color:#ff7a1a !important;
+  border-color:rgba(255,122,26,.75) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(255,122,26,.16),
+    0 0 34px rgba(255,122,26,.12),
+    0 18px 45px rgba(0,0,0,.28) !important;
+}
+a.btn:has(.shop-icon){
+  color:#4b8cff !important;
+  border-color:rgba(59,130,246,.78) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(59,130,246,.16),
+    0 0 34px rgba(59,130,246,.12),
+    0 18px 45px rgba(0,0,0,.28) !important;
+}
+a.btn:has(.gift-icon){
+  color:#f0a6ff !important;
+  border-color:rgba(244,114,182,.65) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(244,114,182,.14),
+    0 0 34px rgba(244,114,182,.12),
+    0 18px 45px rgba(0,0,0,.28) !important;
+}
+a.btn:has(.globe-icon){
+  color:#4ade80 !important;
+  border-color:rgba(34,197,94,.78) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(34,197,94,.16),
+    0 0 34px rgba(34,197,94,.12),
+    0 18px 45px rgba(0,0,0,.28) !important;
+}
+
+/* keep icon color but text white */
+a.btn:has(.az-neon-icon) .card-text{
+  color:#f8fafc !important;
+}
+
+/* hover */
+.hero-actions a.btn:hover,
+.quick-actions a.btn:hover,
+.card-grid a.btn:hover,
+.action-grid a.btn:hover{
+  transform:translateY(-7px) scale(1.015) !important;
+  filter:brightness(1.08) !important;
+}
+
+a.btn:has(.cad-icon):hover{ box-shadow:0 0 44px rgba(255,122,26,.28), 0 20px 50px rgba(0,0,0,.34) !important; }
+a.btn:has(.shop-icon):hover{ box-shadow:0 0 44px rgba(59,130,246,.28), 0 20px 50px rgba(0,0,0,.34) !important; }
+a.btn:has(.gift-icon):hover{ box-shadow:0 0 44px rgba(244,114,182,.24), 0 20px 50px rgba(0,0,0,.34) !important; }
+a.btn:has(.globe-icon):hover{ box-shadow:0 0 44px rgba(34,197,94,.25), 0 20px 50px rgba(0,0,0,.34) !important; }
+
+/* fallback for browsers with limited :has support */
+.cad-icon{ color:#ff7a1a !important; }
+.shop-icon{ color:#4b8cff !important; }
+.gift-icon{ color:#f0a6ff !important; }
+.globe-icon{ color:#4ade80 !important; }
+
+/* phone responsive */
+@media(max-width:768px){
+  .hero-actions a.btn,
+  .quick-actions a.btn,
+  .card-grid a.btn,
+  .action-grid a.btn{
+    min-width:calc(50% - 14px) !important;
+    min-height:145px !important;
+    padding:22px 16px !important;
+    border-radius:22px !important;
+  }
+
+  .az-neon-icon{
+    width:66px !important;
+    height:66px !important;
+  }
+
+  .card-text{
+    font-size:16px !important;
+  }
+
+  .card-text small{
+    font-size:13px !important;
+  }
+}
+
+@media(max-width:520px){
+  .hero-actions a.btn,
+  .quick-actions a.btn,
+  .card-grid a.btn,
+  .action-grid a.btn{
+    min-width:100% !important;
+  }
 }
 </style>
 
@@ -4650,13 +4780,13 @@ a[href*="tools/index"]{
       </a>
   <a class="btn blue" id="heroRequestButton" href="#request"><span>PA / BM / Lot Kadaster Berdigit</span></a>
   <a class="btn orange" href="#software"><span>Software / AutoCAD LISP / E-book</span></a>
-  <a class="btn blue" href="#affiliate"><span><div class="card-icon">🛒</div><div class="card-text">My Affiliate Shop</div></span></a>
+  <a class="btn blue" href="#affiliate"><span><div class="az-neon-icon shop-icon" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M28 34h12l8 40h38l10-28H47"/><circle cx="54" cy="88" r="6"/><circle cx="84" cy="88" r="6"/><path d="M54 46v18M72 46v18M90 46v18"/></svg></div><div class="card-text">My Affiliate Shop</div></span></a>
 
   <a class="btn giveaway-btn" href="#monthly-giveaway-section">
-    <span><div class="card-icon">🎁</div><div class="card-text">Monthly Giveaway<br><small>(Lucky Draw)</small></div></span>
+    <span><div class="az-neon-icon gift-icon" aria-hidden="true"><svg viewBox="0 0 120 120"><path d="M24 52h72v46H24z"/><path d="M20 40h80v18H20z"/><path d="M60 40v58"/><path d="M40 40c-10-8-8-22 4-22 10 0 16 12 16 22"/><path d="M80 40c10-8 8-22-4-22-10 0-16 12-16 22"/></svg></div><div class="card-text">Monthly Giveaway<br><small>(Lucky Draw)</small></div></span>
   </a>
 
-  <a class="btn" href="tools/index.html"><span><div class="card-icon">🌐</div><div class="card-text">Mini Web Tools</div></span></a>
+  <a class="btn" href="tools/index.html"><span><div class="az-neon-icon globe-icon" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="40"/><path d="M20 60h80M60 20c13 13 20 27 20 40s-7 27-20 40M60 20c-13 13-20 27-20 40s7 27 20 40M28 42h64M28 78h64"/></svg></div><div class="card-text">Mini Web Tools</div></span></a>
 </div>
 
     <div class="traffic-widget">
