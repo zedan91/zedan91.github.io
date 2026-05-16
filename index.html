@@ -4101,6 +4101,82 @@ body.is-admin .lucky-draw-prize-admin{
   align-items:center !important;
 }
 
+
+/* =========================================================
+   MONTHLY GIVEAWAY TOPBAR BUTTON
+========================================================= */
+.monthly-giveaway-topbar-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
+  padding:10px 18px;
+
+  border-radius:999px;
+
+  background:
+    linear-gradient(135deg,#22c55e,#16a34a);
+
+  color:#fff !important;
+
+  font-weight:900;
+  font-size:14px;
+  text-decoration:none;
+
+  border:1px solid rgba(255,255,255,.12);
+
+  box-shadow:
+    0 10px 28px rgba(34,197,94,.22),
+    inset 0 1px 0 rgba(255,255,255,.18);
+
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    filter .18s ease;
+
+  animation:monthlyGiveawayPulse 2.2s infinite;
+}
+
+.monthly-giveaway-topbar-btn:hover{
+  transform:translateY(-2px) scale(1.03);
+
+  filter:brightness(1.05);
+
+  box-shadow:
+    0 16px 34px rgba(34,197,94,.34),
+    0 0 18px rgba(34,197,94,.28);
+}
+
+@keyframes monthlyGiveawayPulse{
+  0%{
+    box-shadow:
+      0 0 0 0 rgba(34,197,94,.42),
+      0 10px 28px rgba(34,197,94,.22);
+  }
+
+  70%{
+    box-shadow:
+      0 0 0 12px rgba(34,197,94,0),
+      0 10px 28px rgba(34,197,94,.22);
+  }
+
+  100%{
+    box-shadow:
+      0 0 0 0 rgba(34,197,94,0),
+      0 10px 28px rgba(34,197,94,.22);
+  }
+}
+
+@media(max-width:768px){
+  .monthly-giveaway-topbar-btn{
+    width:100%;
+    margin-top:10px;
+    font-size:13px;
+    padding:10px 14px;
+  }
+}
+
 </style>
 
 
@@ -4187,6 +4263,11 @@ display:none !important;
 </head>
 
 <body>
+
+<a href="#monthlyGiveawaySection" class="monthly-giveaway-topbar-btn">
+  🎁 Monthly Giveaway ( Lucky Draw )
+</a>
+
 
   <div class="top-login-toast" id="loginToast"></div>
   <datalist id="countryDialCodeOptions">
