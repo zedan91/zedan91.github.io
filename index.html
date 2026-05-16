@@ -5553,6 +5553,7 @@ body.is-admin .lucky-draw-admin-pagination{
 }
 </style>
 
+<!-- JOIN NUMBER FIX -->
 </head>
 
 <body>
@@ -7383,7 +7384,7 @@ Peraduan Cabutan Bertuah User</h2>
           ? rows.map(function (entry, index) {
               return `
                 <div class="lucky-draw-participant-card">
-                  <strong>${index + 1}. ${escapeLuckyDrawText(entry.name || entry.usernameKey || 'User')}</strong>
+                  <strong>${list.length - index}. ${escapeLuckyDrawText(entry.name || entry.usernameKey || 'User')}</strong>
                   <span>${escapeLuckyDrawText(entry.monthKey || 'Giveaway')} • ${escapeLuckyDrawText(entry.usernameKey || '-')}</span>
                 </div>
               `;
@@ -7399,7 +7400,7 @@ Peraduan Cabutan Bertuah User</h2>
               const rowId = escapeLuckyDrawText(entry.id || '');
               return `
                 <tr data-entry-id="${rowId}">
-                  <td>${index + 1}</td>
+                  <td>${list.length - index}</td>
                   <td>${escapeLuckyDrawText(entry.monthKey || '-')}</td>
                   <td>${escapeLuckyDrawText(entry.usernameKey || '-')}</td>
                   <td><input data-field="name" value="${escapeLuckyDrawText(entry.name || '')}"></td>
@@ -13699,7 +13700,7 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
       const joined = formatLuckyDrawJoinDate(entry.joinedAt || entry.createdAt || entry.updatedAt);
       return `
         <div class="recent-join-item">
-          <span class="recent-join-no">${i + 1}</span>
+          <span class="recent-join-no">${list.length - i}</span>
           <div>
             <strong>${name}</strong>
             <small>${joined}</small>
