@@ -5554,6 +5554,21 @@ body.is-admin .lucky-draw-admin-pagination{
 </style>
 
 <!-- JOIN NUMBER FIX -->
+
+<style>
+/* =========================================================
+   SPIN ROLL ALL PARTICIPANTS FIX
+========================================================= */
+.lucky-draw-rolling-window{
+  min-height:94px !important;
+}
+
+.lucky-draw-rolling-list span{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -7384,7 +7399,7 @@ Peraduan Cabutan Bertuah User</h2>
           ? rows.map(function (entry, index) {
               return `
                 <div class="lucky-draw-participant-card">
-                  <strong>${list.length - index}. ${escapeLuckyDrawText(entry.name || entry.usernameKey || 'User')}</strong>
+                  <strong>${index + 1}. ${escapeLuckyDrawText(entry.name || entry.usernameKey || 'User')}</strong>
                   <span>${escapeLuckyDrawText(entry.monthKey || 'Giveaway')} • ${escapeLuckyDrawText(entry.usernameKey || '-')}</span>
                 </div>
               `;
@@ -7400,7 +7415,7 @@ Peraduan Cabutan Bertuah User</h2>
               const rowId = escapeLuckyDrawText(entry.id || '');
               return `
                 <tr data-entry-id="${rowId}">
-                  <td>${list.length - index}</td>
+                  <td>${index + 1}</td>
                   <td>${escapeLuckyDrawText(entry.monthKey || '-')}</td>
                   <td>${escapeLuckyDrawText(entry.usernameKey || '-')}</td>
                   <td><input data-field="name" value="${escapeLuckyDrawText(entry.name || '')}"></td>
@@ -7427,35 +7442,56 @@ Peraduan Cabutan Bertuah User</h2>
       if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Loading peserta Giveaway...';
 
       try {
-        if (!firebaseReady || !db) throw new Error('Firebase not ready');
+        // Prefer Render backend entries, because this is the same source used by the website join flow.
+        const res = await apiFetch('/api/lucky-draw/entries?monthKey=' + encodeURIComponent(getMonthKey()));
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Backend entries error');
 
-        const snapshot = await getDocs(collection(db, 'luckyDrawEntries'));
-        const rows = [];
-        snapshot.forEach(function (item) {
-          const data = item.data();
-          if (!data.deleted) rows.push({ id: item.id, ...data });
-        });
-
-        rows.sort(function (a, b) {
-          return (b.joinedAtMs || b.createdAtMs || 0) - (a.joinedAtMs || a.createdAtMs || 0);
-        });
-
-        allLuckyDrawParticipants = rows;
-      } catch (error) {
+        allLuckyDrawParticipants = (data.entries || [])
+          .filter(function(entry){ return !entry.deleted; })
+          .map(function(entry, index){
+            return {
+              id: entry.id || `${entry.monthKey || getMonthKey()}_${entry.usernameKey || entry.name || index}`,
+              ...entry
+            };
+          })
+          .sort(function(a,b){
+            return new Date(b.joinedAt || b.createdAt || b.updatedAt || b.joinedAtMs || b.createdAtMs || 0) -
+                   new Date(a.joinedAt || a.createdAt || a.updatedAt || a.joinedAtMs || a.createdAtMs || 0);
+          });
+      } catch (backendError) {
         try {
-          allLuckyDrawParticipants = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]')
-            .map(function (entry, index) {
-              return { id: entry.id || `${entry.monthKey || 'local'}_${entry.usernameKey || index}`, ...entry };
-            })
-            .filter(function (entry) {
-              return !entry.deleted;
-            });
-        } catch (storageError) {
-          allLuckyDrawParticipants = [];
+          if (!firebaseReady || !db) throw new Error('Firebase not ready');
+
+          const snapshot = await getDocs(collection(db, 'luckyDrawEntries'));
+          const rows = [];
+          snapshot.forEach(function (item) {
+            const data = item.data();
+            if (!data.deleted) rows.push({ id: item.id, ...data });
+          });
+
+          rows.sort(function (a, b) {
+            return (b.joinedAtMs || b.createdAtMs || 0) - (a.joinedAtMs || a.createdAtMs || 0);
+          });
+
+          allLuckyDrawParticipants = rows;
+        } catch (error) {
+          try {
+            allLuckyDrawParticipants = JSON.parse(localStorage.getItem('azobssLuckyDrawEntries') || '[]')
+              .map(function (entry, index) {
+                return { id: entry.id || `${entry.monthKey || 'local'}_${entry.usernameKey || entry.name || index}`, ...entry };
+              })
+              .filter(function (entry) {
+                return !entry.deleted;
+              });
+          } catch (storageError) {
+            allLuckyDrawParticipants = [];
+          }
         }
       }
 
       renderLuckyDrawParticipants();
+      previewLuckyDrawAllNames();
     }
 
     async function saveLuckyDrawParticipant(row) {
@@ -7599,6 +7635,37 @@ Peraduan Cabutan Bertuah User</h2>
       if (luckyDrawTotalParticipants) luckyDrawTotalParticipants.textContent = String(activeRows.length);
     }
 
+
+    function getLuckyDrawActiveParticipantsForSpin(participants) {
+      return (Array.isArray(participants) ? participants : [])
+        .filter(function(entry){
+          return entry && !entry.deleted && (entry.usernameKey || entry.name || entry.contactEmail || entry.phone);
+        });
+    }
+
+    function getLuckyDrawSpinNames(participants) {
+      const seen = new Set();
+      const names = getLuckyDrawActiveParticipantsForSpin(participants).map(function(entry){
+        return getWinnerDisplayName(entry);
+      }).filter(function(name){
+        const clean = String(name || '').trim();
+        if(!clean || seen.has(clean.toLowerCase())) return false;
+        seen.add(clean.toLowerCase());
+        return true;
+      });
+
+      return names;
+    }
+
+    function previewLuckyDrawAllNames() {
+      const names = getLuckyDrawSpinNames(allLuckyDrawParticipants);
+      if(names.length){
+        renderLuckyDrawRollingItems(names, 0);
+      }else{
+        renderLuckyDrawRollingItems(['Belum ada peserta'], 0);
+      }
+    }
+
     function getWinnerDisplayName(entry) {
       return entry ? (entry.name || entry.usernameKey || 'User') : 'Belum dipilih';
     }
@@ -7648,16 +7715,14 @@ Peraduan Cabutan Bertuah User</h2>
     }
 
     function chooseLuckyDrawWinner(participants, monthKey) {
-      const active = participants.filter(function (entry) {
-        return !entry.deleted && entry.usernameKey;
-      }).sort(function (a, b) {
-        return String(a.usernameKey).localeCompare(String(b.usernameKey));
+      const active = getLuckyDrawActiveParticipantsForSpin(participants).sort(function (a, b) {
+        return String(a.usernameKey || a.name || '').localeCompare(String(b.usernameKey || b.name || ''));
       });
 
       if (!active.length) return null;
 
       let seed = 0;
-      const seedText = monthKey + '|' + active.map(function (entry) { return entry.usernameKey; }).join('|');
+      const seedText = monthKey + '|' + active.map(function (entry) { return entry.usernameKey || entry.name || entry.contactEmail || entry.phone || ''; }).join('|');
       for (let i = 0; i < seedText.length; i += 1) {
         seed = (seed * 31 + seedText.charCodeAt(i)) >>> 0;
       }
@@ -7765,8 +7830,9 @@ Peraduan Cabutan Bertuah User</h2>
 
       const safeNames = names.length ? names : ['Menunggu peserta...'];
       const items = [];
+      const visibleCount = Math.max(9, safeNames.length);
 
-      for (let i = 0; i < 9; i += 1) {
+      for (let i = 0; i < visibleCount; i += 1) {
         items.push(safeNames[(selectedIndex + i) % safeNames.length]);
       }
 
@@ -7815,9 +7881,7 @@ Peraduan Cabutan Bertuah User</h2>
     function spinLuckyDrawNames(participants, finalWinner, monthKey) {
       if (!luckyDrawSpinnerName || !luckyDrawSpinStage || luckyDrawSpinRunning) return;
 
-      const names = participants
-        .filter(function (entry) { return !entry.deleted; })
-        .map(getWinnerDisplayName);
+      const names = getLuckyDrawSpinNames(participants);
 
       if (!names.length || !finalWinner) return;
 
@@ -7932,9 +7996,7 @@ Peraduan Cabutan Bertuah User</h2>
 
       await loadLuckyDrawParticipants();
 
-      const active = allLuckyDrawParticipants.filter(function (entry) {
-        return !entry.deleted && entry.usernameKey;
-      });
+      const active = getLuckyDrawActiveParticipantsForSpin(allLuckyDrawParticipants);
 
       if (!active.length) {
         if (luckyDrawParticipantsStatus) luckyDrawParticipantsStatus.textContent = 'Tiada peserta untuk test spin.';
@@ -7943,7 +8005,7 @@ Peraduan Cabutan Bertuah User</h2>
       }
 
       const randomWinner = active[Math.floor(Math.random() * active.length)];
-      const names = active.map(getWinnerDisplayName);
+      const names = getLuckyDrawSpinNames(active);
       const itemHeight = window.matchMedia('(max-width: 760px)').matches ? 76 : 94;
 
       if (luckyDrawParticipantsStatus) {
@@ -13700,7 +13762,7 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
       const joined = formatLuckyDrawJoinDate(entry.joinedAt || entry.createdAt || entry.updatedAt);
       return `
         <div class="recent-join-item">
-          <span class="recent-join-no">${list.length - i}</span>
+          <span class="recent-join-no">${i + 1}</span>
           <div>
             <strong>${name}</strong>
             <small>${joined}</small>
