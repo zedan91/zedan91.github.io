@@ -5438,28 +5438,6 @@ body.is-admin .lucky-draw-admin-pagination{
 }
 </style>
 
-
-<style>
-/* =========================================================
-   PARTICIPANT TITLE TEXT CLEANUP
-========================================================= */
-
-#luckyDrawParticipantsStatus:empty{
-  display:none !important;
-  margin:0 !important;
-  padding:0 !important;
-}
-
-.lucky-draw-participants-head h3{
-  margin-top:8px !important;
-  margin-bottom:0 !important;
-}
-
-.recent-joins-title{
-  line-height:1.2 !important;
-}
-</style>
-
 </head>
 
 <body>
@@ -6722,9 +6700,9 @@ Peraduan Cabutan Bertuah User</h2>
       <div class="lucky-draw-participants-panel" id="luckyDrawParticipantsPanel">
         <div class="lucky-draw-participants-head">
           <div>
-            <span class="lucky-draw-kicker">User Join Contest</span>
-            <h3>Loading peserta...</h3>
-            
+            <span class="lucky-draw-kicker">Peserta Giveaway</span>
+            <h3>Senarai Nama Peserta</h3>
+            <p>User boleh lihat nama peserta. Admin sahaja boleh search dan edit peserta.</p>
           </div>
           <div class="lucky-draw-admin-tools" id="luckyDrawAdminTools">
             <input id="luckyDrawParticipantSearch" type="search" placeholder="Search nama / username / phone / email">
@@ -6785,7 +6763,7 @@ Peraduan Cabutan Bertuah User</h2>
         </div>
 
 
-        <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus"></div>
+        <div class="lucky-draw-participants-status" id="luckyDrawParticipantsStatus">Loading peserta...</div>
 
         <div class="lucky-draw-public-list" id="luckyDrawPublicList">
           <div class="lucky-draw-empty">Belum ada peserta.</div>
