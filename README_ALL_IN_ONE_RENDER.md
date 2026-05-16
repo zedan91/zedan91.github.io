@@ -41,3 +41,10 @@ Struktur:
 GitHub Pages hanya guna file website.
 Render hanya guna folder backend.
 Jadi kedua-duanya boleh duduk dalam repo yang sama tanpa kacau antara satu sama lain.
+
+
+## NetworkError Fix
+Jika keluar `NetworkError when attempting to fetch resource`, tekan button `Set Backend URL` di admin prize panel dan masukkan URL Render backend sebenar, contoh:
+`https://azobss-lucky-draw-backend-xxxx.onrender.com`
+
+Render `CORS_ORIGIN` dalam ZIP ini diset kepada `*` supaya GitHub Pages/custom domain lebih mudah connect.

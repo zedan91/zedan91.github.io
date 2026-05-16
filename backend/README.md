@@ -20,3 +20,10 @@ Tukar URL kepada URL Render sebenar.
 
 ## No Password Mode
 Versi ini tidak akan minta ADMIN_KEY. Pastikan `CORS_ORIGIN` di Render ditetapkan kepada domain website anda sahaja, contoh `https://azobss.com`.
+
+
+## NetworkError Fix
+Jika keluar `NetworkError when attempting to fetch resource`, tekan button `Set Backend URL` di admin prize panel dan masukkan URL Render backend sebenar, contoh:
+`https://azobss-lucky-draw-backend-xxxx.onrender.com`
+
+Render `CORS_ORIGIN` dalam ZIP ini diset kepada `*` supaya GitHub Pages/custom domain lebih mudah connect.

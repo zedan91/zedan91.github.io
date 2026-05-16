@@ -12,6 +12,6 @@ services:
       - key: PUBLIC_BASE_URL
         sync: false
       - key: CORS_ORIGIN
-        value: https://azobss.com
+        value: "*"
       - key: TZ
         value: Asia/Kuala_Lumpur
