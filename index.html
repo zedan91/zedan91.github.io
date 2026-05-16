@@ -4892,6 +4892,33 @@ a.btn.orange[href="#software"] span::first-line{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   MOVE COUNTDOWN CARD UP
+========================================================= */
+
+@media(min-width:900px){
+
+  .countdown-card,
+  .countdown-box,
+  .remaining-time-card,
+  .timer-card{
+      margin-top:-145px !important;
+      position:relative !important;
+      z-index:5 !important;
+  }
+
+}
+
+/* Better title */
+.countdown-title,
+.remaining-title{
+    font-weight:900 !important;
+    letter-spacing:.4px !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -6148,9 +6175,9 @@ Peraduan Cabutan Bertuah User</h2>
             <strong id="luckyDrawTotalParticipants">0</strong>
           </div>
           <div class="lucky-draw-summary-box">
-            <span>Remaining Time</span>
+            <span>CABUTAN AKAN BERMULA</span>
             <strong id="luckyDrawCountdown">-- hari --:--:--</strong>
-            <small id="luckyDrawTargetText">Remaining time ke Lucky Draw hujung bulan, 10:00 malam</small>
+            <small id="luckyDrawTargetText">CABUTAN AKAN BERMULA ke Lucky Draw hujung bulan, 10:00 malam</small>
           </div>
           <div class="lucky-draw-summary-box winner-box">
             <span id="luckyDrawWinnerMonthLabel">Pemenang Bulan Ini</span>
@@ -6194,10 +6221,10 @@ Peraduan Cabutan Bertuah User</h2>
         <div class="lucky-draw-spin-stage" id="luckyDrawSpinStage">
           <div class="lucky-draw-rolling-window" id="luckyDrawRollingWindow">
             <div class="lucky-draw-rolling-list" id="luckyDrawRollingList">
-              <span>Menunggu countdown...</span>
+              <span>Cabutan Bertuah Akan Bermula...</span>
             </div>
           </div>
-          <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Menunggu countdown...</div>
+          <div class="lucky-draw-spinner-name" id="luckyDrawSpinnerName">Cabutan Bertuah Akan Bermula...</div>
           <div class="lucky-draw-winner-effect" id="luckyDrawWinnerEffect"></div>
           <div class="lucky-draw-confetti" id="luckyDrawConfetti"></div>
         </div>
@@ -6932,7 +6959,7 @@ Peraduan Cabutan Bertuah User</h2>
       if (luckyDrawSpinnerName) {
         luckyDrawSpinnerName.textContent = winner
           ? `🎉 ${getWinnerDisplayName(winner)} 🎉`
-          : 'Menunggu countdown...';
+          : 'Cabutan Bertuah Akan Bermula...';
       }
 
       if (luckyDrawSpinStage) {
@@ -7212,7 +7239,7 @@ Peraduan Cabutan Bertuah User</h2>
       const diff = target - now;
 
       if (luckyDrawTargetText) {
-        luckyDrawTargetText.textContent = `Remaining time ke Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 malam`;
+        luckyDrawTargetText.textContent = `CABUTAN AKAN BERMULA ke Lucky Draw ${target.toLocaleDateString('ms-MY')} pukul 10:00 malam`;
       }
 
       if (diff <= 0) {
