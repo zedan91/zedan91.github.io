@@ -11949,7 +11949,9 @@ document.addEventListener('DOMContentLoaded', function(){
    AZOBSS LUCKY DRAW RENDER BACKEND BRIDGE
    Tukar URL ini selepas deploy backend di Render:
 ========================================================= */
-window.AZOBSS_LUCKY_DRAW_API = window.AZOBSS_LUCKY_DRAW_API || localStorage.getItem('azobssLuckyDrawBackendUrl') || '';
+window.AZOBSS_LUCKY_DRAW_API =
+localStorage.getItem('azobssLuckyDrawBackendUrl') ||
+'https://azobss-lucky-draw-api.onrender.com';
 
 (function(){
   const api = () => (window.AZOBSS_LUCKY_DRAW_API || '').replace(/\/$/, '');
