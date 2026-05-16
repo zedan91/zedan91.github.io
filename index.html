@@ -5201,6 +5201,46 @@ body.is-admin .lucky-draw-remove-participant-btn{
 }
 </style>
 
+
+<style>
+/* PARTICIPANTS MOVE TO LEFT OF SPIN */
+.lucky-draw-bottom-layout{
+  display:grid;
+  grid-template-columns:minmax(280px,360px) minmax(0,1fr);
+  gap:18px;
+  align-items:start;
+  margin-top:18px;
+}
+
+.lucky-draw-participants-panel{
+  margin-top:0 !important;
+  padding:16px !important;
+}
+
+.lucky-draw-public-list{
+  max-height:420px;
+  overflow:auto;
+}
+
+.lucky-draw-participant-card{
+  padding:10px 12px !important;
+}
+
+.lucky-draw-participant-card strong{
+  font-size:14px !important;
+}
+
+.lucky-draw-participant-card span{
+  font-size:12px !important;
+}
+
+@media (max-width: 980px){
+  .lucky-draw-bottom-layout{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6549,7 +6589,9 @@ Peraduan Cabutan Bertuah User</h2>
     </div>
   </div>
 
-  <div class="section member-login-section">
+  </div>
+
+<div class="section member-login-section">
     <div class="card member-login-card">
       <h3>🔐 Member Login</h3>
       <p>
