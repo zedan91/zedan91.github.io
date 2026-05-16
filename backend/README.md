@@ -27,3 +27,11 @@ Jika keluar `NetworkError when attempting to fetch resource`, tekan button `Set 
 `https://azobss-lucky-draw-backend-xxxx.onrender.com`
 
 Render `CORS_ORIGIN` dalam ZIP ini diset kepada `*` supaya GitHub Pages/custom domain lebih mudah connect.
+
+
+## Fix included
+This version adds:
+- GET `/` root info endpoint
+- GET `/api/prize` endpoint
+- ES module-safe code only, no `require()`
+- `image` and `imageUrl` compatibility

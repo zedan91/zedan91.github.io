@@ -111,6 +111,14 @@ const upload = multer({
   }
 });
 
+app.get("/", (req, res) => {
+  res.json({
+    ok: true,
+    service: "AZOBSS Lucky Draw Backend",
+    message: "Use /api/health, /api/prize or /api/lucky-draw/prize"
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "AZOBSS Lucky Draw Backend", time: new Date().toISOString() });
 });
@@ -139,12 +147,57 @@ app.post("/api/lucky-draw/prize", requireAdmin, upload.single("image"), (req, re
     title: req.body.title || previous.title || "Hadiah Giveaway",
     description: req.body.description || previous.description || "",
     imageUrl,
+    image: imageUrl,
     updatedAt: new Date().toISOString(),
     updatedBy: req.body.updatedBy || "admin"
   };
 
   writeJson(getPrizeFile(key), prize);
   res.json({ ok: true, prize });
+});
+
+
+// Simple alias for browser test and old frontend code.
+// ES module safe: no require().
+app.get("/api/prize", (req, res) => {
+  try {
+    const key = req.query.monthKey || monthKey();
+
+    let prize = readJson(getPrizeFile(key), null);
+
+    // Fallback manual file: backend/data/prize.json
+    if (!prize) {
+      prize = readJson(path.join(DATA_DIR, "prize.json"), null);
+    }
+
+    if (!prize) {
+      prize = {
+        monthKey: key,
+        title: "Hadiah belum diumumkan",
+        description: "Admin belum upload hadiah Giveaway bulan ini.",
+        imageUrl: "",
+        image: "",
+        updatedAt: ""
+      };
+    }
+
+    // Support both field names.
+    if (!prize.imageUrl && prize.image) prize.imageUrl = prize.image;
+    if (!prize.image && prize.imageUrl) prize.image = prize.imageUrl;
+
+    res.json({
+      ok: true,
+      success: true,
+      prize,
+      monthName: monthName(key)
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      success: false,
+      error: err.message
+    });
+  }
 });
 
 app.get("/api/lucky-draw/entries", (req, res) => {
@@ -303,34 +356,4 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`AZOBSS Lucky Draw Backend running on port ${PORT}`);
-});
-
-
-app.get('/api/prize', (req, res) => {
-  try {
-    const fs = require('fs');
-    const path = require('path');
-
-    const prizePath = path.join(__dirname, 'data', 'prize.json');
-
-    if (!fs.existsSync(prizePath)) {
-      return res.json({
-        success: true,
-        prize: null
-      });
-    }
-
-    const prize = JSON.parse(fs.readFileSync(prizePath, 'utf8'));
-
-    res.json({
-      success: true,
-      prize
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
-  }
 });
