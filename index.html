@@ -5161,6 +5161,46 @@ a.btn.orange[href="#software"] span::first-line{
 }
 </style>
 
+
+<style>
+/* =========================================================
+   ADMIN REMOVE PARTICIPANT BUTTON
+========================================================= */
+
+.lucky-draw-participant-card{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+
+.lucky-draw-remove-participant-btn{
+  display:none;
+  border:0;
+  border-radius:10px;
+  padding:8px 12px;
+  background:#dc2626;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 10px 24px rgba(220,38,38,.22);
+}
+
+body.is-admin .lucky-draw-remove-participant-btn{
+  display:inline-flex !important;
+}
+
+.lucky-draw-remove-participant-btn:hover{
+  filter:brightness(1.08);
+  transform:translateY(-1px);
+}
+
+.lucky-draw-hide-btn{
+  background:#dc2626 !important;
+  color:#fff !important;
+}
+</style>
+
 </head>
 
 <body>
@@ -13078,7 +13118,15 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
       const publicList = document.getElementById('luckyDrawPublicList');
       if(publicList){
         publicList.innerHTML = rows.length
-          ? rows.map((entry, i) => `<div class="lucky-draw-participant-card"><strong>${i+1}. ${(entry.name || entry.usernameKey || 'User')}</strong><span>${entry.monthKey || ''} • ${entry.usernameKey || '-'}</span></div>`).join('')
+          ? rows.map((entry, i) => `
+              <div class="lucky-draw-participant-card" data-backend-entry-id="${entry.id}">
+                <div>
+                  <strong>${i+1}. ${(entry.name || entry.usernameKey || 'User')}</strong>
+                  <span>${entry.monthKey || ''} • ${entry.usernameKey || '-'}</span>
+                </div>
+                <button class="lucky-draw-remove-participant-btn" type="button" data-backend-action="remove-public">Buang</button>
+              </div>
+            `).join('')
           : '<div class="lucky-draw-empty">Belum ada peserta Giveaway.</div>';
       }
 
@@ -13098,7 +13146,7 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
                 <td>
                   <div class="lucky-draw-admin-actions">
                     <button class="lucky-draw-save-btn" type="button" data-backend-action="save">Save</button>
-                    <button class="lucky-draw-hide-btn" type="button" data-backend-action="hide">Hide</button>
+                    <button class="lucky-draw-hide-btn" type="button" data-backend-action="hide">Buang</button>
                   </div>
                 </td>
               </tr>
@@ -13163,14 +13211,14 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
   async function hideEntryBackend(row){
     const id = row && row.dataset.backendEntryId;
     if(!id) return;
-    if(!confirm('Hide peserta ini?')) return;
+    if(!confirm('Buang peserta ini dari cabutan bertuah bulan ini? User ini boleh join semula selepas dibuang.')) return;
 
     const res = await apiFetch('/api/lucky-draw/entries/' + encodeURIComponent(id) + '?monthKey=' + encodeURIComponent(getMonthKey()), {
       method:'DELETE',
       admin:true
     });
     const data = await res.json();
-    if(!data.ok) throw new Error(data.error || 'Hide entry failed');
+    if(!data.ok) throw new Error(data.error || 'Buang peserta gagal');
     await loadEntriesFromBackend();
   }
 
@@ -13237,7 +13285,8 @@ localStorage.getItem('azobssLuckyDrawBackendUrl') ||
     try{
       if(btn.dataset.backendAction === 'save') await saveEntryBackend(row);
       if(btn.dataset.backendAction === 'hide') await hideEntryBackend(row);
-      setStatus('Backend peserta berjaya dikemaskini.');
+      if(btn.dataset.backendAction === 'remove-public') await hideEntryBackend(row);
+      setStatus('Peserta berjaya dikemaskini / dibuang.');
     }catch(e){
       setStatus('Backend peserta gagal: ' + e.message);
     }
